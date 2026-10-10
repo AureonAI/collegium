@@ -7,6 +7,7 @@ com outra extensão, eram lidos como planilha e davam a mensagem FALSA "cabeçal
 import json
 import os
 import random
+import re
 import shutil
 import sys
 import tempfile
@@ -90,6 +91,57 @@ class TestFormatos(unittest.TestCase):
         chave = lambda r: (r["status"], r["pares"], r["grupos"], r["pendencias_extrato"], r["pendencias_razao"])  # noqa
         self.assertEqual(chave(base), ("CONCILIADO", 41, 6, 15, 12))
         self.assertEqual(chave(of), chave(base))
+
+
+class TestVariantesReais(unittest.TestCase):
+    """R6-28/R6-29: variações comuns de arquivos reais."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    @staticmethod
+    def razao_com_coluna_dc() -> str:
+        """O razão do kit reescrito no leiaute 'Valor' + 'D/C' (natureza em coluna própria)."""
+        out = []
+        for ln in C.decode("cp1252").split("\n"):
+            m = re.match(r"(\d\d/\d\d/\d{4});([^;]*);([^;]*);([^;]*);([^;]*);([^;]*);", ln)
+            if ln.startswith("Data;"):
+                out.append("Data;Lançamento;Histórico;Documento;Valor;D/C")
+            elif m:
+                d, c = m.group(5), m.group(6)
+                out.append(";".join([m.group(1), m.group(2), m.group(3), m.group(4), d or c, "D" if d else "C"]))
+            elif not ln.startswith(";;"):
+                out.append(ln)
+        return "\n".join(out)
+
+    def test_r6_28_razao_com_valor_e_coluna_dc(self):
+        """R6-28: 'Valor' + 'D/C' é leiaute comum de ERP; a coluna D/C era ignorada e tudo dava BLOQUEADO."""
+        e, r = os.path.join(self.tmp, "e.ofx"), os.path.join(self.tmp, "r.csv")
+        with open(e, "wb") as f:
+            f.write(O)
+        with open(r, "wb") as f:
+            f.write(self.razao_com_coluna_dc().encode("cp1252"))
+        res = piloto.conciliar_arquivos(e, r, os.path.join(self.tmp, "s"), "E")
+        self.assertEqual((res["status"], res["pares"] + res["grupos"], res["pendencias_extrato"],
+                          res["pendencias_razao"]), ("CONCILIADO", 47, 15, 12))
+
+    def test_r6_28_natureza_ilegivel_ou_contraditoria_falha_fechado(self):
+        cab = "Data;Histórico;Valor;D/C\n"
+        for linha in ("02/09/2026;x;10,00;X\n", "02/09/2026;x;10,00;\n", "02/09/2026;x;-10,00;C\n"):
+            with self.assertRaises(ValueError, msg=linha):
+                imp.ler_planilha(cab + linha, "R")
+        r = imp.ler_planilha(cab + "02/09/2026;a;10,00;D\n03/09/2026;b;5,00;Crédito\n", "R")
+        self.assertEqual([x["valor"] for x in r["itens"]], [-1000, 500])
+
+    def test_r6_29_entidades_do_ofx_viram_texto(self):
+        """R6-29: '&amp;' (regra do OFX) chegava cru ao relatório: o contador lia 'PIX &amp; CIA'."""
+        ofx = ("<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><BANKTRANLIST><STMTTRN><TRNTYPE>CREDIT</TRNTYPE>"
+               "<DTPOSTED>20260902</DTPOSTED><TRNAMT>10.00</TRNAMT><FITID>1</FITID><MEMO>PIX &amp; CIA &lt;LTDA&gt;</MEMO>"
+               "</STMTTRN></BANKTRANLIST></STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>")
+        self.assertEqual(imp.ler_ofx(ofx)["extrato"][0]["desc"], "PIX & CIA <LTDA>")
 
 
 class TestOperarioNuncaRecusadoPeloOraculo(unittest.TestCase):

@@ -19,7 +19,7 @@ razão na convenção contábil (sinais invertidos), CP-1252, título antes da t
 quatro jeitos e texto hostil (fórmula de Excel, `<script>`).
 
 **O que entra:** extrato em OFX, CNAB 240, JSON do Open Finance Brasil ou planilha; razão do ERP em CSV/TXT
-(UTF-8, CP-1252 ou "Texto Unicode" do Excel). **O que ainda não entra:** PDF (o texto de um PDF não garante os
+(UTF-8, CP-1252 ou "Texto Unicode" do Excel; colunas Débito/Crédito, Valor com sinal ou Valor + D/C). **O que ainda não entra:** PDF (o texto de um PDF não garante os
 números: exporte OFX ou CSV no internet banking) e .xlsx/.xls (no Excel, "Salvar como CSV"); a ferramenta diz isso
 ao recusar. **O que sai:** relatório (abre no celular), `pendencias.csv`, `pares.csv`,
 `resumo.json` e, com chave, `recibo.json` assinado. **Quando não serve, diz:** saldo que não fecha, período que não bate ou

@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import io
+import html
 import re
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
@@ -104,7 +105,7 @@ def checar_saldo(extrato: list[dict], saldo_inicial: int | None, saldo_final: in
 
 def _tag(bloco: str, nome: str) -> str | None:
     m = re.search(rf"<{nome}>([^<\r\n]*)", bloco, re.I)
-    return m.group(1).strip() if m else None
+    return html.unescape(m.group(1).strip()) if m else None  # R6-29: &amp; &lt; são regra do OFX
 
 
 _OFX_ENTRADA = {"CREDIT", "DEP", "INT", "DIV", "DIRECTDEP"}  # R6-18: tipos que só podem ser entrada
@@ -384,6 +385,8 @@ ALIASES = {
     "debito": ("debito", "debitos", "saida", "saidas", "deb", "valor debito", "vlr debito"),
     "credito": ("credito", "creditos", "entrada", "entradas", "cred", "valor credito", "vlr credito"),
     "desc": ("historico", "descricao", "complemento", "memo", "historico complementar"),
+    # R6-28: natureza em coluna própria ("Valor" + "D/C"), leiaute comum de ERP
+    "natureza": ("d c", "dc", "natureza", "deb cred", "debito credito", "d c natureza", "natureza d c"),
     "doc": ("documento", "doc", "n doc", "no doc", "num doc", "numero documento", "n documento", "nf",
             "nota", "nota fiscal", "num documento"),
     "id": ("id", "n", "no", "num", "numero", "sequencial", "seq", "codigo", "cod", "n lanc", "lancamento",
@@ -494,6 +497,15 @@ def ler_planilha(conteudo: str | bytes, prefixo: str, colunas: dict | None = Non
         return cs[j].strip() if j is not None and j < len(cs) else ""
 
     def valor_de(cs):
+        if "valor" in mapa and "natureza" in mapa:  # R6-28: D = negativo (convenção bancária, como o sufixo D)
+            v, nat = centavos(cel(cs, "valor")), _norm(cel(cs, "natureza"))
+            if v < 0:
+                raise ValueError("valor com sinal E coluna D/C: ambíguo")
+            if nat in ("d", "debito", "deb"):
+                return -v
+            if nat in ("c", "credito", "cred"):
+                return v
+            raise ValueError(f"natureza ilegível na coluna D/C: {cel(cs, 'natureza')!r} (use D ou C)")
         if "valor" in mapa:
             return centavos(cel(cs, "valor"))
         cr, db = cel(cs, "credito"), cel(cs, "debito")
