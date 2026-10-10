@@ -73,6 +73,17 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **LLM-6** | gemma3:4b anotando o resíduo (T6), n=20 | 13/20 notas aceitas; 6 incidentes capturados (4 `SUGESTAO_FORA_DOS_CANDIDATOS`, 2 `CONSERVACAO`); op-det intacto; conciliação idêntica à execução sem LLM, inclusive entre Windows e Linux | Nenhuma: o desenho segurou | `resultados/llm_real/T6_gemma3_4b_2026-10-10.json` |
 | **V-1** | "O LLM acerta 99,3% do resíduo" (número bruto do T6) | **Ataque venceu contra a leitura ingênua:** a comparação era entre conjuntos diferentes. Nos mesmos 148 itens, a base trivial faz 148/148 e o LLM 147/148. Ele copiou a ordem da lista e errou a única decisão própria. Custo: 115 s de CPU por nota para valor zero | Nenhuma de código; a frase "o LLM ajuda no resíduo" fica **sem base empírica** até haver dado real com sinal semântico (T015) | este registro |
 
+## Rodada 5 — estado da arte (10/10/2026)
+
+| ID | Alvo | Resultado | Correção | Prova |
+|---|---|---|---|---|
+| **Q-1** | Quórum do Patronus (T042) | **Ataque venceu na minha revisão:** a mesma chave pública sob dois nomes fazia UMA pessoa valer dois votos | REGIMENTO com chave repetida é recusado | `test_mesma_chave_sob_dois_nomes_nao_vale_dois` (falhou antes, passa depois) |
+| **Q-2** | Rebaixamento de assinatura | Testado: com chave pública registrada, a assinatura HMAC do humano deixa de valer (o núcleo conhece o HMAC e poderia forjá-la) | — | `test_rebaixamento_para_hmac_recusado` |
+| **Q-3** | Autoaprovação de REGIMENTO | Testado: o quórum que autoriza é o do REGIMENTO ANTERIOR, selado no ANAIS; regras novas não trazem as próprias chaves | — | `test_regimento_novo_nao_se_autoaprova` |
+| **E-1** | Ed25519 em Python puro | **Limite que não se corrige:** não é tempo constante. Uso restrito a assinar no computador do humano; nunca em servidor exposto | Declarado no módulo | — |
+| **R-1** | Recibo (T043) | **Limite:** o recibo prova que as linhas EXISTEM, não que não existe linha POSTERIOR sobre a mesma tarefa (prova de ausência). Hoje cada tarefa tem um único recibo; com tentativas (T053) isso muda | A registrar: índice por tarefa com prova de ausência | — |
+| **R-2** | Teste do recibo | Meu teste de "histórico reescrito" não reescrevia nada (linha errada) e falhou por isso. Erro do teste, não do código | Teste passa a garantir que a reescrita ocorreu e está no trecho já visto | `test_reescrita_do_historico_depois_da_cabeca` |
+
 ## Ataque-Gödel (contra o próprio método)
 
 **"O Red Team escolheu ataques que sabia vencer ou perder. Os 17 comportamentos do T1 foram escritos pelo mesmo autor do LEX, então 2989/2989 mede a coerência entre o código e a lista, não a segurança contra um adversário desconhecido."**

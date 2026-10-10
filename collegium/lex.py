@@ -53,6 +53,20 @@ def assinar_humano(chave: bytes, *campos: Any) -> str:
     return hmac.new(chave, canonico(list(campos)), hashlib.sha256).hexdigest()
 
 
+def assinar_humano_ed25519(privada: bytes, *campos: Any) -> str:
+    """T042: assinatura assimétrica do humano. O núcleo só guarda a chave PÚBLICA."""
+    from . import ed25519
+    return ed25519.assinar(privada, canonico(list(campos))).hex()
+
+
+def _ed_ok(publica_hex: str, assinatura: Any, *campos: Any) -> bool:
+    from . import ed25519
+    try:
+        return ed25519.verificar(bytes.fromhex(publica_hex), canonico(list(campos)), bytes.fromhex(assinatura))
+    except (TypeError, ValueError):
+        return False
+
+
 def linhagem(declarada: str | list[str]) -> frozenset[str]:
     """Família de modelo como CONJUNTO de linhagens (ex.: um destilado ['qwen','deepseek'])."""
     itens = [declarada] if isinstance(declarada, str) else list(declarada)
@@ -76,6 +90,26 @@ def carregar_regimento(fonte: str | dict) -> dict:
     for cl, d in reg["classes_tarefa"].items():
         if int(d.get("orcamento_passos", 0)) <= 0:
             raise RegimentoInvalido(f"classe {cl} sem orcamento_passos positivo (exigido pela lei L2)")
+    # T042: chaves públicas (Ed25519, 32 bytes em hex) e quórum do Patronus
+    def _chave_ok(h):
+        try:
+            return isinstance(h, str) and len(bytes.fromhex(h)) == 32
+        except ValueError:
+            return False
+    for ag, d in reg["agentes"].items():
+        if "chave_publica" in d and not _chave_ok(d["chave_publica"]):
+            raise RegimentoInvalido(f"agente {ag}: chave_publica deve ser Ed25519 (64 hex)")
+    pat = reg.get("patronus")
+    if pat is not None:
+        chaves, rev = pat.get("chaves", {}), set(pat.get("revogadas", []))
+        if not chaves or not all(_chave_ok(v) for v in chaves.values()):
+            raise RegimentoInvalido("patronus.chaves: dicionário nome -> chave pública Ed25519")
+        if len(set(chaves.values())) != len(chaves):  # uma pessoa não conta duas vezes no quórum
+            raise RegimentoInvalido("patronus.chaves: a mesma chave pública aparece sob dois nomes")
+        if not 1 <= int(pat.get("quorum", 0)) <= len(chaves):
+            raise RegimentoInvalido("patronus.quorum deve estar entre 1 e o número de chaves")
+        if rev & set(chaves.values()) or any(d.get("chave_publica") in rev for d in reg["agentes"].values()):
+            raise RegimentoInvalido("chave revogada não pode voltar ao REGIMENTO")
     niveis = [r["nivel"] for r in reg["autonomia"]["niveis"]]
     if sorted(niveis) != list(range(1, len(niveis) + 1)):
         raise RegimentoInvalido("níveis de autonomia devem ser 1..k sem lacunas")
@@ -142,16 +176,35 @@ class Lex:
         self.quarentena: set[str] = set()
         self.admitidos: set[str] = set()
         self.hist: dict[tuple[str, str], Historico] = {}
+        self._patronus_selado: dict | None = None
         anterior = self._reconstruir()
         # G4: MUDAR o REGIMENTO de um ANAIS existente exige assinatura do Patronus sobre o novo hash.
         # (O primeiro REGIMENTO de um ANAIS novo é o ato de fundação e fica selado.)
+        # T042: se o REGIMENTO ANTERIOR selou um quórum Ed25519, só esse quórum autoriza a mudança;
+        # o REGIMENTO novo não pode trazer chaves próprias e se autoaprovar.
         if anterior is not None and anterior != self.hash_regimento:
-            if not (self._chave_patronus and assinatura_regimento and hmac.compare_digest(
+            sel = self._patronus_selado
+            if sel:
+                validas = {n for n, k in sel["chaves"].items() if isinstance(assinatura_regimento, dict)
+                           and k not in sel.get("revogadas", [])
+                           and _ed_ok(k, assinatura_regimento.get(n), "regimento", self.hash_regimento)}
+                if len(validas) < int(sel["quorum"]):
+                    raise RegimentoInvalido(f"mudança de REGIMENTO exige {sel['quorum']} assinatura(s) Ed25519 "
+                                            f"do quórum selado; válidas: {sorted(validas)}")
+                novas = set(self.r.get("patronus", {}).get("revogadas", []))
+                if not set(sel.get("revogadas", [])) <= novas:
+                    raise RegimentoInvalido("revogação não se desfaz: o REGIMENTO novo omitiu chave revogada")
+            elif not (self._chave_patronus and isinstance(assinatura_regimento, str) and hmac.compare_digest(
                     assinatura_regimento, assinar_humano(self._chave_patronus, "regimento", self.hash_regimento))):
                 raise RegimentoInvalido("REGIMENTO mudou desde a última execução e a mudança não está "
                                         "assinada pelo Patronus (assinar regimento HASH)")
-        self.anais.anexar("regimento", {"versao": self.r["versao"], "hash": self.hash_regimento,
-                                        "anterior": anterior, "oraculos": sorted(self.oraculos)})
+        selo = {"versao": self.r["versao"], "hash": self.hash_regimento,
+                "anterior": anterior, "oraculos": sorted(self.oraculos)}
+        if "patronus" in self.r:  # chaves públicas não são segredo: ficam seladas para a próxima mudança
+            selo["patronus"] = {"quorum": int(self.r["patronus"]["quorum"]),
+                                "chaves": dict(self.r["patronus"]["chaves"]),
+                                "revogadas": sorted(self.r["patronus"].get("revogadas", []))}
+        self.anais.anexar("regimento", selo)
 
     # ------------------------------------------------------------ reconstrução a partir do ANAIS
     def _reconstruir(self) -> None:
@@ -165,6 +218,7 @@ class Lex:
             tipo, d = reg["corpo"]["tipo"], reg["corpo"]["dados"]
             if tipo == "regimento":
                 ultimo_regimento = d["hash"]
+                self._patronus_selado = d.get("patronus")
             if tipo == "recibo" and "produtor" in d:
                 self._hist(d["produtor"], d["classe"]).registrar(bool(d["aceito"]))
                 t = self.tarefas.get(d["tarefa"])
@@ -242,10 +296,17 @@ class Lex:
         self.anais.anexar("incidente", {"agente": acao.agente, "codigo": codigo, "motivo": motivo})
         return self._decidir(acao, False, codigo, motivo)
 
-    def _assinatura_ok(self, assinatura: str | None, *campos: Any) -> bool:
+    def _assinatura_ok(self, assinatura: str | None, *campos: Any, humano: str | None = None) -> bool:
         if not self.r["autonomia"].get("exigir_assinatura_humana", True):
             return True
-        if not self._chave_patronus or not assinatura:
+        if not assinatura or not isinstance(assinatura, str):
+            return False
+        pub = self.r["agentes"].get(humano, {}).get("chave_publica") if humano else None
+        if pub:  # T042: humano com chave pública NÃO aceita HMAC (anti-rebaixamento: o núcleo conhece o HMAC)
+            if pub in self.r.get("patronus", {}).get("revogadas", []):
+                return False
+            return _ed_ok(pub, assinatura, *campos)
+        if not self._chave_patronus:
             return False
         return hmac.compare_digest(assinatura, assinar_humano(self._chave_patronus, *campos))
 
@@ -256,7 +317,8 @@ class Lex:
     def reabilitar(self, agente: str, humano: str, motivo: str, assinatura: str | None = None) -> Decisao:
         """Só um humano tira um agente da quarentena; o histórico NÃO volta (recomeça de L0)."""
         acao = Acao(humano, "reabilitacao", "reabilitar", None, {"agente": agente})
-        if not self._eh_humano(humano) or not self._assinatura_ok(assinatura, "reabilitar", agente, humano):
+        if not self._eh_humano(humano) or not self._assinatura_ok(assinatura, "reabilitar", agente, humano,
+                                                                           humano=humano):
             return self._violacao(acao, "FALSO_HUMANO", "reabilitação exige humano registrado E assinatura válida")
         self.quarentena.discard(agente)
         self.anais.anexar("reabilitacao", {"agente": agente, "humano": humano, "motivo": motivo})
@@ -458,7 +520,7 @@ class Lex:
         t = self.tarefas[tarefa_id]
         acao = Acao(humano, "aprovacao", "aprovar", tarefa_id)
         if not self._eh_humano(humano) or not self._assinatura_ok(
-                assinatura, "aprovar", tarefa_id, t.entrega_hash, bool(aprovado), humano):
+                assinatura, "aprovar", tarefa_id, t.entrega_hash, bool(aprovado), humano, humano=humano):
             return self._violacao(acao, "FALSO_HUMANO", "aprovação exige humano registrado E assinatura "
                                   "válida sobre (tarefa, entrega, decisão)")
         if t.estado != "AGUARDA_HUMANO":

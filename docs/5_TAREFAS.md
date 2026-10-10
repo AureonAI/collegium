@@ -81,6 +81,36 @@
 | T026 | Juiz externo: auditor independente confere amostra de recibos | ⬜ |
 | T027 | Segundo pacote de ofício **só se** T025 pagar | ⬜ |
 
+## Fase SA: estado da arte (pedido de 10/10/2026; ver a resposta da sessão e `forge/ADVERSARIAL_LOG.md`)
+
+Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um ataque registrado contra ele. Nível 0 = sem isto não é estado da arte; Nível 1 = completa o que o projeto promete; Nível 2 = método e confiança.
+
+| ID | Nível | Item | Pronto quando | Status |
+|---|---|---|---|---|
+| T042 | 0 | Ed25519 só com biblioteca padrão (RFC 8032) + chave pública do humano no REGIMENTO + quórum m-de-n + revogação | vetores oficiais da RFC passam; o núcleo não conhece chave privada humana | ✅ (`collegium/ed25519.py`, vetores RFC 8032; `tests/test_patronus.py`) |
+| T043 | 0 | Recibo verificável offline: árvore de Merkle (RFC 9162), cabeça assinada, provas de inclusão e consistência | um verificador sem acesso ao sistema confere um recibo e detecta reescrita do histórico | ✅ (`collegium/merkle.py`, `collegium/recibo.py`; raízes de referência do CT) |
+| T044 | 1 | Anonimizador BR (CPF/CNPJ com dígito verificador, e-mail, telefone, conta, nomes) com pseudônimo por titular | falha fechada: arquivo com risco residual não sai sem revisão | ⬜ |
+| T045 | 1 | Cofre de titulares: eliminação LGPD (art. 18) por destruição de chave, sem tocar no ANAIS | após eliminar, o pseudônimo não é mais ligável ao titular | ⬜ |
+| T046 | 0 | Portão: servidor MCP mediador, tokens efêmeros por tarefa, executor isolado que falha fechado | agente sem o portão não tem ferramenta; token fora da tarefa é negado | ⬜ |
+| T047 | 0 | Plano selado na abertura (fluxo de controle confiável) + destinos confiáveis para argumentos | injeção no dado não muda capacidade nem destino | ⬜ |
+| T048 | 0 | Identidade de modelo por impressão digital (digest); admissão caduca com troca de modelo | "qwen-falso" não herda a linhagem qwen | ⬜ |
+| T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ⬜ |
+| T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ⬜ |
+| T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ⬜ |
+| T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ⬜ |
+| T053 | 1 | Tentativas com devolutiva só de código e checagens ocultas | fraude continua sem segunda chance | ⬜ |
+| T054 | 1 | Saída estruturada por esquema JSON no adaptador | — | ⬜ |
+| T055 | 1 | Admissão por conduta (tarefas-isca) + canários sorteados em produção | canário errado gera incidente | ⬜ |
+| T056 | 1 | Orçamento de tokens, tempo e custo por tarefa com corte duro | estouro = BLOQUEADO selado | ⬜ |
+| T057 | 1 | Fila do humano: evidência, prazo, 4 olhos acima da alçada, medida de "carimbo" | — | ⬜ |
+| T058 | 1 | ANAIS em SQLite por ente + telemetria (convenções GenAI) + backup verificado | mesma cadeia e mesma raiz Merkle que o JSONL | ⬜ |
+| T059 | 1 | Importadores CNAB 240 (extrato) e Open Finance Brasil | prova de saldo em ambos | ⬜ |
+| T060 | 2 | Verificação exaustiva limitada da máquina de estados do LEX + fuzzing das leis | nenhuma sequência viola os invariantes até a profundidade k | ⬜ |
+| T061 | 2 | Pré-registro selado com testemunha externa | — | ⬜ |
+| T062 | 2 | Cadeia de suprimentos: SECURITY.md, SBOM, release assinada (LICENSE = decisão do Renato) | — | ⬜ |
+| T063 | 2 | Mapa de conformidade (OWASP ASI01–ASI10, LGPD) | — | ⬜ |
+| T064 | 2 | Métricas de valor + fatura derivada dos recibos | fatura conferível pelo cliente | ⬜ |
+
 ## Missão atual (uma de cada vez)
 
 > **MISSÃO 3: ouvir o mercado (T011), Renato**
