@@ -1,6 +1,7 @@
 """T044/T045: anonimizador BR e cofre com eliminação. Âncoras externas: exemplo oficial de CNPJ
 alfanumérico da Receita (12.ABC.345/01DE-35) e CPF/CNPJ numéricos de exemplo público."""
 import json
+import re
 import os
 import random
 import sys
@@ -15,6 +16,16 @@ from collegium_oficios.conciliacao import dados, operarios, oraculo, residuo  # 
 PARAM = {"padroes_documento": [r"NF\d+", r"BOL\d+", r"PED\d+"]}
 NOMES = ["JOÃO DA SILVA", "MARIA APARECIDA SOUZA", "ACME COMÉRCIO", "José Pereira"]
 
+
+
+_PSEUDONIMO = re.compile(r"\b(?:NOME|CPF|CNPJ|EMAIL|CHAVE|TEL|NUM)_[A-Z]{12}")
+
+
+def _sem_pseudonimos(texto: str) -> str:
+    """W-6 (achado pelo CI): o pseudônimo é aleatório (12 letras) e às vezes CONTÉM um nome por acaso
+    ('CPF_VGFXTKEFACME' tem 'ACME'). Procurar o nome por trecho dava falha intermitente. Tira só pseudônimos
+    com prefixo de tipo conhecido em início de palavra: nome colado ANTES do pseudônimo continua visível."""
+    return _PSEUDONIMO.sub("<P>", texto.upper())
 
 def _cpf(rnd):
     n = [rnd.randint(0, 9) for _ in range(9)]
@@ -50,7 +61,7 @@ class TestAnonimizador(unittest.TestCase):
                  "CNPJ 12.ABC.345/01DE-35 chave 123e4567-e89b-12d3-a456-426614174000 cc 98765-4 NF12345")
         saida = self.an.texto(texto)
         for vaza in ("JOÃO", "SILVA", "529", "joao", "99876", "12.ABC", "123e4567", "98765"):
-            self.assertNotIn(vaza.upper(), saida.upper(), saida)
+            self.assertNotIn(vaza.upper(), _sem_pseudonimos(saida), saida)
         self.assertIn("NF12345", saida)            # documento preservado: é a ponte da conciliação
         self.assertIn("PIX RECEBIDO", saida)
 
@@ -70,7 +81,7 @@ class TestAnonimizador(unittest.TestCase):
         for texto, vazamentos in casos.items():
             saida = self.an.texto(texto)
             for v in vazamentos:
-                self.assertNotIn(v.upper(), saida.upper(), (texto, saida))
+                self.assertNotIn(v.upper(), _sem_pseudonimos(saida), (texto, saida))
 
     def test_mesmo_titular_mesmo_pseudonimo(self):
         a = self.an.texto("PIX RECEBIDO JOÃO DA SILVA")
@@ -79,9 +90,15 @@ class TestAnonimizador(unittest.TestCase):
         self.assertEqual(a.split()[-1], b.split()[-1])
         self.assertNotEqual(a.split()[-1], c.split()[-1])
 
+    def test_w6_conferencia_nao_esconde_vazamento(self):
+        """O auxiliar do W-6 não pode virar ponto cego: nome colado antes do pseudônimo ou solto continua visível."""
+        self.assertIn("SILVA", _sem_pseudonimos("SILVANOME_ABCDEFGHIJKL"))
+        self.assertIn("SILVA", _sem_pseudonimos("NOME_ABCDEFGHIJKL SILVA"))
+        self.assertNotIn("ACME", _sem_pseudonimos("CPF_VGFXTKEFACME"))  # o caso real do CI
+
     def test_nome_colado_ao_documento(self):
         saida = self.an.texto("JOAONF123")
-        self.assertNotIn("JOAO", saida)
+        self.assertNotIn("JOAO", _sem_pseudonimos(saida))
         self.assertIn("NF123", saida)
 
     def test_conciliacao_identica_antes_e_depois(self):
@@ -102,7 +119,7 @@ class TestAnonimizador(unittest.TestCase):
                              oraculo.verificar(ext, raz, p1, parametros=PARAM))
             self.assertEqual(residuo.pacote_humano(ds["extrato"], ds["razao"], p0, PARAM),
                              residuo.pacote_humano(ext, raz, p1, PARAM))
-            texto = json.dumps(ext + raz, ensure_ascii=False).upper()
+            texto = _sem_pseudonimos(json.dumps(ext + raz, ensure_ascii=False))
             for n in ("SILVA", "APARECIDA", "ACME", "PEREIRA"):
                 self.assertNotIn(n, texto)
 
@@ -195,7 +212,7 @@ class TestCLIPrivacidade(unittest.TestCase):
                     self.assertEqual(main(["anonimizar", ent, sai, cof, "--confirmo", codigo]), 0)
                 with open(sai, encoding="utf-8") as f:
                     txt = f.read()
-                self.assertNotIn("SILVA", txt)
+                self.assertNotIn("SILVA", _sem_pseudonimos(txt))
                 self.assertIn("NF1", txt)
                 with contextlib.redirect_stdout(io.StringIO()):
                     self.assertEqual(main(["eliminar-titular", cof, "NOME", "JOÃO DA SILVA"]), 0)

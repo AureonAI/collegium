@@ -67,11 +67,26 @@ class TestEscala(unittest.TestCase):
                         casos += 1
         self.assertEqual(casos, 640)
 
-    def test_dez_mil_lancamentos_em_tempo_de_produto(self):
-        ds = dados.gerar_v2(42, n=10000, taxa_injecao=0.0)
-        t = time.perf_counter()
-        operarios.honesto_v5(ds["extrato"], ds["razao"])
-        self.assertLess(time.perf_counter() - t, 3.0)  # antes: ~6 s nesta máquina; folga para o CI
+    @staticmethod
+    def _crescimento(f, n: int) -> float:
+        """Tempo(4n) / tempo(n), melhor de 2: depende do ALGORITMO, não da velocidade da máquina (W-7)."""
+        def t(m):
+            ds = dados.gerar_v2(42, n=m, taxa_injecao=0.0)
+            melhor = float("inf")
+            for _ in range(2):
+                a = time.perf_counter()
+                f(ds["extrato"], ds["razao"])
+                melhor = min(melhor, time.perf_counter() - a)
+            return melhor
+        return t(4 * n) / t(n)
+
+    def test_crescimento_linear(self):
+        """Quadruplicar o volume: linear ≈ 4×, quadrático ≈ 16×. Medido: novo 4,6×, antigo 11,4×.
+        W-7: a versão anterior deste teste exigia '10 mil em menos de 3 s', e isso depende da máquina do CI."""
+        self.assertLess(self._crescimento(operarios.honesto_v5, 2500), 7.0)  # medido 4,1–4,6
+
+    def test_o_teste_de_crescimento_morde_a_versao_antiga(self):
+        self.assertGreater(self._crescimento(honesto_v5_referencia, 1500), 7.0)  # medido 9,2–10,0
 
 
 if __name__ == "__main__":
