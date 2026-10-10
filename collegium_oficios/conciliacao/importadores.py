@@ -398,11 +398,27 @@ def _norm(t: str) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9$() ]+", " ", t)).strip()
 
 
+_EXCEL = ("é uma planilha do Excel ({}). No Excel: Arquivo > Salvar como > \"CSV (separado por vírgulas)\" "
+          "e use o .csv gerado (no Excel em português ele sai com ponto e vírgula, que é o que se espera aqui).")
+
+
+def _recusar_tipo_conhecido(b: bytes) -> None:
+    """R6-27: o que o contador costuma ter na mão e não é texto. A mensagem diz o que fazer."""
+    if b[:5] == b"%PDF-":
+        raise ImportacaoInvalida("é um PDF. PDF não é lido: o texto de um PDF não garante os números. No internet "
+                                 "banking, exporte o extrato em OFX (às vezes chamado \"Money\" ou \"Quicken\") ou CSV.")
+    if b[:4] == b"PK\x03\x04":
+        raise ImportacaoInvalida(_EXCEL.format(".xlsx"))
+    if b[:8] == bytes.fromhex("D0CF11E0A1B11AE1"):
+        raise ImportacaoInvalida(_EXCEL.format(".xls"))
+
+
 def decodificar(conteudo: str | bytes) -> tuple[str, str]:
     """UTF-16 (Excel "Texto Unicode", R6-11), utf-8 (com ou sem BOM) e, se falhar, cp1252 (Excel
     brasileiro). Devolve (texto, encoding). UTF-16 sem BOM é reconhecido pelos zeros intercalados."""
     if isinstance(conteudo, str):
         return conteudo.lstrip("\ufeff"), "texto"
+    _recusar_tipo_conhecido(conteudo)
     if conteudo[:2] in (b"\xff\xfe", b"\xfe\xff"):
         return conteudo.decode("utf-16").lstrip("\ufeff"), "utf-16"
     amostra = conteudo[:400]

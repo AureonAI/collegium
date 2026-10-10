@@ -93,6 +93,25 @@ class TestHostil(Base):
         self.assertEqual(r["status"], "BLOQUEADO")
         self.assertIn("mês/dia", r["motivo"])
 
+    def test_r6_27_arquivo_do_tipo_errado_diz_o_que_fazer(self):
+        """R6-27: .xlsx, .xls e PDF (o que o contador costuma ter na mão) davam 'bytes nulos' ou 'cabeçalho
+        não encontrado'. A mensagem tem de dizer o que fazer."""
+        import io
+        import zipfile
+        b = io.BytesIO()
+        with zipfile.ZipFile(b, "w") as z:
+            z.writestr("[Content_Types].xml", "<Types/>")
+        casos = {"xlsx": (b.getvalue(), "Salvar como"), "xls": (bytes.fromhex("D0CF11E0A1B11AE1") + bytes(600), "Salvar como"),
+                 "pdf": (b"%PDF-1.4\n1 0 obj << /Type /Catalog >> endobj\n", "OFX"),
+                 "pdf_com_nulos": (b"%PDF-1.7\n" + bytes(100), "OFX")}
+        for nome, (conteudo, dica) in casos.items():
+            with self.assertRaises(imp.ImportacaoInvalida, msg=nome) as cm:
+                imp.decodificar(conteudo)
+            self.assertIn(dica, str(cm.exception), nome)
+        with self.assertRaises(imp.ImportacaoInvalida) as cm:
+            self.conciliar(ofx=b"%PDF-1.4\nextrato em pdf\n")
+        self.assertIn("OFX", str(cm.exception))
+
     def test_cli_nunca_mostra_traceback(self):
         e, r = self.arquivos(ofx=re.sub(r"<STMTTRN>.*?</STMTTRN>", "", OFX, flags=re.S))
         p = subprocess.run([sys.executable, "-m", "collegium", "conciliar", "--extrato", e, "--razao", r,
