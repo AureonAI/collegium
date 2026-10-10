@@ -31,8 +31,9 @@ def _variar_doc(texto: str, rnd: random.Random) -> str:
     return re.sub(r"NF(\d+)", troca, texto)
 
 
-def gerar(semente: int = 42) -> tuple[bytes, bytes]:
-    ds = dados.gerar_v2(semente, n=60, taxa_injecao=0.0)
+def gerar(semente: int = 42, n: int = 60) -> tuple[bytes, bytes]:
+    """n = lançamentos-base (o padrão 60 gera o kit publicado; maior = teste de escala)."""
+    ds = dados.gerar_v2(semente, n=n, taxa_injecao=0.0)
     rnd = random.Random(semente)
     ext = sorted(ds["extrato"], key=lambda x: (x["data"], x["id"]))
     raz = sorted(ds["razao"], key=lambda x: (x["data"], x["id"]))

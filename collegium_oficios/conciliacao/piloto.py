@@ -207,6 +207,18 @@ def dbr(iso: str) -> str:
     return f"{iso[8:10]}/{iso[5:7]}/{iso[:4]}" if len(iso) == 10 and iso[4] == "-" else iso
 
 
+class NumeroBR(str):
+    """R6-21: número gerado POR NÓS (de um int em centavos), no formato do Excel em português: '-18071,82'.
+    É o único conteúdo que passa sem apóstrofo, e só se casar com o padrão estrito."""
+
+
+_NUMERO_BR = re.compile(r"-?\d+,\d{2}")
+
+
+def num_br(c: int) -> NumeroBR:
+    return NumeroBR(f"{'-' if c < 0 else ''}{abs(int(c)) // 100},{abs(int(c)) % 100:02d}")
+
+
 def _celula(v) -> str:
     """CWE-1236: texto que começa com = + - @ TAB CR vira fórmula no Excel. Neutraliza com apóstrofo."""
     s = "" if v is None else str(v)
@@ -218,7 +230,8 @@ def _csv(linhas: list[list], cabecalho: list[str]) -> str:
     w = csv.writer(buf, delimiter=";", lineterminator="\r\n")
     w.writerow(cabecalho)
     for ln in linhas:
-        w.writerow([x if isinstance(x, (int, float)) else _celula(x) for x in ln])  # "-R$ 1,00" também neutraliza
+        w.writerow([x if isinstance(x, (int, float)) or (isinstance(x, NumeroBR) and _NUMERO_BR.fullmatch(x))
+                    else _celula(x) for x in ln])  # qualquer outro texto que comece com - é neutralizado
     return buf.getvalue()
 
 
@@ -317,18 +330,18 @@ def _escrever_tabelas(saida: str, entrada: dict, prop: dict, pilha: list[dict]) 
     for it in pilha:
         x = B[it["id"]] if it["lado"] == "banco" else R[it["id"]]
         outro = R if it["lado"] == "banco" else B
-        pend.append([it["lado"], it["id"], dbr(x["data"]), reais(x["valor"]),
+        pend.append([it["lado"], it["id"], dbr(x["data"]), num_br(x["valor"]),
                      x.get("desc_original", x.get("desc", "")) or x.get("doc_original", x.get("doc", "")),
                      MOTIVOS.get(it["motivo"], it["motivo"]),
                      " | ".join(f"{c} {dbr(outro[c]['data'])} {reais(outro[c]['valor'])}" for c in it["candidatos"])])
     with open(os.path.join(saida, "pendencias.csv"), "w", encoding="utf-8-sig", newline="") as f:
         f.write(_csv(pend, ["lado", "id", "data", "valor", "historico_ou_documento", "motivo", "candidatos"]))
-    pares = [[b, dbr(B[b]["data"]), reais(B[b]["valor"]), B[b].get("desc_original", ""), r, dbr(R[r]["data"]),
+    pares = [[b, dbr(B[b]["data"]), num_br(B[b]["valor"]), B[b].get("desc_original", ""), r, dbr(R[r]["data"]),
               R[r].get("doc_original", R[r].get("doc", "")) or R[r].get("desc", "")] for b, r in prop["pares"]]
     for g in prop.get("grupos", []):
         for b in g["banco"]:
             for r in g["razao"]:
-                pares.append([b, dbr(B[b]["data"]), reais(B[b]["valor"]), B[b].get("desc_original", ""),
+                pares.append([b, dbr(B[b]["data"]), num_br(B[b]["valor"]), B[b].get("desc_original", ""),
                               r, dbr(R[r]["data"]), f"(lote) {reais(R[r]['valor'])} {R[r].get('doc_original', '')}"])
     with open(os.path.join(saida, "pares.csv"), "w", encoding="utf-8-sig", newline="") as f:
         f.write(_csv(pares, ["extrato_id", "extrato_data", "valor", "extrato_historico", "razao_id", "razao_data",

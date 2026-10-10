@@ -20,6 +20,7 @@ from __future__ import annotations
 import re
 from collections import Counter, defaultdict
 from datetime import date
+from functools import lru_cache
 from itertools import combinations
 
 JANELA_DIAS = 5
@@ -27,7 +28,8 @@ PADRAO = {"janela_dias": JANELA_DIAS, "padroes_documento": [r"NF\d+"],
           "max_membros_grupo": 4, "max_candidatos_grupo": 25}
 
 
-def _d(s: str) -> date:
+@lru_cache(maxsize=4096)
+def _d(s: str) -> date:  # T072: a mesma data era convertida milhões de vezes (date é imutável: cache seguro)
     return date.fromisoformat(s)
 
 

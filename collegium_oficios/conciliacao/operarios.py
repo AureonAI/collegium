@@ -134,10 +134,27 @@ def honesto_v5(extrato, razao, parametros=None):
             pares.append([b["id"], escolhido["id"]])
             del livres_b[b["id"]], livres_r[escolhido["id"]]
     mx = int(c.cfg["max_membros_grupo"])
+    # T072: índice por data em vez de varrer TODO o razão livre para cada item (era quase quadrático).
+    # Mesmo resultado, bit a bit: os candidatos voltam à ORDEM ORIGINAL (posição no razão), que decide qual
+    # combinação vence; e passar do teto de candidatos continua significando "pula" (tests/test_escala.py).
+    from bisect import bisect_left, bisect_right
+    from .oraculo import _d
+    limite = int(c.cfg["max_candidatos_grupo"])
+    pos = {r["id"]: i for i, r in enumerate(razao)}
+    ordem = sorted((_d(r["data"]).toordinal(), pos[r["id"]], r["id"]) for r in livres_r.values())
+    dias = [o[0] for o in ordem]
     for b in sorted(list(livres_b.values()), key=lambda x: x["id"]):
-        cands = [r for r in livres_r.values() if c.janela(b, r) and (r["valor"] > 0) == (b["valor"] > 0)]
-        if len(cands) > int(c.cfg["max_candidatos_grupo"]):
+        db = _d(b["data"]).toordinal()
+        achou: list[tuple[int, dict]] = []
+        for i in range(bisect_left(dias, db - c.jan), bisect_right(dias, db + c.jan)):
+            r = livres_r.get(ordem[i][2])
+            if r is not None and (r["valor"] > 0) == (b["valor"] > 0):
+                achou.append((ordem[i][1], r))
+                if len(achou) > limite:
+                    break
+        if len(achou) > limite:
             continue
+        cands = [r for _, r in sorted(achou, key=lambda t: t[0])]
         for k in range(2, mx + 1):
             achados = [comb for comb in combinations(cands, k) if sum(x["valor"] for x in comb) == b["valor"]]
             doc = [comb for comb in achados if all(c.evidencia(b, r) for r in comb)]

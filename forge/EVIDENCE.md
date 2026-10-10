@@ -48,7 +48,7 @@
 3. **O LEX não é sandbox** (A1). A separação agente/orquestrador é de processo.
 4. **Assinatura humana:** Ed25519 desde o T042 (o núcleo não conhece a chave privada), em Python puro e **sem tempo constante** (E-1): assinar só no computador do humano. HMAC segue aceito apenas quando o REGIMENTO não registra chave pública (Q-2).
 5. **O EXAME mede compreensão de regras, não competência.** O "estudioso" do T5 é roteirizado e circular.
-6. **Desempenho.** O operário de referência leva cerca de 24 s com 20 mil lançamentos; o oráculo, 0,3 s. O T3 leva 3–6 min.
+6. **Desempenho (T072, dado sintético):** `collegium conciliar` inteiro (importar, conciliar, oráculo, relatório) leva 2,6 s com 10 mil lançamentos, 7,8 s com 30 mil e 16,7 s com 60 mil, nesta máquina. O T3 leva 3–6 min.
 7. **Mercado: zero evidência.**
 8. **Recibo e fatura:** a completude é provada contra o mapa ASSINADO; quem assina pode mentir no mapa, e só o auditor com o ANAIS detecta (R6-7L). Sem auditor, a garantia é de atribuição, não de impossibilidade.
 9. **Produto (`collegium conciliar`):** rodado só com o kit de demonstração (sintético, com armadilhas de arquivos reais) e com as variações dos testes. Nenhum arquivo de banco ou ERP real passou por ele.

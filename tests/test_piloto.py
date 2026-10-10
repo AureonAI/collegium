@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -79,10 +80,18 @@ class TestPiloto(Base):
             h = f.read()
         self.assertNotIn("<script>", h)
         self.assertIn("Content-Security-Policy", h)
+        numero = re.compile(r"-?\d+,\d{2}")
         for nome in ("pendencias.csv", "pares.csv"):
             with open(os.path.join(s, nome), encoding="utf-8-sig") as f:
-                for linha in csv.reader(f, delimiter=";"):
-                    self.assertFalse(any(c[:1] in "=+-@" for c in linha if c), (nome, linha))
+                linhas = list(csv.reader(f, delimiter=";"))
+            col = linhas[0].index("valor")
+            for linha in linhas[1:]:
+                # R6-21: o valor é NÚMERO para o Excel em português (somar e ordenar); nada de "R$" nem apóstrofo
+                self.assertRegex(linha[col], r"^-?\d+,\d{2}$", (nome, linha))
+                for c in filter(None, linha):  # o resto: nada que vire fórmula, salvo número puro nosso
+                    self.assertFalse(c[:1] in "=+@" or (c[:1] == "-" and not numero.fullmatch(c)), (nome, linha))
+        self.assertIn("'=", open(os.path.join(s, "pendencias.csv"), encoding="utf-8-sig").read()
+                      + open(os.path.join(s, "pares.csv"), encoding="utf-8-sig").read())  # o texto hostil do kit
 
     def test_anais_nao_guarda_historico_do_cliente(self):
         s = os.path.join(self.tmp, "s")
