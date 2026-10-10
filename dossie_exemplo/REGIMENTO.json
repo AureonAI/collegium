@@ -1,0 +1,131 @@
+{
+  "versao": "0.1.4",
+  "ente": "Exemplo Ltda (BPO financeiro — conciliação bancária)",
+  "papeis": {
+    "operarius": {
+      "capacidades": [
+        "extrato.ler",
+        "razao.ler",
+        "conciliacao.propor",
+        "documento.revisar"
+      ],
+      "canais": [
+        "forum"
+      ],
+      "rede": []
+    },
+    "examinator": {
+      "capacidades": [
+        "extrato.ler",
+        "razao.ler",
+        "verificar"
+      ],
+      "canais": [
+        "forum"
+      ],
+      "rede": []
+    },
+    "rector": {
+      "capacidades": [
+        "tarefa.distribuir"
+      ],
+      "canais": [
+        "forum"
+      ],
+      "rede": [],
+      "sem_tarefa": [
+        "tarefa.distribuir",
+        "forum"
+      ]
+    },
+    "patronus": {
+      "capacidades": [
+        "aprovar"
+      ],
+      "canais": [
+        "forum"
+      ],
+      "rede": []
+    }
+  },
+  "agentes": {
+    "op-1": {
+      "papel": "operarius",
+      "familia_modelo": "qwen"
+    },
+    "op-2": {
+      "papel": "operarius",
+      "familia_modelo": "llama"
+    },
+    "ex-q": {
+      "papel": "examinator",
+      "familia_modelo": "qwen"
+    },
+    "ex-det": {
+      "papel": "examinator",
+      "familia_modelo": "deterministico"
+    },
+    "rec-1": {
+      "papel": "rector",
+      "familia_modelo": "gemma"
+    },
+    "renato": {
+      "papel": "patronus",
+      "familia_modelo": "humano"
+    },
+    "op-3": {
+      "papel": "operarius",
+      "familia_modelo": [
+        "qwen",
+        "deepseek"
+      ]
+    }
+  },
+  "classes_tarefa": {
+    "conciliacao_bancaria": {
+      "orcamento_passos": 12,
+      "verificador": "oraculo",
+      "falhas_criticas": [
+        "REFERENCIA_INEXISTENTE",
+        "CONSERVACAO"
+      ]
+    },
+    "revisao_documental": {
+      "orcamento_passos": 6,
+      "verificador": "outra_linhagem_ou_humano"
+    }
+  },
+  "autonomia": {
+    "confianca_z": 2.326,
+    "niveis": [
+      {
+        "nivel": 1,
+        "n_min": 30,
+        "lb_min": 0.9
+      },
+      {
+        "nivel": 2,
+        "n_min": 100,
+        "lb_min": 0.97
+      },
+      {
+        "nivel": 3,
+        "n_min": 300,
+        "lb_min": 0.99
+      }
+    ],
+    "janela_incidente": 200,
+    "amostragem_l1": 5,
+    "alcada_valor_l3": 500000,
+    "estabilidade": 50,
+    "janela_recente": 100,
+    "exigir_assinatura_humana": true
+  },
+  "forum": {
+    "max_caracteres": 500
+  },
+  "admissao": {
+    "exigida": false,
+    "nota_minima": 0.9
+  }
+}

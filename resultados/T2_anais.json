@@ -1,0 +1,20 @@
+{
+  "com_chave+ancora/alterar_valor": "100/100 detectadas",
+  "com_chave+ancora/apagar": "100/100 detectadas",
+  "com_chave+ancora/recomputar_cadeia": "100/100 detectadas",
+  "com_chave+ancora/trocar_ordem": "100/100 detectadas",
+  "com_chave+ancora/truncar_cauda": "100/100 detectadas",
+  "com_chave+ancora/truncar_meio": "100/100 detectadas",
+  "com_chave/alterar_valor": "100/100 detectadas",
+  "com_chave/apagar": "100/100 detectadas",
+  "com_chave/recomputar_cadeia": "100/100 detectadas",
+  "com_chave/trocar_ordem": "100/100 detectadas",
+  "com_chave/truncar_cauda": "0/100 detectadas",
+  "com_chave/truncar_meio": "100/100 detectadas",
+  "sem_chave/alterar_valor": "100/100 detectadas",
+  "sem_chave/apagar": "100/100 detectadas",
+  "sem_chave/recomputar_cadeia": "0/100 detectadas",
+  "sem_chave/trocar_ordem": "100/100 detectadas",
+  "sem_chave/truncar_cauda": "0/100 detectadas",
+  "sem_chave/truncar_meio": "100/100 detectadas"
+}

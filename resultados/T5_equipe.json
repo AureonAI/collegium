@@ -1,0 +1,40 @@
+{
+  "equipe(op-1,op-2,op-3)": {
+    "anais_integro": true,
+    "atribuicoes_indevidas": 0,
+    "entregues": "199/200",
+    "exame_chutador": {
+      "aprovado": false,
+      "nota": 0.381
+    },
+    "fila_humano": 1,
+    "quarentena": [
+      "op-1"
+    ],
+    "segundas_mesma_linhagem": 0,
+    "segundas_opinioes": 3
+  },
+  "sozinho(op-1)": {
+    "anais_integro": true,
+    "atribuicoes_indevidas": 0,
+    "entregues": "14/200",
+    "exame_chutador": {
+      "aprovado": false,
+      "nota": 0.381
+    },
+    "fila_humano": 186,
+    "quarentena": [
+      "op-1"
+    ],
+    "segundas_mesma_linhagem": 0,
+    "segundas_opinioes": 0
+  },
+  "veredito": {
+    "a": true,
+    "b": true,
+    "c": true,
+    "d": true,
+    "e": true,
+    "geral": "PASSOU"
+  }
+}

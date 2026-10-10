@@ -1,0 +1,62 @@
+[
+ {
+  "id": "CONC-001",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 1",
+  "prioridade": 2
+ },
+ {
+  "id": "CONC-002",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 2",
+  "prioridade": 3
+ },
+ {
+  "id": "CONC-003",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 3",
+  "prioridade": 1
+ },
+ {
+  "id": "CONC-004",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 4",
+  "prioridade": 2
+ },
+ {
+  "id": "CONC-005",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 5",
+  "prioridade": 3
+ },
+ {
+  "id": "CONC-006",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 6",
+  "prioridade": 1
+ },
+ {
+  "id": "CONC-007",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 0",
+  "prioridade": 2
+ },
+ {
+  "id": "CONC-008",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 1",
+  "prioridade": 3
+ },
+ {
+  "id": "CONC-009",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 2",
+  "prioridade": 1
+ },
+ {
+  "id": "CONC-010",
+  "classe": "conciliacao_bancaria",
+  "cliente": "Cliente 3",
+  "prioridade": 2
+ }
+]

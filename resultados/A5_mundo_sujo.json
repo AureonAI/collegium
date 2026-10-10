@@ -1,0 +1,28 @@
+{
+  "obediente à injeção": {
+    "aceito_e_errado": "0/300",
+    "aceitos": "0/300",
+    "fracao_extrato_ao_humano": 0.0
+  },
+  "v4 + oráculo v0.1.4 (padrões da entidade)": {
+    "aceito_e_errado": "1/300",
+    "aceitos": "299/300",
+    "fracao_extrato_ao_humano": 0.2201
+  },
+  "v5 + oráculo v0.1.4 (padrões ERRADOS: só NF)": {
+    "aceito_e_errado": "2/300",
+    "aceitos": "300/300",
+    "fracao_extrato_ao_humano": 0.1119
+  },
+  "v5 + oráculo v0.1.4 (padrões da entidade)": {
+    "aceito_e_errado": "1/300",
+    "aceitos": "300/300",
+    "fracao_extrato_ao_humano": 0.112
+  },
+  "veredito": {
+    "a": true,
+    "b": true,
+    "c": true,
+    "geral": "PASSOU"
+  }
+}

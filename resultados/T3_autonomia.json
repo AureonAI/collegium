@@ -1,0 +1,42 @@
+{
+  "degradacao_0.999_para_0.90": {
+    "mediana": 35.5,
+    "perdeu_L2_em_ate_100": "498/500",
+    "trajetorias_validas": 500
+  },
+  "p=0.9": {
+    "chegou_L2": "0/2000 (0.00%)",
+    "mediana_tarefas": null
+  },
+  "p=0.95": {
+    "chegou_L2": "0/2000 (0.00%)",
+    "mediana_tarefas": null
+  },
+  "p=0.97": {
+    "chegou_L2": "40/2000 (2.00%)",
+    "mediana_tarefas": 590.0
+  },
+  "p=0.98": {
+    "chegou_L2": "642/2000 (32.10%)",
+    "mediana_tarefas": 659.5
+  },
+  "p=0.99": {
+    "chegou_L2": "1962/2000 (98.10%)",
+    "mediana_tarefas": 446.0
+  },
+  "p=0.995": {
+    "chegou_L2": "2000/2000 (100.00%)",
+    "mediana_tarefas": 286.0
+  },
+  "p=1.0": {
+    "chegou_L2": "2000/2000 (100.00%)",
+    "mediana_tarefas": 224.0
+  },
+  "veredito": {
+    "a": true,
+    "b": true,
+    "c": true,
+    "d": true,
+    "geral": "PASSOU"
+  }
+}

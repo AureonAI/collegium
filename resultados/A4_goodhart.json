@@ -1,0 +1,206 @@
+{
+  "dup=0.0": {
+    "v0.1.0 oráculo + honesto_v1": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.1 oráculo + honesto_v1": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.1 oráculo + honesto_v2": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.2 oráculo + honesto_v2": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.2 oráculo + honesto_v3": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.3 oráculo + honesto_v3": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    },
+    "v0.1.3 oráculo + honesto_v4": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/16184"
+    }
+  },
+  "dup=0.1": {
+    "v0.1.0 oráculo + honesto_v1": {
+      "aceito_e_errado": "167/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0019,
+      "itens_ao_humano_por_entrega_aceita": 0.11,
+      "pares_errados_entre_aceitos": "409/16226"
+    },
+    "v0.1.1 oráculo + honesto_v1": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "47/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/2559"
+    },
+    "v0.1.1 oráculo + honesto_v2": {
+      "aceito_e_errado": "4/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0257,
+      "itens_ao_humano_por_entrega_aceita": 1.47,
+      "pares_errados_entre_aceitos": "4/15792"
+    },
+    "v0.1.2 oráculo + honesto_v2": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "67/300",
+      "fracao_itens_ao_humano": 0.0283,
+      "itens_ao_humano_por_entrega_aceita": 1.61,
+      "pares_errados_entre_aceitos": "0/3521"
+    },
+    "v0.1.2 oráculo + honesto_v3": {
+      "aceito_e_errado": "3/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0538,
+      "itens_ao_humano_por_entrega_aceita": 3.08,
+      "pares_errados_entre_aceitos": "3/15308"
+    },
+    "v0.1.3 oráculo + honesto_v3": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "297/300",
+      "fracao_itens_ao_humano": 0.0539,
+      "itens_ao_humano_por_entrega_aceita": 3.08,
+      "pares_errados_entre_aceitos": "0/15156"
+    },
+    "v0.1.3 oráculo + honesto_v4": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0538,
+      "itens_ao_humano_por_entrega_aceita": 3.08,
+      "pares_errados_entre_aceitos": "0/15305"
+    }
+  },
+  "dup=0.2": {
+    "v0.1.0 oráculo + honesto_v1": {
+      "aceito_e_errado": "245/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0053,
+      "itens_ao_humano_por_entrega_aceita": 0.3,
+      "pares_errados_entre_aceitos": "861/16266"
+    },
+    "v0.1.1 oráculo + honesto_v1": {
+      "aceito_e_errado": "1/300",
+      "aceitos": "10/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "1/535"
+    },
+    "v0.1.1 oráculo + honesto_v2": {
+      "aceito_e_errado": "11/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0509,
+      "itens_ao_humano_por_entrega_aceita": 2.91,
+      "pares_errados_entre_aceitos": "11/15406"
+    },
+    "v0.1.2 oráculo + honesto_v2": {
+      "aceito_e_errado": "2/300",
+      "aceitos": "23/300",
+      "fracao_itens_ao_humano": 0.065,
+      "itens_ao_humano_por_entrega_aceita": 3.7,
+      "pares_errados_entre_aceitos": "2/1153"
+    },
+    "v0.1.2 oráculo + honesto_v3": {
+      "aceito_e_errado": "9/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.1013,
+      "itens_ao_humano_por_entrega_aceita": 5.8,
+      "pares_errados_entre_aceitos": "9/14538"
+    },
+    "v0.1.3 oráculo + honesto_v3": {
+      "aceito_e_errado": "2/300",
+      "aceitos": "293/300",
+      "fracao_itens_ao_humano": 0.1019,
+      "itens_ao_humano_por_entrega_aceita": 5.84,
+      "pares_errados_entre_aceitos": "2/14194"
+    },
+    "v0.1.3 oráculo + honesto_v4": {
+      "aceito_e_errado": "2/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.1013,
+      "itens_ao_humano_por_entrega_aceita": 5.8,
+      "pares_errados_entre_aceitos": "2/14531"
+    }
+  },
+  "dup=0.3": {
+    "v0.1.0 oráculo + honesto_v1": {
+      "aceito_e_errado": "276/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0097,
+      "itens_ao_humano_por_entrega_aceita": 0.55,
+      "pares_errados_entre_aceitos": "1341/16223"
+    },
+    "v0.1.1 oráculo + honesto_v1": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "0/300",
+      "fracao_itens_ao_humano": 0.0,
+      "itens_ao_humano_por_entrega_aceita": 0.0,
+      "pares_errados_entre_aceitos": "0/0"
+    },
+    "v0.1.1 oráculo + honesto_v2": {
+      "aceito_e_errado": "9/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.0799,
+      "itens_ao_humano_por_entrega_aceita": 4.57,
+      "pares_errados_entre_aceitos": "9/14891"
+    },
+    "v0.1.2 oráculo + honesto_v2": {
+      "aceito_e_errado": "0/300",
+      "aceitos": "5/300",
+      "fracao_itens_ao_humano": 0.081,
+      "itens_ao_humano_por_entrega_aceita": 4.6,
+      "pares_errados_entre_aceitos": "0/246"
+    },
+    "v0.1.2 oráculo + honesto_v3": {
+      "aceito_e_errado": "4/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.1429,
+      "itens_ao_humano_por_entrega_aceita": 8.17,
+      "pares_errados_entre_aceitos": "4/13805"
+    },
+    "v0.1.3 oráculo + honesto_v3": {
+      "aceito_e_errado": "1/300",
+      "aceitos": "297/300",
+      "fracao_itens_ao_humano": 0.1434,
+      "itens_ao_humano_por_entrega_aceita": 8.2,
+      "pares_errados_entre_aceitos": "1/13663"
+    },
+    "v0.1.3 oráculo + honesto_v4": {
+      "aceito_e_errado": "1/300",
+      "aceitos": "300/300",
+      "fracao_itens_ao_humano": 0.1429,
+      "itens_ao_humano_por_entrega_aceita": 8.17,
+      "pares_errados_entre_aceitos": "1/13802"
+    }
+  }
+}

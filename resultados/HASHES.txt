@@ -1,0 +1,7 @@
+# Python 3.13.16 | Linux
+T1_contencao a47169042dbf394b
+T2_anais 9fcefd9d7d198b57
+T3_autonomia 63efe66f413f96f6
+A4_goodhart 6314e2afba0f8a82
+A5_mundo_sujo b8ed2164b0b84510
+T5_equipe 6cca208b372d7a23
