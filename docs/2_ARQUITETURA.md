@@ -96,7 +96,7 @@ collegium/
 │   └── operarios.py               operários roteirizados honestos e adversários
 ├── experimentos/                  T1 · T2 · T3 · A4 · A5 · T5 (+ T4/T4b com LLM real, no Windows)
 ├── resultados/                    JSON + HASHES.txt + historico/ (resultados falsificados arquivados)
-├── tests/                         60 testes unittest
+├── tests/                         73 testes unittest
 ├── docs/                          os 6 arquivos
 └── forge/                         EVIDENCE · ABSTRACT · ADVERSARIAL_LOG · PRIMITIVE · ANALISE_VIDEO
 ```
@@ -118,3 +118,4 @@ collegium/
 | 011 | OCR (PaddleOCR) é adaptador opcional, nunca dependência do núcleo | Embutir OCR | Dependência pesada (motor de inferência e modelos); soberania: quem não usa, não paga |
 | 012 | Prova de saldo na ENTRADA (saldo inicial + Σ = saldo final) | Confiar no importador | OCR errado com confiança alta só é pego pela conservação |
 | 013 | Grupos só com documento de todos os membros OU subconjunto único | Aceitar qualquer soma que feche | Soma que fecha por coincidência é o Goodhart do N:1 |
+| 014 | **Decisão A (10/10/2026, Renato):** onde há lei de conservação, o operário é **código** (`honesto_v5`, família "deterministico", sob o mesmo LEX); o LLM só anota o **resíduo** (classe `nota_residuo`, oráculo próprio) e nunca cria par | LLM como operário da conciliação | LLMs reais ≤4B: 0/79 aceitas; código: 20/20. Custo declarado: a "equipe de agentes" vira híbrida nesta frente; o valor do LLM no resíduo ainda não foi medido (dados sintéticos não têm sinal semântico) |

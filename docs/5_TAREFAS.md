@@ -49,6 +49,9 @@
 | T015 | H1 | Repetir A4/A5 com **dados reais anonimizados** de 1 escritório (auditoria amostral como gabarito) | ⬜ |
 | T016 | — | Isolamento C0 (`docker --network none` + egress por lista) com LLM real tentando sair | ⬜ |
 | T017 | H1 | Âncora: comando `python -m collegium ancora` | 🔶 (falta publicar automaticamente) |
+| T039 | — | Decisão A: operário determinístico sob o LEX + pacote do humano (motivo e candidatos por pendência) | ✅ (`pacotes/conciliacao/residuo.py`, `tests/test_residuo.py`) |
+| T040 | — | Classe `nota_residuo`: LLM anota o resíduo; oráculo barra id inventado, sugestão fora da lista e omissão | ✅ (invariante: a nota nunca altera a conciliação) |
+| T041 | — | T6 híbrido: parte determinística no `reproduzir.py`; parte LLM na máquina do Renato | 🔶 (falta a execução com gemma3:4b) |
 | T036 | — | PaddleOCR real com extratos escaneados (instalar no Windows; medir taxa de "revisar" e de saldo que não fecha) | ⬜ |
 
 ## Fase F2: Admissão por prova
@@ -80,11 +83,9 @@
 
 ## Missão atual (uma de cada vez)
 
-> **MISSÃO 1: reproduzir a evidência no seu Windows (cerca de 15 minutos)**
-> 1. Descompacte o arquivo `COLLEGIUM_v0.1.4.zip` em `D:\COLLEGIUM`.
-> 2. Abra o **Prompt de Comando** (tecla Windows → digite `cmd` → Enter).
-> 3. Digite `cd /d D:\COLLEGIUM\collegium` e tecle Enter.
-> 4. Digite `python -m unittest discover -s tests` e tecle Enter. **Esperado:** a última linha diz `OK` (60 testes).
-> 5. Digite `python reproduzir.py --conferir` e tecle Enter. Leva de 5 a 10 minutos; o T3 é o mais demorado.
-> 6. **Me reporte:** a primeira linha (versão do Python) e as 6 linhas. Cada uma deve terminar em `IGUAL`.
-> **Por que importa:** é a primeira vez que o código roda num sistema operacional diferente do meu. Se algo der `DIVERGE`, isso também é resultado: me mande a linha exata.
+> **MISSÃO 2b: o LLM no resíduo (T041), na máquina do Renato, PowerShell**
+> 1. `cd D:\COLLEGIUM` e `git pull`.
+> 2. `python experimentos/t6_hibrido.py 20 --modelo gemma3:4b` (cerca de 20–30 min).
+> 3. **Me reporte** o bloco `{ ... }` final inteiro e as linhas `N001 ... N020`.
+> **Por que importa:** mede se um LLM de 4B consegue, ao menos, anotar pendências sem inventar (P6).
+> Missões anteriores (1: reproduzir no Windows; 2: T4/T4b com 3 modelos) estão concluídas: ver MEMÓRIA.

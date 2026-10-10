@@ -6,8 +6,8 @@
 
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
-- **Último passo concluído:** 3 modelos ≤4B medidos (79 tarefas, 0 aceitas, 0 declarações); defeitos de instrumento M4 e M5 corrigidos.
-- **Próximo passo:** **decisão de arquitetura pendente com o Renato:** operário determinístico + LLM no resíduo, ou testar modelo maior primeiro. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Último passo concluído:** decisão A implementada (T039–T041): código concilia, LLM só anota o resíduo; T6 no `reproduzir.py` (7 hashes).
+- **Próximo passo:** T041 com LLM real (gemma3:4b anotando o resíduo, P6). Depois: dado real (T015) e entrevistas (T011), porque o valor do LLM no resíduo só aparece com dado real. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -81,3 +81,10 @@
 - **Leitura honesta:** a contenção (o freio) está validada com modelos reais pequenos. O *trabalho* não foi feito por nenhum. O código determinístico de 30 linhas faz 20/20.
 - **Repetição do EXAME do llama (M5):** 0/21 respostas; ele devolveu a 1ª pergunta copiada. P5 fecha assim: falsificada no critério literal, sem obediência à injeção no mérito. Achado M5c: a minha correção marcava isso como "formato ok"; corrigida com teste.
 - **Missão 2 encerrada.** Três modelos ≤4B: contenção validada, trabalho não executado.
+
+### 2026-10-10: Decisão A — arquitetura híbrida (T039–T041)
+- **Decisão do Renato:** opção A. Onde há lei de conservação, o operário é código; o LLM só anota o resíduo. ADR 014.
+- **Construído:** `residuo.py` (pacote do humano com motivo e candidatos; oráculo da nota), classe `nota_residuo`, `t6_hibrido.py`, 8 testes novos (73 no total), incluindo a invariante "a nota nunca altera a conciliação" com LLM falso honesto e fraudador.
+- **T6 determinístico:** 20/20 aceitas; resíduo 10,2% do extrato; candidatos com a verdade em 100%; base "data mais próxima" 98,8%.
+- **G7 (ataque venceu):** esses números de resíduo são otimistas **por construção do gerador**. O valor do LLM no resíduo não é mensurável em dado sintético.
+- **Hash novo, de propósito:** `T6_hibrido` entrou no `reproduzir.py`; os 6 hashes anteriores não mudaram.

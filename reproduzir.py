@@ -15,14 +15,15 @@ import time
 
 RAIZ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, RAIZ)
-from experimentos import a4_goodhart, a5_mundo_sujo, t1_contencao, t2_anais, t3_autonomia, t5_equipe  # noqa: E402
+from experimentos import a4_goodhart, a5_mundo_sujo, t1_contencao, t2_anais, t3_autonomia, t5_equipe, t6_hibrido  # noqa: E402
 
 PLANO = [("T1_contencao", lambda: t1_contencao.main(200)),
          ("T2_anais", lambda: t2_anais.main(600)),
          ("T3_autonomia", lambda: t3_autonomia.main(2000)),
          ("A4_goodhart", lambda: a4_goodhart.main(300)),
          ("A5_mundo_sujo", lambda: a5_mundo_sujo.main(300)),
-         ("T5_equipe", lambda: t5_equipe.main(200))]
+         ("T5_equipe", lambda: t5_equipe.main(200)),
+         ("T6_hibrido", lambda: t6_hibrido.main(20))]  # T041: decisão A, só a parte determinística
 
 
 def _ler_hashes(caminho):

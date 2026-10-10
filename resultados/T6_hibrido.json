@@ -1,0 +1,31 @@
+{
+  "H1_recall_candidatos_pct": 100.0,
+  "H2_base_acerto_pct": 98.8,
+  "anais_integro": true,
+  "contagem": {
+    "base_acertou": 245,
+    "candidatos_contem_verdade": 150,
+    "conciliacao_ACEITA": 20,
+    "itens_com_par_1a1": 150,
+    "itens_residuo": 248,
+    "julgaveis": 248,
+    "lancamentos_extrato": 1200,
+    "residuo_banco": 123,
+    "residuo_razao": 125
+  },
+  "impressao_conciliacoes": "37eaad7a82d9750e",
+  "modelo": null,
+  "motivos": {
+    "SEM_CANDIDATO_1A1": 97,
+    "VALOR_REPETIDO_SEM_DOC": 151
+  },
+  "quarentena_op_det": false,
+  "residuo_pct_extrato": 10.2,
+  "tarefas": 20,
+  "veredito": {
+    "D1": "PASSOU",
+    "H1": "PASSOU",
+    "H2": "PASSOU",
+    "geral": "PASSOU"
+  }
+}

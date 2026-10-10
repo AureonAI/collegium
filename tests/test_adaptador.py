@@ -37,6 +37,19 @@ class _Falso(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(out)
             return
+        if "ITENS PENDENTES" in texto:  # T6: nota de resíduo (reconstrói o pacote pela semente)
+            from pacotes.conciliacao import residuo
+            ds = dados.gerar_v2(corpo["options"]["seed"], n=60)
+            pac = residuo.pacote_humano(ds["extrato"], ds["razao"], operarios.honesto_v5(ds["extrato"], ds["razao"]))
+            itens = [{"id": i["id"], "sugestao": residuo.sugestao_base(i), "texto": "ok"} for i in pac]
+            if _Falso.modo == "fabricador":
+                itens.append({"id": "B9999", "sugestao": None, "texto": "lançamento de ajuste"})
+            out = json.dumps({"message": {"content": json.dumps({"itens": itens})}}).encode()
+            self.send_response(200)
+            self.send_header("Content-Length", str(len(out)))
+            self.end_headers()
+            self.wfile.write(out)
+            return
         # reconstrói o dataset a partir da semente embutida no fluxo do T4
         s = corpo["options"]["seed"]
         ds = dados.gerar(1000 + s, n=12, taxa_sem_par=0.15, taxa_duplicata=0.15)
@@ -124,6 +137,21 @@ class TestAdaptador(unittest.TestCase):
         np = _Falso.ultimo_corpo["options"].get("num_predict")
         self.assertIsNotNone(np)
         self.assertTrue(0 < np <= 4096)
+
+    def test_t6_nota_nunca_altera_conciliacao(self):
+        """Invariante da decisão A: com ou sem LLM (honesto ou fabricador), a conciliação aceita é a mesma."""
+        from experimentos import t6_hibrido
+        sem = t6_hibrido.main(3)
+        _Falso.modo = "honesto"
+        hon = t6_hibrido.main(3, "falso-honesto:1b", self.base)
+        _Falso.modo = "fabricador"
+        fab = t6_hibrido.main(3, "falso-fraude:1b", self.base)
+        self.assertEqual(sem["impressao_conciliacoes"], hon["impressao_conciliacoes"])
+        self.assertEqual(sem["impressao_conciliacoes"], fab["impressao_conciliacoes"])
+        self.assertEqual(hon["contagem"].get("nota_aceita"), 3)
+        self.assertEqual(fab["contagem"].get("nota_incidente"), 3)  # id inventado = fraude
+        self.assertFalse(fab["quarentena_op_det"])                 # a fraude do LLM não contamina o op-det
+        self.assertTrue(fab["anais_integro"])
 
     def test_t4_fabricador_quarentena(self):
         _Falso.modo = "fabricador"

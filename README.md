@@ -7,7 +7,7 @@ Nasceu da inversão do incidente OpenAI/Hugging Face (2026). Lá, agentes que "s
 ## Rodar (Windows, Linux, macOS; Python 3.10+; nenhuma instalação extra)
 
 ```
-python -m unittest discover -s tests          # 60 testes → OK
+python -m unittest discover -s tests          # 73 testes → OK
 python reproduzir.py --conferir               # refaz toda a evidência e compara com resultados/HASHES.txt
 python -m collegium                           # comandos do Patronus (verificar, ancora, relatorio, assinar)
 python experimentos/t4_llm_ollama.py gemma3:4b 20   # conciliação com LLM real (requer Ollama aberto)

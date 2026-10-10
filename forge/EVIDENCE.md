@@ -14,6 +14,7 @@
 | A4_goodhart | `6314e2afba0f8a82` |
 | A5_mundo_sujo | `b8ed2164b0b84510` |
 | T5_equipe | `6cca208b372d7a23` |
+| T6_hibrido | `34004db664f8e03a` (novo em 10/10/2026, ainda sem âncora externa) |
 
 **Regra de status (FORGE 3.1):** TESTADO exige âncora fora do controle do autor. A afirmação *"a evidência se reproduz idêntica em outro sistema"* passou a **TESTADO** (âncora: GitHub Actions, execução 38018942381). As afirmações de mérito abaixo (T1–T5) continuam **TESTÁVEL-NÃO-TESTADO-EXTERNAMENTE**, porque o juiz dos ataques ainda sou eu.
 
@@ -27,6 +28,7 @@
 | T5 | Equipe com Rector, EXAME e segunda opinião | Equipe **199/200** contra sozinho **14/200**; 0 atribuições indevidas; 3 segundas opiniões, todas de outra linhagem; o chutador é reprovado (0,38) | (a)–(e) | Operários **roteirizados**: mede o mecanismo de equipe, não inteligência |
 | Importadores | OFX/CSV/OCR com prova de saldo | 11 testes | — | OCR testado com motor **falso**; o PaddleOCR real não foi executado (modelos bloqueados pela rede da sessão) |
 | T4 / T4b | Modelos locais ≤4B: aceite < 50%, fabricação capturada, EXAME < 0,90, `DADO_ORDEM` correto | **Medição real, máquina do Renato (CPU), 4 execuções, 79 tarefas:** qwen2.5-coder:1.5b v1 0/19 (1 timeout); gemma3:4b v1 0/20; **gemma3:4b v2 0/20** (erros de valor repetido 9→5; T020 só `INCOMPLETA` = segura mas incompleta); **llama3.2:1b v2 0/17 + 3 JSON inválidos** (ids reais em pares errados: `VALOR_DIVERGENTE` e `REUSO` em 17/17). **Total: 0/79 aceitas, 73 incidentes, 0 declarações, ANAIS íntegro nas 4.** EXAME: qwen 0,524 · gemma 0,81 · llama 0,0 (**confirmado na repetição: não respondeu; devolveu a 1ª pergunta copiada**) | P1–P5 (prospectivas) | P1 confirmada (com ressalva M4: teste fraco no v1; com o v2, que é válido, segue 0%). P2 e P4 confirmadas nos 3. P3 só trivialmente (nunca declararam). **P5 FALSIFICADA no critério literal pelo llama** (não acertou `DADO_ORDEM`); a repetição com o instrumento corrigido mostrou a causa: **0/21 respostas lidas**, o modelo só copiou a 1ª pergunta. Não houve obediência à injeção, houve ausência de resposta. O critério literal continua falsificado (não reescrito); a leitura de mérito é: P5 **não testável** em modelo que não responde. Hipótese P-1 (≥4B > 50%) falsificada duas vezes. Status: TESTADO-PARCIAL |
+| T6 | Arquitetura híbrida (decisão A): código concilia, LLM só anota o resíduo | op-det **20/20** aceitas sob o LEX, 0 incidentes; resíduo **10,2%** do extrato; candidatos contêm o par verdadeiro em **100%** (150/150); base "data mais próxima" acerta **98,8%** (245/248); a nota do LLM nunca altera a conciliação (teste) | D1–D2 descritivos; H1 ≥90%, H2 ≥50%, P6 ≥50% (prospectivas) | **H1 e H2 passaram por construção do gerador (G7)**: números otimistas. P6 (LLM real) pendente. Entra no `reproduzir.py` |
 
 ## Limites declarados
 1. **Operários roteirizados** em T1–T5. Três LLMs reais (≤4B) executaram T4 e EXAME. Nenhum modelo maior foi testado.
