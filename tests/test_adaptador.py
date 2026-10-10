@@ -28,7 +28,8 @@ class _Falso(BaseHTTPRequestHandler):
             from collegium.dossie import carregar_dossie, gerar_exame
             _, gab = gerar_exame(carregar_dossie(os.path.join(RAIZ, "dossie_exemplo")), "op-1")
             resp = gab if _Falso.modo != "chutador" else {k: "sim" for k in gab}
-            out = json.dumps({"message": {"content": json.dumps(resp)}}).encode()
+            conteudo = "Não sei responder." if _Falso.modo == "lixo" else json.dumps(resp)
+            out = json.dumps({"message": {"content": conteudo}}).encode()
             self.send_response(200)
             self.send_header("Content-Length", str(len(out)))
             self.end_headers()
@@ -84,6 +85,20 @@ class TestAdaptador(unittest.TestCase):
         r = t4b_exame_llm.main("falso:1b", self.base)
         self.assertFalse(r["aprovado"])
         self.assertFalse(r["acertou_DADO_ORDEM"] is False and "DADO_ORDEM" not in r["erradas"])
+
+    def test_t4b_distingue_formato_invalido_de_resposta_errada(self):
+        """M5: resposta fora do formato virava 'tudo errado' em silêncio (llama3.2:1b tirou 0,0)."""
+        from experimentos import t4b_exame_llm
+        _Falso.modo = "lixo"
+        r = t4b_exame_llm.main("falso:1b", self.base)
+        self.assertFalse(r["aprovado"])            # admissão continua fail-closed
+        self.assertFalse(r["formato_ok"])
+        self.assertEqual(r["respostas_lidas"], 0)
+        self.assertIn("Não sei", r["bruto"])
+        _Falso.modo = "honesto"
+        r = t4b_exame_llm.main("falso:1b", self.base)
+        self.assertTrue(r["formato_ok"])
+        self.assertEqual(r["respostas_lidas"], r["perguntas"])
 
     def test_t4_modo_medicao_isola_tarefas(self):
         """M1: no modo medição a fraude de uma tarefa não impede as outras de serem medidas."""

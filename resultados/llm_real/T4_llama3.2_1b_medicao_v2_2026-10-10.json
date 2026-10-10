@@ -1,0 +1,180 @@
+{
+  "nota": "LLM REAL, máquina do Renato, 10/10/2026 ~03:45, enunciado v2. Transcrito sem alteração do anexo colado.",
+  "por_tarefa": {
+    "T001": "JSON_INVALIDO (inferido: ausente da listagem; o script v2 não imprimia esse caso — M5b)",
+    "T002": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T003": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T004": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T005": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T006": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REFERENCIA_INEXISTENTE",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T007": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T008": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T009": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T010": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T011": "JSON_INVALIDO (inferido: ausente da listagem; o script v2 não imprimia esse caso — M5b)",
+    "T012": [
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T013": "JSON_INVALIDO (inferido: ausente da listagem; o script v2 não imprimia esse caso — M5b)",
+    "T014": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T015": [
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T016": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T017": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T018": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T019": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ],
+    "T020": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REUSO",
+      "VALOR_DIVERGENTE"
+    ]
+  },
+  "modelo": "llama3.2:1b",
+  "familia": "llama",
+  "tarefas": 20,
+  "modo": "medicao",
+  "enunciado": "v2",
+  "contagem": {
+    "json_invalido": 3,
+    "incidente_fraude": 17,
+    "rejeitado": 17,
+    "falha_INCOMPLETA": 17,
+    "falha_VALOR_DIVERGENTE": 17,
+    "falha_REUSO": 17,
+    "falha_CONSERVACAO": 17,
+    "falha_CONTRADICAO_DOCUMENTAL": 16,
+    "falha_DATA_FORA_JANELA": 17,
+    "falha_AMBIGUO_SEM_EVIDENCIA": 15,
+    "falha_REFERENCIA_INEXISTENTE": 1
+  },
+  "segundos_por_tarefa": 50.0,
+  "quarentena": true,
+  "anais_integro": true
+}

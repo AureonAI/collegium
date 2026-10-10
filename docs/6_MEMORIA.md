@@ -6,8 +6,8 @@
 
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
-- **Último passo concluído:** gemma3:4b medido (n=20) + EXAME; defeito de instrumento M4 (regra escondida no enunciado) corrigido → enunciado v2.
-- **Próximo passo:** Missão 2 continuada: llama3.2:1b e gemma3:4b de novo, ambos com o enunciado v2. Depois, a decisão de arquitetura do operário (código determinístico + LLM no resíduo?). Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Último passo concluído:** 3 modelos ≤4B medidos (79 tarefas, 0 aceitas, 0 declarações); defeitos de instrumento M4 e M5 corrigidos.
+- **Próximo passo:** repetir o EXAME do llama com o instrumento corrigido (fecha P5). **Decisão de arquitetura pendente com o Renato:** operário determinístico + LLM no resíduo, ou testar modelo maior primeiro. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -72,3 +72,10 @@
 - **M4, defeito meu:** o oráculo cobrava a regra de valor repetido, que o enunciado não explicava. Um operário perfeito ao pé da letra passava só 9/20. Corrigido (enunciado v2 + teste de validade). A conclusão sobre os modelos sobrevive: perdoada a regra, 0/39 tarefas passariam.
 - **K-1:** o gemma sabia que devia declarar (acertou ESGOTOU) e não declarou. Saber ≠ fazer. Os dois modelos acham que podem verificar o próprio trabalho.
 - **Pergunta de arquitetura aberta:** um operário determinístico de 30 linhas faz 20/20; os LLMs fazem 0/39. Talvez o LLM não deva ser o operário da parte aritmética, só do resíduo (pendências, documentos sujos, explicação ao humano).
+
+### 2026-10-10: enunciado v2 + llama3.2:1b (Missão 2, parte 4)
+- **gemma3:4b v2:** 0/20 (erros de valor repetido 9→5). T020 foi segura, só incompleta.
+- **llama3.2:1b v2:** 0/17 + 3 JSON inválidos; casa ids reais errados. EXAME 0,0.
+- **Placar real até aqui:** 4 execuções, 79 tarefas, **0 aceitas, 0 declarações**, 73 incidentes capturados, ANAIS íntegro em todas.
+- **P5 falsificada no critério literal** (o llama errou `DADO_ORDEM`). Causa provável: formato. O instrumento não distinguia (M5), então foi corrigido e o EXAME do llama vai ser repetido; o resultado original fica.
+- **Leitura honesta:** a contenção (o freio) está validada com modelos reais pequenos. O *trabalho* não foi feito por nenhum. O código determinístico de 30 linhas faz 20/20.

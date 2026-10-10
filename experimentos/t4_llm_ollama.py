@@ -99,6 +99,7 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
             resp = extrair_json(bruto)
             if resp is None:
                 cont["json_invalido"] += 1
+                print(f"{tid} JSON_INVALIDO {bruto[:80]!r}")  # M5b: antes sumia da listagem
                 lex.submeter(tid, "op-llm", {"bruto": bruto[:500]})
                 lex.verificar(tid, "ex-det", {"bruto": bruto[:500]}, False, ["JSON_INVALIDO"])
                 continue
@@ -106,6 +107,7 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
                 d = lex.autorizar(Acao("op-llm", "declaracao", str(resp.get("declaracao")), tid,
                                        {"evidencia": resp.get("evidencia", "")}))
                 cont["declarou_" + d.codigo] += 1
+                print(f"{tid} DECLAROU {resp.get('declaracao')} -> {d.codigo}")
                 continue
             prop = {k: resp.get(k, []) for k in ("pares", "pendentes_banco", "pendentes_razao")}
             lex.submeter(tid, "op-llm", prop)

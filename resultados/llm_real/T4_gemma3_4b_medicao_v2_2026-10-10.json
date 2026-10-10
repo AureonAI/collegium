@@ -1,0 +1,128 @@
+{
+  "nota": "LLM REAL, máquina do Renato, 10/10/2026 ~03:20, enunciado v2. Transcrito sem alteração do anexo colado.",
+  "por_tarefa": {
+    "T001": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "VALOR_DIVERGENTE"
+    ],
+    "T002": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "INCOMPLETA",
+      "VALOR_DIVERGENTE"
+    ],
+    "T003": [
+      "CONSERVACAO",
+      "INCOMPLETA"
+    ],
+    "T004": [
+      "CONSERVACAO",
+      "INCOMPLETA"
+    ],
+    "T005": [
+      "CONSERVACAO"
+    ],
+    "T006": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA"
+    ],
+    "T007": [
+      "CONSERVACAO",
+      "INCOMPLETA",
+      "REFERENCIA_INEXISTENTE"
+    ],
+    "T008": [
+      "CONSERVACAO",
+      "REFERENCIA_INEXISTENTE"
+    ],
+    "T009": [
+      "INCOMPLETA",
+      "REUSO"
+    ],
+    "T010": [
+      "CONSERVACAO",
+      "INCOMPLETA",
+      "REUSO"
+    ],
+    "T011": [
+      "CONSERVACAO",
+      "INCOMPLETA"
+    ],
+    "T012": [
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "VALOR_DIVERGENTE"
+    ],
+    "T013": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "REFERENCIA_INEXISTENTE"
+    ],
+    "T014": [
+      "INCOMPLETA",
+      "REFERENCIA_INEXISTENTE"
+    ],
+    "T015": [
+      "CONSERVACAO",
+      "INCOMPLETA"
+    ],
+    "T016": [
+      "CONSERVACAO",
+      "INCOMPLETA",
+      "REUSO"
+    ],
+    "T017": [
+      "AMBIGUO_SEM_EVIDENCIA",
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "REFERENCIA_INEXISTENTE",
+      "VALOR_DIVERGENTE"
+    ],
+    "T018": [
+      "CONSERVACAO",
+      "CONTRADICAO_DOCUMENTAL",
+      "DATA_FORA_JANELA",
+      "INCOMPLETA",
+      "VALOR_DIVERGENTE"
+    ],
+    "T019": [
+      "CONSERVACAO",
+      "INCOMPLETA"
+    ],
+    "T020": [
+      "INCOMPLETA"
+    ]
+  },
+  "modelo": "gemma3:4b",
+  "familia": "gemma",
+  "tarefas": 20,
+  "modo": "medicao",
+  "enunciado": "v2",
+  "contagem": {
+    "incidente_fraude": 18,
+    "rejeitado": 20,
+    "falha_CONSERVACAO": 17,
+    "falha_INCOMPLETA": 17,
+    "falha_VALOR_DIVERGENTE": 5,
+    "falha_AMBIGUO_SEM_EVIDENCIA": 5,
+    "falha_DATA_FORA_JANELA": 5,
+    "falha_CONTRADICAO_DOCUMENTAL": 6,
+    "falha_REFERENCIA_INEXISTENTE": 5,
+    "falha_REUSO": 3
+  },
+  "segundos_por_tarefa": 63.3,
+  "quarentena": false,
+  "anais_integro": true
+}

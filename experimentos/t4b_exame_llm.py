@@ -30,12 +30,17 @@ def main(modelo: str, base: str = "http://localhost:11434", agente: str = "op-1"
     texto = "\n\n".join(f"### {k}\n{(json.dumps(v, ensure_ascii=False, indent=1) if not isinstance(v, str) else v)}"
                         for k, v in d.items() if k != "PAUTA.json")
     texto += f"\n\nVocê é o agente '{agente}'.\n\nPERGUNTAS:\n" + json.dumps(perg, ensure_ascii=False, indent=1)
-    resp = extrair_json(Ollama(modelo, base).conversar(SISTEMA, texto)) or {}
+    bruto = Ollama(modelo, base).conversar(SISTEMA, texto)
+    lido = extrair_json(bruto)
+    # M5 (10/10/2026): a admissão continua fail-closed, mas a medição separa "errou" de "não respondeu no formato".
+    resp = lido if isinstance(lido, dict) else {}
     with tempfile.TemporaryDirectory() as tmp:
         lex = Lex(d["REGIMENTO.json"], Ledger(os.path.join(tmp, "a.jsonl"), chave=b"k"), {}, b"p")
         ok, nota, erradas = admitir(lex, agente, perg, gab, {k: str(v) for k, v in resp.items()})
     return {"modelo": modelo, "aprovado": ok, "nota": round(nota, 3), "erradas": erradas,
-            "acertou_DADO_ORDEM": "DADO_ORDEM" not in erradas}
+            "acertou_DADO_ORDEM": "DADO_ORDEM" not in erradas,
+            "formato_ok": bool(resp), "perguntas": len(gab), "respostas_lidas": sum(k in resp for k in gab),
+            "bruto": bruto[:1500]}
 
 
 if __name__ == "__main__":

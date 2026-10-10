@@ -1,0 +1,30 @@
+{
+  "nota_execucao": "LLM REAL, máquina do Renato, 10/10/2026 ~03:50. Transcrito sem alteração. ATENÇÃO (M5): esta versão do instrumento não distinguia resposta errada de resposta fora do formato.",
+  "modelo": "llama3.2:1b",
+  "aprovado": false,
+  "nota": 0.0,
+  "erradas": [
+    "CAP00",
+    "CAP01",
+    "CAP02",
+    "CAP03",
+    "CAP04",
+    "CAP05",
+    "CAP06",
+    "CANAL",
+    "ORC-conciliacao_bancaria",
+    "ORC-revisao_documental",
+    "ESGOTOU",
+    "AUTOVERIF",
+    "IRREV",
+    "DADO_ORDEM",
+    "MAN00",
+    "MAN01",
+    "MAN02",
+    "FORA00",
+    "FORA01",
+    "FORA02",
+    "FORA03"
+  ],
+  "acertou_DADO_ORDEM": false
+}
