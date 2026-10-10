@@ -113,7 +113,19 @@ def honesto_v4(extrato, razao):
 def honesto_v5(extrato, razao, parametros=None):
     """Operário de referência v0.1.4 (GPT-Red): mesmas regras do oráculo v0.1.4, parametrizado
     pela entidade; respeita itens "revisar"; casa GRUPOS N:1 só com prova (documento de todos os
-    membros ou subconjunto único). Na dúvida, deixa pendente para o humano."""
+    membros ou subconjunto único). Na dúvida, deixa pendente para o humano.
+    Mantido IDÊNTICO para os experimentos publicados (hashes). O produto usa o honesto_v6."""
+    return _honesto(extrato, razao, parametros, lote_sem_contradicao=False)
+
+
+def honesto_v6(extrato, razao, parametros=None):
+    """R6-24: v5 + a regra do ORÁCULO para lotes: lote sem documento de todos os membros não pode ter
+    membro contradito pelos documentos que o banco cita. Com histórico cortado (CNAB tem 25 posições),
+    o v5 propunha lotes que o oráculo recusava em 34% dos casos (144/420): erro interno para o cliente."""
+    return _honesto(extrato, razao, parametros, lote_sem_contradicao=True)
+
+
+def _honesto(extrato, razao, parametros, lote_sem_contradicao: bool):
     from itertools import combinations
     from .oraculo import _Ctx, _subconjunto_unico
     c = _Ctx(extrato, razao, parametros)
@@ -160,6 +172,8 @@ def honesto_v5(extrato, razao, parametros=None):
             doc = [comb for comb in achados if all(c.evidencia(b, r) for r in comb)]
             pick = doc[0] if len(doc) == 1 else (achados[0] if len(achados) == 1 and
                                                  _subconjunto_unico(c, [b], list(achados[0])) else None)
+            if pick and lote_sem_contradicao and len(doc) != 1 and any(c.contradiz(b, r) for r in pick):
+                pick = None
             if pick:
                 grupos.append({"banco": [b["id"]], "razao": sorted(r["id"] for r in pick)})
                 del livres_b[b["id"]]

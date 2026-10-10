@@ -72,7 +72,7 @@ def _canonizar(extrato: list[dict], razao: list[dict]) -> tuple[list[dict], list
     for b in extrato:
         b = dict(b)
         toks = docs_canonicos(b.get("desc", ""))
-        b["desc_original"] = b.get("desc", "")
+        b["desc_original"] = b.get("desc_original", b.get("desc", ""))  # o importador pode ter guardado o texto inteiro
         b["desc"] = " ".join([b.get("desc", "")] + [t for t in toks if t not in b.get("desc", "").split()]).strip()
         ext.append(b)
     raz = []
@@ -108,22 +108,41 @@ def carregar_extrato(caminho: str) -> dict:
     return _exigir_lancamentos(_carregar_extrato(_ler_bytes(caminho, "extrato"), caminho), "extrato")
 
 
+def _parece_open_finance(dados: bytes):
+    t = dados.lstrip(b"\xef\xbb\xbf \t\r\n")
+    if not t.startswith(b"{"):
+        return None
+    try:
+        j = json.loads(t.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return None
+    return j if isinstance(j, dict) and isinstance(j.get("data"), list) else None
+
+
 def _carregar_extrato(dados: bytes, caminho: str) -> dict:
+    """R6-25: o formato é reconhecido pelo CONTEÚDO, não pela extensão nem pela largura exata das linhas."""
+    dados = dados.rstrip(b"\x1a\r\n")  # 0x1A = fim de arquivo de sistemas antigos
     cab = dados[:4000].upper()
     if b"<OFX" in cab or b"OFXHEADER" in cab:
         r = imp.ler_ofx(dados)
         return {"itens": r["extrato"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
                 "formato": "OFX", "ignoradas": [], "avisos": r.get("avisos", [])}
-    if caminho.lower().endswith(".json"):
-        r = imp.ler_open_finance(json.loads(dados.decode("utf-8-sig")))
+    of = _parece_open_finance(dados)
+    if of is not None:
+        r = imp.ler_open_finance(of)
         return {"itens": r["extrato"], "saldo_inicial": None, "saldo_final": None, "formato": "Open Finance",
-                "ignoradas": [{"linha": None, "texto": f"{len(r.get('fora_por_nao_efetivada', []))} transações "
+                "ignoradas": [{"linha": None, "texto": f"{r.get('fora_por_nao_efetivada')} transações "
                                "não efetivadas ficaram fora"}] if r.get("fora_por_nao_efetivada") else []}
-    linhas = [ln for ln in dados.splitlines() if ln.strip()]
-    if linhas and all(len(ln.rstrip(b"\r")) == 240 for ln in linhas):
+    if caminho.lower().endswith(".json"):
+        raise imp.ImportacaoInvalida("o arquivo .json não é um extrato do Open Finance (falta a lista \"data\")")
+    primeira = next((ln for ln in dados.splitlines() if ln.strip()), b"")
+    if re.match(rb"\d{3}0000 {0,9}0", primeira):  # header de arquivo CNAB 240: banco, lote 0000, registro 0
         r = imp.ler_cnab240(dados)
+        cortados = sum(1 for x in r["extrato"] if x.get("historico_cortado"))
+        avisos = [f"CNAB: {cortados} lançamento(s) com o histórico cheio (25 posições); a última palavra pode estar "
+                  "cortada e NÃO foi usada como documento (o texto inteiro aparece nas pendências)."] if cortados else []
         return {"itens": r["extrato"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
-                "formato": "CNAB 240", "ignoradas": [], "conferencia": r.get("conferencia")}
+                "formato": "CNAB 240", "ignoradas": [], "conferencia": r.get("conferencia"), "avisos": avisos}
     r = imp.ler_planilha(dados, "B")
     return {"itens": r["itens"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
             "formato": f"planilha ({r['encoding']}, separador {r['separador']!r}, colunas {r['mapa']})",
@@ -254,7 +273,7 @@ def conciliar_arquivos(extrato: str, razao: str, saida: str, ente: str = "Client
     entrada = {"extrato": e_can, "razao": r_can}
     of = dataclasses.replace(
         OFICIO, oraculo=oraculo.fabricar_oraculo(params),
-        operario=lambda e: operarios.honesto_v5(e["extrato"], e["razao"], params),
+        operario=lambda e: operarios.honesto_v6(e["extrato"], e["razao"], params),
         residuo=lambda e, p: residuo.pacote_humano(e["extrato"], e["razao"], p, params))
     caminho_anais = anais or os.path.join(saida, "anais.jsonl")
     led = Ledger(caminho_anais, chave=chave_hmac)

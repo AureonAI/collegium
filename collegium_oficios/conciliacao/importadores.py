@@ -294,10 +294,18 @@ def ler_cnab240(conteudo: str | bytes, prefixo: str = "B") -> dict:
             if dc not in "DC":
                 raise CNABInvalido(f"linha {n}: tipo de lançamento {dc!r} (esperado D ou C)")
             v = _cents(ln[150:168])
-            desc = " ".join(x for x in (ln[176:201].strip(), ln[201:208].strip(), ln[208:240].strip()) if x)
-            atual["extrato"].append({"id": f"{prefixo}{len(atual['extrato']) + 1:05d}", "data": _dmy(ln[142:150]),
-                                     "valor": -v if dc == "D" else v, "desc": desc,
-                                     "categoria": ln[169:172].strip(), "codigo_historico": ln[172:176].strip()})
+            hist = ln[176:201]
+            # R6-24: histórico CHEIO (25 posições até o fim) = a última palavra pode estar cortada no meio de um
+            # número ("NF77" de "NF77123"). Ela não vale como documento; o texto inteiro fica para o humano ler.
+            cortado = len(hist.rstrip()) == 25 and " " in hist.strip()
+            hist_util = hist.strip().rsplit(" ", 1)[0] if cortado else hist.strip()
+            partes = lambda h: " ".join(x for x in (h, ln[201:208].strip(), ln[208:240].strip()) if x)  # noqa: E731
+            item = {"id": f"{prefixo}{len(atual['extrato']) + 1:05d}", "data": _dmy(ln[142:150]),
+                    "valor": -v if dc == "D" else v, "desc": partes(hist_util),
+                    "categoria": ln[169:172].strip(), "codigo_historico": ln[172:176].strip()}
+            if cortado:
+                item["desc_original"], item["historico_cortado"] = partes(hist.strip()), True
+            atual["extrato"].append(item)
         elif tipo == "5":
             if atual is None:
                 raise CNABInvalido(f"linha {n}: trailer de lote sem header")
