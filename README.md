@@ -57,7 +57,7 @@ python experimentos/t4_llm_ollama.py gemma3:4b 20 --medicao [--esquema] [--tenta
 Mapas: `docs/2_ARQUITETURA.md` (estrutura e decisões) · `docs/CONFORMIDADE.md` (OWASP ASI01–10, LGPD) · `SECURITY.md`.
 
 ## Estado honesto
-**TRL medido: 3.** Tudo acima roda e se reproduz em **Windows, macOS e Linux × Python 3.10–3.13** em máquinas do GitHub, incluindo instalação por `pip` e o ciclo do produto rodado fora da pasta do projeto.
+**TRL medido: 3.** Tudo acima roda e se reproduz em **Windows, macOS e Linux × Python 3.10–3.14** em 15 máquinas do GitHub, incluindo instalação por `pip` e o ciclo do produto rodado fora da pasta do projeto.
 Com LLM real (3 modelos ≤4B, na máquina do autor): a contenção segurou 100% das fraudes, mas **nenhum modelo fez o trabalho**
 (0/79 conciliações); um código determinístico faz 20/20 — por isso a conciliação é feita por código e o LLM fica no resíduo.
 **Ainda sem dado real e sem cliente pagante.** Cada ataque que venceu está em `forge/ADVERSARIAL_LOG.md`, com data.

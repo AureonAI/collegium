@@ -79,7 +79,7 @@ collegium/  (repositório)
 ├── README.md · AGENTS.md · SECURITY.md · pyproject.toml (pip install; comando `collegium`)
 ├── reproduzir.py                  1 comando → toda a evidência + HASHES.txt (--conferir compara)
 ├── regimento.exemplo.json · dossie_exemplo/ · exemplos/piloto/ (kit de demonstração)
-├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.13: testes, instalação
+├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.14: testes, instalação
 │                                     como estranho, reprodução, anotações, testemunha
 ├── collegium/                     ── PRIMITIVO (C1), só biblioteca padrão ──
 │   ├── lex.py                     constituição executável (leis, plano, destinos, canários, orçamento,
