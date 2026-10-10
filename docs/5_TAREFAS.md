@@ -94,7 +94,7 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T046 | 0 | Portão: servidor MCP mediador, tokens efêmeros por tarefa, executor isolado que falha fechado | agente sem o portão não tem ferramenta; token fora da tarefa é negado | ✅ código (`collegium/portao.py` MCP 2026-07-28 + legado; `collegium/isolamento.py`); 🔶 Docker real = missão no Windows (T016) |
 | T047 | 0 | Plano selado na abertura (fluxo de controle confiável) + destinos confiáveis para argumentos | injeção no dado não muda capacidade nem destino | ✅ (`plano` na abertura; `destinos` no REGIMENTO; saída marcada `nao_confiavel`) |
 | T048 | 0 | Identidade de modelo por impressão digital (digest); admissão caduca com troca de modelo | "qwen-falso" não herda a linhagem qwen | ✅ (`modelo.digest` + `Lex.atestar_modelo`; `Ollama.digest()`) |
-| T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ⬜ |
+| T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ✅ (`collegium/oficio.py` + `pacotes/tres_vias`; 2 ofícios conformes, mutação 741/741 não equivalentes em 200 sementes; controle negativo) |
 | T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ⬜ |
 | T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ⬜ |
 | T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ⬜ |

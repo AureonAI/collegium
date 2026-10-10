@@ -93,6 +93,9 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **M-2** | Especificação MCP | A versão vigente (2026-07-28, sem sessão, `server/discover`) é posterior ao meu conhecimento; implementada a partir da leitura da especificação publicada, com suporte também à era legada (`initialize`) | — | `tests/test_portao.py` |
 | **I-1** | Executor isolado | **Limites:** (a) `unshare -rn` isola SÓ a rede, não o disco; (b) o nível `container` (Docker) não pôde ser executado aqui (serviço parado na sessão): está coberto só pela construção do comando. Prova real = missão T016 no Windows | Declarado no módulo | `test_rede_cortada_de_verdade` (rede real cortada com unshare) |
 | **F-1** | Linhagem (L3) por nome | Fechado: o REGIMENTO assinado declara o digest; o mesmo digest com duas linhagens é recusado; troca de pesos vira incidente; o agente não se atesta | — | `tests/test_fluxo_confiavel.py` |
+| **K-2** | Teste de mutação × meu oráculo de três vias (T049) | **Ataque venceu (achado pela suíte):** pagar a 2ª via de uma cobrança em duplicidade e reter a 1ª era aceito; o motivo registrado ("quantidade não recebida") também era impreciso | Motivo `DUPLICIDADE` + ordem canônica (mais antiga primeiro, contra o aprovado antes dela) | `test_duplicidade_paga_a_mais_antiga_e_marca_a_outra` (falhou antes, passa depois) |
+| **K-3** | Escore de 100% na conciliação | **Desconfiança registrada:** o mutante "trocar" inicial trocava ids de tipos diferentes (estrago grosseiro). Endurecido para o mesmo tipo; o escore se manteve. Limite: mede só ESTES operadores; o A4 mostra pares errados raros que o oráculo aceita | Mutantes equivalentes descartados por forma canônica e contados | `conformidade` (campo `equivalentes`) |
+| **K-4** | A própria suíte | Controle negativo: um oráculo que aceita tudo é reprovado (C3) | — | `test_suite_pega_oraculo_fraco` |
 
 ## Ataque-Gödel (contra o próprio método)
 

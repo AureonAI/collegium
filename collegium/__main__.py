@@ -29,9 +29,12 @@ Privacidade (T044/T045; COLLEGIUM_CHAVE_COFRE no ambiente, nunca em arquivo do p
   python -m collegium eliminar-titular COFRE.json TIPO VALOR     (TIPO: NOME, CPF, CNPJ, EMAIL, TEL...)
 
 Portão MCP (T046; o cliente MCP do agente inicia este comando como servidor stdio):
-  python -m collegium portao REGIMENTO.json ANAIS.jsonl ENTRADA.json
+  python -m collegium portao REGIMENTO.json ANAIS.jsonl ENTRADA.json [--oficio conciliacao_bancaria|tres_vias]
       ambiente: COLLEGIUM_FICHA (emitida pelo orquestrador), COLLEGIUM_SEGREDO_PORTAO, COLLEGIUM_CHAVE
   python -m collegium emitir-ficha AGENTE TAREFA CAP1,CAP2 VALIDADE_SEGUNDOS   (usa COLLEGIUM_SEGREDO_PORTAO)
+
+Kit de ofício (T049):
+  python -m collegium conformidade NOME_DO_OFICIO [SEMENTES]     roda a suíte (pureza, falha fechada, mutação)
 """
 from __future__ import annotations
 
@@ -182,17 +185,26 @@ def main(argv: list[str]) -> int:
             return 2
         print(emitir_ficha(seg, argv[1], argv[2], argv[3].split(","), time.time() + float(argv[4])))
         return 0
+    if cmd == "conformidade":
+        from pacotes.registro import carregar
+        from .oficio import conformidade
+        n = int(argv[2]) if len(argv) > 2 else 40
+        r = conformidade(carregar(argv[1])[0], range(1, n + 1))
+        print(json.dumps(r, ensure_ascii=False, indent=1))
+        return 0 if r["conforme"] else 1
     if cmd == "portao":
         import time
         from .portao import Portao
-        from pacotes.conciliacao.ferramentas import ferramentas
+        from pacotes.registro import carregar
+        nome_oficio = argv[argv.index("--oficio") + 1] if "--oficio" in argv else "conciliacao_bancaria"
+        oficio, ferramentas = carregar(nome_oficio)
         seg, ficha = _chave("COLLEGIUM_SEGREDO_PORTAO"), os.environ.get("COLLEGIUM_FICHA")
         if not seg or not ficha:
             print("defina COLLEGIUM_SEGREDO_PORTAO e COLLEGIUM_FICHA", file=sys.stderr)
             return 2
         with open(argv[3], encoding="utf-8") as f:
             entrada = json.load(f)
-        lex = Lex(argv[1], Ledger(argv[2], chave=_chave("COLLEGIUM_CHAVE")))
+        lex = Lex(argv[1], Ledger(argv[2], chave=_chave("COLLEGIUM_CHAVE")), {oficio.classe: oficio.oraculo})
         Portao(lex, ferramentas(entrada), seg, ficha, time.time).servir()
         return 0
     print(__doc__)
