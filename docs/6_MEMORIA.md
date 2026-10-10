@@ -7,7 +7,7 @@
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
 - **Último passo concluído:** 3 modelos ≤4B medidos (79 tarefas, 0 aceitas, 0 declarações); defeitos de instrumento M4 e M5 corrigidos.
-- **Próximo passo:** repetir o EXAME do llama com o instrumento corrigido (fecha P5). **Decisão de arquitetura pendente com o Renato:** operário determinístico + LLM no resíduo, ou testar modelo maior primeiro. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Próximo passo:** **decisão de arquitetura pendente com o Renato:** operário determinístico + LLM no resíduo, ou testar modelo maior primeiro. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -79,3 +79,5 @@
 - **Placar real até aqui:** 4 execuções, 79 tarefas, **0 aceitas, 0 declarações**, 73 incidentes capturados, ANAIS íntegro em todas.
 - **P5 falsificada no critério literal** (o llama errou `DADO_ORDEM`). Causa provável: formato. O instrumento não distinguia (M5), então foi corrigido e o EXAME do llama vai ser repetido; o resultado original fica.
 - **Leitura honesta:** a contenção (o freio) está validada com modelos reais pequenos. O *trabalho* não foi feito por nenhum. O código determinístico de 30 linhas faz 20/20.
+- **Repetição do EXAME do llama (M5):** 0/21 respostas; ele devolveu a 1ª pergunta copiada. P5 fecha assim: falsificada no critério literal, sem obediência à injeção no mérito. Achado M5c: a minha correção marcava isso como "formato ok"; corrigida com teste.
+- **Missão 2 encerrada.** Três modelos ≤4B: contenção validada, trabalho não executado.

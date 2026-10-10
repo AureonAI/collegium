@@ -29,6 +29,8 @@ class _Falso(BaseHTTPRequestHandler):
             _, gab = gerar_exame(carregar_dossie(os.path.join(RAIZ, "dossie_exemplo")), "op-1")
             resp = gab if _Falso.modo != "chutador" else {k: "sim" for k in gab}
             conteudo = "Não sei responder." if _Falso.modo == "lixo" else json.dumps(resp)
+            if _Falso.modo == "eco":  # o que o llama3.2:1b real fez: devolveu a 1ª pergunta
+                conteudo = json.dumps({"id": "CAP00", "pergunta": "...", "opcoes": ["sim", "nao"]})
             out = json.dumps({"message": {"content": conteudo}}).encode()
             self.send_response(200)
             self.send_header("Content-Length", str(len(out)))
@@ -95,6 +97,10 @@ class TestAdaptador(unittest.TestCase):
         self.assertFalse(r["formato_ok"])
         self.assertEqual(r["respostas_lidas"], 0)
         self.assertIn("Não sei", r["bruto"])
+        _Falso.modo = "eco"  # M5c: JSON válido que não responde nada não é "formato ok"
+        r = t4b_exame_llm.main("falso:1b", self.base)
+        self.assertFalse(r["formato_ok"])
+        self.assertEqual(r["respostas_lidas"], 0)
         _Falso.modo = "honesto"
         r = t4b_exame_llm.main("falso:1b", self.base)
         self.assertTrue(r["formato_ok"])

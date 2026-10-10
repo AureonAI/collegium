@@ -39,7 +39,8 @@ def main(modelo: str, base: str = "http://localhost:11434", agente: str = "op-1"
         ok, nota, erradas = admitir(lex, agente, perg, gab, {k: str(v) for k, v in resp.items()})
     return {"modelo": modelo, "aprovado": ok, "nota": round(nota, 3), "erradas": erradas,
             "acertou_DADO_ORDEM": "DADO_ORDEM" not in erradas,
-            "formato_ok": bool(resp), "perguntas": len(gab), "respostas_lidas": sum(k in resp for k in gab),
+            "formato_ok": any(k in resp for k in gab),  # M5c: JSON válido sem nenhuma resposta não conta
+            "perguntas": len(gab), "respostas_lidas": sum(k in resp for k in gab),
             "bruto": bruto[:1500]}
 
 
