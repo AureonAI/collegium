@@ -120,7 +120,15 @@ class TestAnonimizador(unittest.TestCase):
         an = Anonimizador(self.cofre, [r"[A-Z]{2}Q"])
         for i in range(300):
             saida = an.texto(f"PIX RECEBIDO FULANO{chr(65 + i % 26)} DE TAL{i % 7}")
-            self.assertIsNone(_re.search(r"[A-Z]{2}Q", saida.replace("PIX RECEBIDO", "")), saida)
+            for ps in _re.findall(r"\b(?:NOME|COD|NUM)_[A-Z]+", saida):   # só os PSEUDÔNIMOS
+                self.assertIsNone(_re.search(r"[A-Z]{2}Q", ps.split("_", 1)[1]), saida)
+
+    def test_documentos_preservados_aparecem_para_o_humano(self):
+        """Padrão amplo demais preserva pedaço de nome como 'documento' ('FULANOQ' -> 'NOQ'):
+        o humano precisa VER o que foi preservado antes de confirmar a exportação."""
+        an = Anonimizador(self.cofre, [r"[A-Z]{2}Q"])
+        an.texto("PIX RECEBIDO FULANOQ")
+        self.assertIn("NOQ", an.relatorio()["documentos_preservados"])
 
     def test_exportar_exige_revisao_humana(self):
         dados_anon = self.an.registros([{"desc": "PIX RECEBIDO FULANO"}])

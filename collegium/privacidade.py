@@ -151,6 +151,7 @@ class Anonimizador:
         self.vocab = VOCABULARIO | {_sem_acento(x).upper() for x in (vocabulario_extra or set())}
         self.cont: Counter = Counter()
         self.mantidos: set[str] = set()
+        self.docs: set[str] = set()  # o que foi PRESERVADO como documento (o humano precisa ver)
 
     def _p(self, tipo: str, valor: str) -> str:
         self.cont[tipo] += 1
@@ -170,7 +171,7 @@ class Anonimizador:
             protegidos[marca] = v
             return marca
         for rx in self.doc:  # documentos (NF...) ficam intactos: são a ponte da conciliação
-            s = rx.sub(lambda m: guardar(m.group(0)), s)
+            s = rx.sub(lambda m: (self.docs.add(m.group(0)), guardar(m.group(0)))[1], s)
         # datas e valores em reais também ficam (não identificam ninguém e servem ao humano)
         s = re.sub(r"\b\d{1,2}/\d{1,2}(?:/\d{2,4})?\b", lambda m: guardar(m.group(0)), s)
         s = re.sub(r"(?:R\$\s?)?\b\d{1,3}(?:\.\d{3})*,\d{2}\b", lambda m: guardar(m.group(0)), s)
@@ -241,9 +242,10 @@ class Anonimizador:
         return out
 
     def relatorio(self) -> dict:
-        mantidos = sorted(self.mantidos)
+        mantidos, docs = sorted(self.mantidos), sorted(self.docs)
         return {"substituicoes": dict(sorted(self.cont.items())), "palavras_mantidas": mantidos,
-                "confirmacao": hashlib.sha256(canonico(mantidos)).hexdigest()[:16]}
+                "documentos_preservados": docs[:500], "documentos_preservados_total": len(docs),
+                "confirmacao": hashlib.sha256(canonico([mantidos, docs])).hexdigest()[:16]}
 
 
 def exportar(dados: Any, relatorio: dict, confirmacao: str | None) -> Any:
