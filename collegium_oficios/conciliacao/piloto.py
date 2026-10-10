@@ -90,14 +90,30 @@ def _canonizar(extrato: list[dict], razao: list[dict]) -> tuple[list[dict], list
 
 # ---------------------------------------------------------------- leitura de arquivos
 
-def carregar_extrato(caminho: str) -> dict:
+def _ler_bytes(caminho: str, papel: str) -> bytes:
     with open(caminho, "rb") as f:
         dados = f.read()
+    if not dados.strip():  # R6-17
+        raise imp.ImportacaoInvalida(f"o arquivo do {papel} está vazio: {os.path.basename(caminho)}")
+    return dados
+
+
+def _exigir_lancamentos(r: dict, papel: str) -> dict:
+    if not r["itens"]:  # R6-17: antes, IndexError lá na frente
+        raise imp.ImportacaoInvalida(f"o {papel} está sem lançamentos: exporte o período com movimento")
+    return r
+
+
+def carregar_extrato(caminho: str) -> dict:
+    return _exigir_lancamentos(_carregar_extrato(_ler_bytes(caminho, "extrato"), caminho), "extrato")
+
+
+def _carregar_extrato(dados: bytes, caminho: str) -> dict:
     cab = dados[:4000].upper()
     if b"<OFX" in cab or b"OFXHEADER" in cab:
         r = imp.ler_ofx(dados)
         return {"itens": r["extrato"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
-                "formato": "OFX", "ignoradas": []}
+                "formato": "OFX", "ignoradas": [], "avisos": r.get("avisos", [])}
     if caminho.lower().endswith(".json"):
         r = imp.ler_open_finance(json.loads(dados.decode("utf-8-sig")))
         return {"itens": r["extrato"], "saldo_inicial": None, "saldo_final": None, "formato": "Open Finance",
@@ -115,14 +131,13 @@ def carregar_extrato(caminho: str) -> dict:
 
 
 def carregar_razao(caminho: str) -> dict:
-    with open(caminho, "rb") as f:
-        r = imp.ler_planilha(f.read(), "R")
-    return {"itens": r["itens"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
+    r = imp.ler_planilha(_ler_bytes(caminho, "razão"), "R")
+    return _exigir_lancamentos({"itens": r["itens"], "saldo_inicial": r["saldo_inicial"], "saldo_final": r["saldo_final"],
             "formato": f"planilha ({r['encoding']}, separador {r['separador']!r}, colunas {r['mapa']})",
-            "ignoradas": r["ignoradas"]}
+            "ignoradas": r["ignoradas"]}, "razão")
 
 
-# ---------------------------------------------------------------- sanidade (S1–S3)
+# ---------------------------------------------------------------- sanidade (S0–S3)
 
 def _periodo(itens):
     ds = sorted(date.fromisoformat(x["data"]) for x in itens)
@@ -131,7 +146,12 @@ def _periodo(itens):
 
 def sanidade(ext: dict, raz: dict, sinal: str) -> dict:
     """Devolve {"bloqueio": motivo|None, "avisos": [...], "convencao": ..., "razao_itens": ...}."""
-    avisos: list[str] = []
+    avisos: list[str] = list(ext.get("avisos", []))
+    chave = lambda xs: sorted((x["data"], x["valor"], x.get("desc", "")) for x in xs)  # noqa: E731
+    if chave(ext["itens"]) == chave(raz["itens"]):  # R6-15: o mesmo arquivo dos dois lados dava "CONCILIADO"
+        return {"bloqueio": "S0 MESMO_CONTEUDO: o extrato e o razão têm exatamente os mesmos lançamentos; "
+                            "provavelmente o mesmo arquivo foi escolhido duas vezes. Use o extrato do BANCO e o "
+                            "razão do ERP.", "avisos": avisos}
     ok, msg = imp.checar_saldo(ext["itens"], ext["saldo_inicial"], ext["saldo_final"])
     if not ok:
         return {"bloqueio": f"S1 {msg}. O extrato está incompleto ou foi lido errado: exporte de novo o período inteiro.",
@@ -150,8 +170,10 @@ def sanidade(ext: dict, raz: dict, sinal: str) -> dict:
         if det["convencao"] == "indeterminado":
             return {"bloqueio": f"S3 CONVENCAO_INDETERMINADA: só {max(det['casam_direto'], det['casam_invertido'])} "
                                 f"lançamentos do razão têm par no extrato com qualquer sinal (mínimo {det['minimo']}). "
-                                "O razão parece ser de OUTRA conta ou de outro período. Se tiver certeza de que é "
-                                "a mesma conta, rode de novo com --sinal-razao bancaria ou --sinal-razao contabil.",
+                                "Causas comuns: razão de OUTRA conta; datas no formato mês/dia ou valores no formato "
+                                "1,234.56 (sistema configurado em inglês); exportação incompleta. Se tiver certeza "
+                                "de que é a mesma conta e o mesmo formato, rode de novo com --sinal-razao bancaria "
+                                "ou --sinal-razao contabil.",
                     "avisos": avisos, "convencao": det}
         conv = det["convencao"]
     else:

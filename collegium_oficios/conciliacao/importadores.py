@@ -25,22 +25,56 @@ from decimal import Decimal, InvalidOperation
 _NUM = re.compile(r"^\(?-?\s*(R\$\s*)?[\d.]+(,\d{1,2})?\)?-?$|^-?\d+(\.\d{1,2})?$")
 
 
+def _grupos_de_milhar(inteiro: str, sep: str) -> bool:
+    g = inteiro.split(sep)
+    return 1 <= len(g[0]) <= 3 and all(len(x) == 3 for x in g[1:])
+
+
+def _numero(t: str, original: str) -> Decimal:
+    """R6-14: só formatos SEM ambiguidade. '1,234.56' e '1.234,56' (os dois separadores: o da direita é o
+    decimal) e '1234,56' / '1234.56' (um separador com 1 ou 2 decimais). '1.234' e '1,234' são ambíguos
+    (milhar ou decimal?) e são recusados; mais de 2 decimais só se forem zeros ('1234.5600')."""
+    ruim = ValueError(f"valor monetário ambíguo ou ilegível: {original!r} (use 1.234,56 ou 1234.56)")
+    if not re.fullmatch(r"\d[\d.,]*\d|\d", t):
+        raise ruim
+    if "." in t and "," in t:
+        dec = "," if t.rfind(",") > t.rfind(".") else "."
+        inteiro, frac = t.rsplit(dec, 1)
+        if dec in inteiro or not _grupos_de_milhar(inteiro, "." if dec == "," else ","):
+            raise ruim
+    elif "." in t or "," in t:
+        sep = "." if "." in t else ","
+        if t.count(sep) > 1:  # só separador de milhar: '1.234.567'
+            if not _grupos_de_milhar(t, sep):
+                raise ruim
+            inteiro, frac = t.replace(sep, ""), ""
+        else:
+            inteiro, frac = t.split(sep)
+            if len(frac) == 3:
+                raise ruim
+    else:
+        inteiro, frac = t, ""
+    inteiro = inteiro.replace(".", "").replace(",", "")
+    if len(frac) > 2:
+        if frac[2:].strip("0"):
+            raise ValueError(f"valor com fração de centavo: {original!r}")
+        frac = frac[:2]
+    return Decimal(inteiro + "." + (frac or "0"))
+
+
 def centavos(texto: str) -> int:
-    """'1.234,56' | '-1.234,56' | '(1.234,56)' | '1234.56' | '1.234,56-' -> centavos (int).
+    """'1.234,56' | '-1.234,56' | '(1.234,56)' | '1234.56' | '1,234.56' | '1.234,56-' -> centavos (int).
     R6-4 (10/10/2026): sufixo de extrato/razão '1.234,56 D' (negativo) ou '1.234,56C' (positivo),
-    na convenção BANCÁRIA (D = saída). A convenção contábil é tratada por detectar_convencao()."""
+    na convenção BANCÁRIA (D = saída). A convenção contábil é tratada por detectar_convencao().
+    R6-14: valor ambíguo ou fora de formato é RECUSADO (antes, '1,234.56' virava R$ 1,23 em silêncio)."""
     t = str(texto).strip().replace("R$", "").replace(" ", "")
     sufixo_d = bool(re.search(r"\d[Dd]$", t))
     if re.search(r"\d[CcDd]$", t):
         t = t[:-1]
     negativo = sufixo_d or t.startswith("-") or t.endswith("-") or (t.startswith("(") and t.endswith(")"))
     t = t.strip("()-")
-    if "," in t:
-        t = t.replace(".", "").replace(",", ".")
-    elif t.count(".") > 1:
-        t = t.replace(".", "")
     try:
-        v = (Decimal(t) * 100).quantize(Decimal("1"))
+        v = (_numero(t, str(texto)) * 100).quantize(Decimal("1"))
     except InvalidOperation as e:
         raise ValueError(f"valor monetário ilegível: {texto!r}") from e
     return -int(v) if negativo else int(v)
@@ -73,6 +107,10 @@ def _tag(bloco: str, nome: str) -> str | None:
     return m.group(1).strip() if m else None
 
 
+_OFX_ENTRADA = {"CREDIT", "DEP", "INT", "DIV", "DIRECTDEP"}  # R6-18: tipos que só podem ser entrada
+_OFX_SAIDA = {"DEBIT", "FEE", "SRVCHG", "ATM", "POS", "CHECK", "PAYMENT", "CASH", "DIRECTDEBIT", "REPEATPMT"}
+
+
 def ler_ofx(conteudo: str | bytes) -> dict:
     """Retorna {"extrato": [...], "saldo_final": int|None, "saldo_inicial": int|None}."""
     if isinstance(conteudo, bytes):
@@ -82,18 +120,31 @@ def ler_ofx(conteudo: str | bytes) -> dict:
                 break
             except UnicodeDecodeError:
                 continue
-    extrato, vistos = [], set()
+    contas = re.findall(r"<(?:STMTRS|CCSTMTRS)>(.*?)(?:</(?:STMTRS|CCSTMTRS)>|(?=<(?:STMTRS|CCSTMTRS)>)|$)",
+                        conteudo, re.S | re.I)
+    if len(contas) > 1:  # R6-16: duas contas eram misturadas numa conciliação só
+        ids = [(_tag(c, "ACCTID") or "?") for c in contas]
+        raise ImportacaoInvalida(f"OFX com {len(contas)} contas ({', '.join(ids)}): exporte UMA conta por arquivo")
+    extrato, vistos, contradiz = [], set(), 0
     for bloco in re.findall(r"<STMTTRN>(.*?)(?:</STMTTRN>|(?=<STMTTRN>)|(?=</BANKTRANLIST>))", conteudo, re.S | re.I):
         fitid = _tag(bloco, "FITID")
         if not fitid or fitid in vistos:
-            raise ValueError(f"OFX com FITID ausente ou repetido: {fitid!r}")
+            raise ImportacaoInvalida(f"OFX com FITID ausente ou repetido: {fitid!r} (exportação sobreposta?)")
         vistos.add(fitid)
         desc = " ".join(x for x in (_tag(bloco, "NAME"), _tag(bloco, "MEMO"), _tag(bloco, "CHECKNUM")) if x)
+        valor = centavos(_tag(bloco, "TRNAMT"))
+        tipo = (_tag(bloco, "TRNTYPE") or "").upper()
+        if (tipo in _OFX_ENTRADA and valor < 0) or (tipo in _OFX_SAIDA and valor > 0):
+            contradiz += 1
         extrato.append({"id": f"B-{fitid}", "data": data_iso(_tag(bloco, "DTPOSTED")[:8], ("%Y%m%d",)),
-                        "valor": centavos(_tag(bloco, "TRNAMT")), "desc": desc})
+                        "valor": valor, "desc": desc})
+    if not extrato:
+        raise ImportacaoInvalida("OFX sem lançamentos: o período exportado está vazio ou o arquivo está incompleto")
     bal = re.search(r"<LEDGERBAL>(.*?)(?:</LEDGERBAL>|<AVAILBAL>|$)", conteudo, re.S | re.I)
     saldo_final = centavos(_tag(bal.group(1), "BALAMT")) if bal and _tag(bal.group(1), "BALAMT") else None
-    return {"extrato": extrato, "saldo_final": saldo_final, "saldo_inicial": None}
+    avisos = [f"OFX: em {contradiz} lançamento(s) o TRNTYPE contradiz o sinal do valor. Valeu o SINAL (regra da "
+              "especificação OFX); confira esses itens, a exportação pode estar defeituosa."] if contradiz else []
+    return {"extrato": extrato, "saldo_final": saldo_final, "saldo_inicial": None, "avisos": avisos}
 
 
 # ------------------------------------------------------------------ CSV (ERP / planilha)
