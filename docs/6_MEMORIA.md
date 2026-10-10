@@ -7,7 +7,7 @@
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
 - **Último passo concluído:** rodada GPT-Red (T028–T034): 14 ataques que venceram foram corrigidos, hashes idênticos em Python 3.10–3.13.
-- **Próximo passo:** MISSÃO 1 (T009) no Windows com `--conferir`. Depois Missão 2 (T010: T4 + T4b) e Missão 3 (T011). Publicar o repositório (T035) liga o juiz externo do GitHub.
+- **Próximo passo:** Missão 2 (T010: T4 + T4b com LLM real no Windows do Renato) e Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -44,3 +44,9 @@
 - **Falsificado e registrado:** T3 (a) com z=1,96 deu 4,55% (critério ≤2%). Resolvido com z=2,326 pós-hoc e **confirmado com semente nova**: 2,00%, exatamente no limite.
 - **Números:** T1 4179/4179 (21 comportamentos) · T2 600/600 · T3 PASSOU · A5: humano 22%→11,2%, injeção 0/300 · T5: equipe 199/200 contra sozinho 14/200 · 60 testes · hashes iguais em 3.10/3.11/3.12/3.13.
 - **Ainda não feito por depender de fora do código:** LLM real, dado real, Windows real, comprador, jurídico, isolamento de SO.
+
+### 2026-10-10: Publicação e primeira âncora externa
+- Repositório público criado por Renato: `AureonAI/collegium` (colaborador `dotorenato` + aplicativo do Claude instalado na conta AureonAI).
+- Commit `2a70aaf` publicado. Workflow `evidencia`, execução 38018942381: **12/12 verdes** (Windows/macOS/Linux × Python 3.10–3.13). Os 60 testes passaram e os 6 hashes saíram idênticos (`--conferir` sai com erro se divergir).
+- Status FORGE: "a evidência se reproduz" passou a TESTADO (âncora de terceiro). O mérito das afirmações (T1–T5) continua dependendo de juiz externo.
+- Limite: os logs detalhados do Actions não puderam ser lidos desta sessão (domínio de logs bloqueado pela rede); a conclusão vem do código de saída de cada passo.

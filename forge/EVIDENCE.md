@@ -2,7 +2,9 @@
 
 **Comando único reprodutível por um estranho:** `python reproduzir.py --conferir` (Python 3.10+, sem dependências, sementes fixas). Sai com código 1 se algum hash divergir de `resultados/HASHES.txt`.
 
-**Reprodução entre versões (09/10/2026):** os **6 hashes idênticos** em Python **3.10.20, 3.11.15, 3.12.13 e 3.13.16** (Linux), e os 60 testes passando nas 4 versões. Windows e macOS: workflow pronto em `.github/workflows/evidencia.yml`, **ainda não executado**. Quando rodar nas máquinas do GitHub, vira a primeira âncora fora do controle do autor.
+**Reprodução externa (10/10/2026) — PRIMEIRA ÂNCORA FORA DO CONTROLE DO AUTOR:** execução 38018942381 do workflow `evidencia` em máquinas do GitHub, no repositório público `AureonAI/collegium`, commit `2a70aaf`: **12/12 combinações verdes** (Windows, macOS, Linux × Python 3.10, 3.11, 3.12, 3.13). Em cada uma, os 60 testes passaram e `reproduzir.py --conferir`, que sai com erro se qualquer hash divergir, terminou com sucesso, ou seja, os **6 hashes são idênticos nas 12**. Antes disso, eu já tinha conferido localmente no Linux com Python 3.10.20, 3.11.15, 3.12.13 e 3.13.16.
+
+**O que esta âncora prova e o que não prova:** prova **reprodutibilidade e determinismo** (qualquer pessoa obtém os mesmos números). Não prova **validade** (os ataques e os critérios continuam escritos pelo autor).
 
 | Resultado | SHA-256 (16) |
 |---|---|
@@ -13,7 +15,7 @@
 | A5_mundo_sujo | `b8ed2164b0b84510` |
 | T5_equipe | `6cca208b372d7a23` |
 
-**Regra de status (FORGE 3.1):** TESTADO exige âncora fora do controle do autor. Versões diferentes do Python rodadas por mim **não** são juiz externo: provam determinismo, não validade. Por isso tudo abaixo continua **TESTÁVEL-NÃO-TESTADO-EXTERNAMENTE**.
+**Regra de status (FORGE 3.1):** TESTADO exige âncora fora do controle do autor. A afirmação *"a evidência se reproduz idêntica em outro sistema"* passou a **TESTADO** (âncora: GitHub Actions, execução 38018942381). As afirmações de mérito abaixo (T1–T5) continuam **TESTÁVEL-NÃO-TESTADO-EXTERNAMENTE**, porque o juiz dos ataques ainda sou eu.
 
 | ID | Afirmação | Resultado interno | Critério pré-registrado | Observação honesta |
 |---|---|---|---|---|
@@ -37,5 +39,5 @@
 
 ## TRL e nota
 - **TRL MEDIDO: 3.** Continua 3: as melhorias são de robustez da função crítica em laboratório. O TRL 4 exige um componente validado com LLM real **e** dado real (Missões 2 e T015).
-- **Nota do primitivo LEX/ANAIS: 4,8/10.** O teto do TRL 3 é 5,0. Subiu 0,3 porque fechei 14 ataques que venceram e provei determinismo em 4 versões. Não chega a 5,0 porque o juiz externo ainda não rodou.
+- **Nota do primitivo LEX/ANAIS: 5,0/10 (no teto do TRL 3).** Subiu de 4,8 porque a reprodução externa em 3 sistemas e 4 versões foi confirmada por infraestrutura de terceiro. Não passa de 5,0 sem TRL 4 (LLM real + dado real).
 - **Nota do projeto: ver a resposta da sessão** (a régua é a mesma da avaliação anterior).

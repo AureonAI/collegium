@@ -28,18 +28,18 @@
 | T031 | H1 | Oráculo v0.1.4: grupos N:1, "revisar", parâmetros da entidade, índice | ✅ | A5 |
 | T032 | H1 | G1–G5: falha fechada, entrega inválida, evidência selada, REGIMENTO assinado, admissão caduca | ✅ | `TestGPTRedFinal` |
 | T033 | — | Reprodução em Python 3.10–3.13 com hashes idênticos | ✅ | `reproduzir.py --conferir` |
-| T034 | — | Workflow multiplataforma (Windows/macOS/Linux) | 🔶 escrito, não executado | `.github/workflows/evidencia.yml` |
+| T034 | — | Workflow multiplataforma (Windows/macOS/Linux) | ✅ 12/12 verdes (execução 38018942381) | `.github/workflows/evidencia.yml` |
 
 ## Fase F0: Validação de mercado e de reprodução (PRIORIDADE MÁXIMA)
 
 | ID | Hist | Descrição | Status | Critério pré-registrado |
 |---|---|---|---|---|
-| T009 | — | **Missão 1 (Renato):** `python reproduzir.py --conferir` no Windows | ⬜ | Todos "IGUAL" = reprodução em outro SO |
+| T009 | — | **Missão 1 (Renato):** `python reproduzir.py --conferir` no Windows | 🔶 Windows já confirmado pelo GitHub (T034); rodar na máquina do Renato vira apenas preparação da Missão 2 | Todos "IGUAL" |
 | T010 | H6 | **Missão 2 (Renato):** T4 (conciliação) e T4b (EXAME) com `qwen2.5-coder:1.5b`, `gemma3:4b`, `llama3.2:1b` | ⬜ | Previsões P1–P5 |
 | T011 | — | **Missão 3 (Renato):** 10 conversas com escritórios | ⬜ | ≥ 3 SIM ao piloto pago |
 | T012 | — | Busca de marca COLLEGIUM no INPI (classes 9 e 42) | ⬜ | Sem colidência |
 | T013 | — | Consulta jurídica sobre a conciliação automatizada | ⬜ | Parecer escrito |
-| T035 | — | Publicar o repositório (conta AureonAI) para o workflow rodar nas máquinas do GitHub | ⬜ | 12 combinações verdes = primeira âncora externa |
+| T035 | — | Publicar o repositório (conta AureonAI) para o workflow rodar nas máquinas do GitHub | ✅ `github.com/AureonAI/collegium`, 12/12 verdes | 12 combinações verdes = primeira âncora externa |
 
 ## Fase F1: Do laboratório ao dado real (TRL 3 → 4)
 

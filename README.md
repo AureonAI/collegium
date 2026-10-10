@@ -29,8 +29,10 @@ Extrato escaneado (opcional): `pip install paddleocr` + motor de inferência, e 
 | `experimentos/` + `resultados/` | T1 · T2 · T3 · A4 · A5 · T5 (+ T4/T4b para LLM real) · HASHES · histórico de falsificações |
 | `.github/workflows/evidencia.yml` | Mesma evidência em Windows/macOS/Linux × Python 3.10–3.13 |
 
+[![evidencia](https://github.com/AureonAI/collegium/actions/workflows/evidencia.yml/badge.svg)](https://github.com/AureonAI/collegium/actions/workflows/evidencia.yml)
+
 ## Estado honesto
-TRL medido **3**: laboratório, operários roteirizados, dados sintéticos. Hashes idênticos em Python 3.10–3.13 (Linux). Ainda sem LLM real, sem dado real, sem Windows real, sem comprador ouvido. Próximo passo: `docs/5_TAREFAS.md` → MISSÃO 1.
+TRL medido **3**: laboratório, operários roteirizados, dados sintéticos. Evidência reproduzida com hashes idênticos em **Windows, macOS e Linux × Python 3.10–3.13**, em máquinas do GitHub (12/12). Ainda sem LLM real, sem dado real e sem comprador ouvido. Próximo passo: `docs/5_TAREFAS.md` → Missão 2.
 
 ## In English (summary)
 COLLEGIUM is a model-agnostic, local-first governance kernel plus a first vertical (bank reconciliation) for teams of AI agents that a business can safely *hire*. It inverts the four misalignment patterns OpenAI documented in 2026: deny-by-default actions, a *duty to declare* impossibility within a step budget, separation of powers (the kernel runs the oracle itself, so a lying verifier cannot pass fabricated work), and autonomy *earned* from a statistical track record (Wilson bound + stability + recent window). Everything is reproducible with `python reproduzir.py --conferir`. Status: TRL 3, lab-only. Not yet tested with real LLMs, real data or paying customers.
