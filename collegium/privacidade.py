@@ -178,6 +178,11 @@ class Anonimizador:
         # número depois de AG/CC/CONTA identifica a pessoa junto com o banco, qualquer que seja o tamanho
         s = re.sub(r"(?i)\b(AG(?:ENCIA|ÊNCIA)?|C/?C|CONTA(?:\s+CORRENTE)?)(\s*[:.]?\s*)(\d[\d\-]*)",
                    lambda m: m.group(1) + m.group(2) + guardar(self._p("NUM", m.group(3))), s)
+        # Rodada 5: CPF/CNPJ numérico escrito com ESPAÇOS ou separadores trocados ("529 982 247 25")
+        for tipo, n, valida in (("CNPJ", 14, cnpj_valido), ("CPF", 11, cpf_valido)):
+            rx_sep = re.compile(r"(?<![\d])\d(?:[\s.\-/]?\d){%d}(?![\d])" % (n - 1))
+            s = rx_sep.sub(lambda m, tipo=tipo, valida=valida: guardar(self._p(tipo, re.sub(r"\D", "", m.group(0))))
+                           if valida(re.sub(r"\D", "", m.group(0))) else m.group(0), s)
         for tipo, rx in _RX:
             def troca(m, tipo=tipo):
                 v = m.group(0)
@@ -212,6 +217,13 @@ class Anonimizador:
                 saida.append(t)
                 continue
             eh_palavra = bool(re.fullmatch(r"[A-Z][A-Z'\-]*", limpo))
+            partes = [x for x in re.split(r"[^A-Z0-9]+", limpo) if x]
+            if not eh_palavra and re.search(r"[A-Z]", limpo) and not re.search(r"\d", limpo) \
+                    and any(x not in self.vocab for x in partes):
+                # Rodada 5: palavra com pontuação no meio ("joao.silva", "SILVA/JOAO") saía literal
+                fechar()
+                saida.append(self._p("NOME", " ".join(partes)))
+                continue
             if eh_palavra and limpo in _CONECTORES and nome:
                 nome.append(t)
             elif eh_palavra and limpo not in self.vocab:

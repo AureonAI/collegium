@@ -50,11 +50,13 @@ def _corpo(f: dict) -> bytes:
 def emitir_fatura(fonte, cab: dict, inicio: float, fim: float, precos: dict[str, int], privada: bytes) -> dict:
     a, linhas = arvore(fonte)
     n = int(cab["tamanho"])
-    canarios = set()
-    for ln in linhas[:n]:
+    canarios, abertura = set(), {}
+    for i, ln in enumerate(linhas[:n]):
         c = json.loads(ln)["corpo"]
         if c["tipo"] == "canario":
             canarios.add(c["dados"]["tarefa"])
+        elif c["tipo"] == "tarefa_aberta":
+            abertura[c["dados"]["tarefa"]] = i
     itens, cobradas = [], set()
     for i, ln in enumerate(linhas[:n]):
         c = json.loads(ln)["corpo"]
@@ -62,7 +64,10 @@ def emitir_fatura(fonte, cab: dict, inicio: float, fim: float, precos: dict[str,
         if (c["tipo"] == "recibo" and d.get("aceito") and d.get("por_oraculo") and d.get("classe") in precos
                 and inicio <= c["t"] < fim and d["tarefa"] not in canarios and d["tarefa"] not in cobradas):
             cobradas.add(d["tarefa"])
+            j = abertura[d["tarefa"]]  # a ABERTURA também vai, com prova: diz de quem é a entrada (rodada 5)
             itens.append({"indice": i, "linha": ln, "prova": [h.hex() for h in a.prova_inclusao(i, n)],
+                          "abertura": {"indice": j, "linha": linhas[j],
+                                       "prova": [h.hex() for h in a.prova_inclusao(j, n)]},
                           "preco_centavos": int(precos[d["classe"]])})
     f = {"formato": FORMATO, "ente": cab.get("ente"), "periodo": [inicio, fim], "precos": dict(precos),
          "cabeca": cab, "itens": itens, "total_centavos": sum(x["preco_centavos"] for x in itens)}
@@ -70,7 +75,9 @@ def emitir_fatura(fonte, cab: dict, inicio: float, fim: float, precos: dict[str,
     return f
 
 
-def conferir_fatura(f, chave_confiavel: str) -> tuple[bool, list[str], dict]:
+def conferir_fatura(f, chave_confiavel: str, entradas_do_cliente: set[str] | None = None) -> tuple[bool, list[str], dict]:
+    """entradas_do_cliente: hashes das entradas que ESTE cliente enviou (ele tem os arquivos); com eles,
+    cobrança de tarefa de outro cliente no mesmo ANAIS é detectada."""
     try:
         if f.get("formato") != FORMATO:
             return False, ["FORMATO"], {}
@@ -100,6 +107,18 @@ def conferir_fatura(f, chave_confiavel: str) -> tuple[bool, list[str], dict]:
             if d.get("tarefa") in vistas:
                 motivos.append(f"COBRANCA_DUPLICADA:{d.get('tarefa')}")
             vistas.add(d.get("tarefa"))
+            ab = it.get("abertura") or {}
+            try:
+                ok_ab = mk.verificar_inclusao(mk.folha(ab["linha"].encode("utf-8")), int(ab["indice"]), n,
+                                              [bytes.fromhex(x) for x in ab["prova"]], raiz)
+                da = json.loads(ab["linha"])
+            except (KeyError, TypeError, ValueError):
+                ok_ab, da = False, {}
+            if not ok_ab or da.get("i") != ab.get("indice") or da.get("corpo", {}).get("tipo") != "tarefa_aberta" \
+                    or da["corpo"]["dados"].get("tarefa") != d.get("tarefa") or da["corpo"]["dados"].get("entrada") != d.get("entrada"):
+                motivos.append(f"ABERTURA_NAO_CONFERE:{d.get('tarefa')}")
+            elif entradas_do_cliente is not None and d.get("entrada") not in entradas_do_cliente:
+                motivos.append(f"ENTRADA_DE_OUTRO_CLIENTE:{d.get('tarefa')}")
             if int(it["preco_centavos"]) != int(f["precos"].get(d.get("classe"), -1)):
                 motivos.append(f"PRECO_DIVERGENTE:{d.get('tarefa')}")
             soma += int(it["preco_centavos"])

@@ -98,7 +98,7 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ✅ (`collegium/garantia.py`, T7: G1/G2 passaram; G3 falsificada e reconfirmada com semente nova) |
 | T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ✅ código (A6: 6 quebras + 1 burla corrigidas; 2ª confirmatória 0 vitórias); 🔶 AgentDojo = missão externa |
 | T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ✅ (`collegium/aprendizado.py` + minerador de janela; T8: L1–L4 passaram; regra só entra com quórum) |
-| T053 | 1 | Tentativas com devolutiva só de código e checagens ocultas | fraude continua sem segunda chance | ⬜ |
+| T053 | 1 | Tentativas com devolutiva só de código e checagens ocultas | fraude continua sem segunda chance | ✅ (reabertura com devolutiva só de códigos; `falhas_ocultas`; fraude não reabre; T9 com tentativas: 0 violações; `--tentativas` no T4) |
 | T054 | 1 | Saída estruturada por esquema JSON no adaptador | — | ✅ (`esquema=` no adaptador; `--esquema` no T4/T4b — efeito real = missão) |
 | T055 | 1 | Admissão por conduta (tarefas-isca) + canários sorteados em produção | canário errado gera incidente | ✅ (`abrir_canario`, `sortear_canario`, `collegium/conduta.py`, iscas da conciliação) |
 | T056 | 1 | Orçamento de tokens, tempo e custo por tarefa com corte duro | estouro = BLOQUEADO selado | ✅ (`registrar_consumo`; orçamento por classe; `Ollama.ultimo_uso`) |

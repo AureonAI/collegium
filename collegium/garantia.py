@@ -81,6 +81,12 @@ class Calibracao:
     votos: list[list[bool]]
     humano: list[bool]
 
+    def __post_init__(self):  # rodada 5: zip cortaria em silêncio e a garantia ficaria falsa
+        if len(self.votos) != len(self.humano):
+            raise ValueError(f"calibração com {len(self.votos)} votos e {len(self.humano)} vereditos humanos")
+        if self.votos and len({len(v) for v in self.votos}) != 1:
+            raise ValueError("todas as linhas de votos precisam ter o mesmo número de jurados")
+
     def risco(self, minimo_votos: int) -> tuple[int, int]:
         """(aceitos automaticamente, aceitos errados) para 'aceita se >= minimo_votos dizem sim'."""
         n = erros = 0

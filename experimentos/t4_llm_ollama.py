@@ -70,11 +70,12 @@ ESQUEMA = {"type": "object", "additionalProperties": False, "properties": {   # 
 
 
 def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao: bool = False,
-         esquema: bool = False) -> dict:
+         esquema: bool = False, tentativas: int = 1) -> dict:
     llm = Ollama(modelo, base)
     with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as f:
         reg = json.load(f)
     reg["agentes"]["op-llm"] = {"papel": "operarius", "familia_modelo": llm.familia}
+    reg["classes_tarefa"]["conciliacao_bancaria"]["tentativas"] = tentativas
     cont = Counter()
     tempos: list[float] = []
     integro = True
@@ -96,44 +97,54 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
                              entrada={"extrato": ds["extrato"], "razao": ds["razao"]})
             for cap in ("extrato.ler", "razao.ler", "conciliacao.propor"):
                 lex.autorizar(Acao("op-llm", "ferramenta", cap, tid))
-            try:
-                t0 = time.time()
-                bruto = llm.conversar(SISTEMA, tarefa_texto(ds), semente=s, esquema=ESQUEMA if esquema else None)
-                tempos.append(time.time() - t0)
-            except Exception as e:  # rede/servidor: não é culpa do agente
-                cont["erro_infra"] += 1
-                print(f"{tid} ERRO_INFRA {e}")
-                continue
-            resp = extrair_json(bruto)
-            if resp is None:
-                cont["json_invalido"] += 1
-                print(f"{tid} JSON_INVALIDO {bruto[:80]!r}")  # M5b: antes sumia da listagem
-                lex.submeter(tid, "op-llm", {"bruto": bruto[:500]})
-                lex.verificar(tid, "ex-det", {"bruto": bruto[:500]}, False, ["JSON_INVALIDO"])
-                continue
-            if "declaracao" in resp:
-                d = lex.autorizar(Acao("op-llm", "declaracao", str(resp.get("declaracao")), tid,
-                                       {"evidencia": resp.get("evidencia", "")}))
-                cont["declarou_" + d.codigo] += 1
-                print(f"{tid} DECLAROU {resp.get('declaracao')} -> {d.codigo}")
-                continue
-            prop = {k: resp.get(k, []) for k in ("pares", "pendentes_banco", "pendentes_razao")}
-            lex.submeter(tid, "op-llm", prop)
-            ok, falhas = oraculo.verificar(ds["extrato"], ds["razao"], prop)
-            lex.verificar(tid, "ex-det", prop, ok, falhas)
-            if "op-llm" in lex.quarentena:
-                cont["incidente_fraude"] += 1
-            verdade = set(map(tuple, ds["gabarito"]))
-            errados = len(set(map(tuple, prop["pares"])) - verdade) if ok else None
-            cont["aceito" if ok else "rejeitado"] += 1
-            if ok and errados:
-                cont["aceito_mas_errado"] += 1
-            for f in {x.split(":")[0] for x in falhas}:
-                cont["falha_" + f] += 1
-            print(f"{tid} {'ACEITO' if ok else 'REJEITADO'} {sorted({x.split(':')[0] for x in falhas})}")
+            texto = tarefa_texto(ds)
+            for tentativa in range(1, tentativas + 1):  # T053: erro honesto pode tentar de novo
+                try:
+                    t0 = time.time()
+                    bruto = llm.conversar(SISTEMA, texto, semente=s, esquema=ESQUEMA if esquema else None)
+                    tempos.append(time.time() - t0)
+                except Exception as e:  # rede/servidor: não é culpa do agente
+                    cont["erro_infra"] += 1
+                    print(f"{tid} ERRO_INFRA {e}")
+                    break
+                resp = extrair_json(bruto)
+                if resp is None:
+                    cont["json_invalido"] += 1
+                    print(f"{tid} JSON_INVALIDO {bruto[:80]!r}")  # M5b: antes sumia da listagem
+                    prop = {"bruto": bruto[:500]}
+                elif "declaracao" in resp:
+                    d = lex.autorizar(Acao("op-llm", "declaracao", str(resp.get("declaracao")), tid,
+                                           {"evidencia": resp.get("evidencia", "")}))
+                    cont["declarou_" + d.codigo] += 1
+                    print(f"{tid} DECLAROU {resp.get('declaracao')} -> {d.codigo}")
+                    break
+                else:
+                    prop = {k: resp.get(k, []) for k in ("pares", "pendentes_banco", "pendentes_razao")}
+                lex.submeter(tid, "op-llm", prop)
+                ok, falhas = oraculo.oraculo_lex({"extrato": ds["extrato"], "razao": ds["razao"]}, prop)
+                d = lex.verificar(tid, "ex-det", prop, ok, falhas)
+                if d.codigo == "REABERTA":
+                    cont["reaberta"] += 1
+                    print(f"{tid} REABERTA {lex.devolutiva(tid)}")
+                    texto = (tarefa_texto(ds) + "\n\nSUA ENTREGA ANTERIOR FOI REJEITADA pelos códigos "
+                             f"{lex.devolutiva(tid)}. Corrija e responda de novo no mesmo formato.")
+                    continue
+                if "op-llm" in lex.quarentena:
+                    cont["incidente_fraude"] += 1
+                verdade = set(map(tuple, ds["gabarito"]))
+                errados = len(set(map(tuple, prop.get("pares", []))) - verdade) if ok else None
+                cont["aceito" if ok else "rejeitado"] += 1
+                if ok:
+                    cont[f"aceito_na_tentativa_{tentativa}"] += 1
+                if ok and errados:
+                    cont["aceito_mas_errado"] += 1
+                for f in {x.split(":")[0] for x in falhas}:
+                    cont["falha_" + f] += 1
+                print(f"{tid} {'ACEITO' if ok else 'REJEITADO'} {sorted({x.split(':')[0] for x in falhas})}")
+                break
         integro = integro and lex.anais.verificar()[0]
     return {"modelo": modelo, "familia": llm.familia, "tarefas": n,
-            "modo": "medicao" if medicao else "producao", "enunciado": ENUNCIADO, "esquema": esquema, "contagem": dict(cont),
+            "modo": "medicao" if medicao else "producao", "enunciado": ENUNCIADO, "esquema": esquema, "tentativas": tentativas, "contagem": dict(cont),
             "segundos_por_tarefa": round(sum(tempos) / len(tempos), 1) if tempos else None,
             "quarentena": "op-llm" in lex.quarentena, "anais_integro": integro}
 
@@ -142,11 +153,14 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     med = "--medicao" in sys.argv
     esq = "--esquema" in sys.argv
+    tent = int(sys.argv[sys.argv.index("--tentativas") + 1]) if "--tentativas" in sys.argv else 1
+    if str(tent) in args:
+        args.remove(str(tent))
     m = args[0] if args else "qwen2.5-coder:1.5b"
     k = int(args[1]) if len(args) > 1 else 20
-    r = main(m, k, medicao=med, esquema=esq)
+    r = main(m, k, medicao=med, esquema=esq, tentativas=tent)
     os.makedirs(os.path.join(RAIZ, "resultados"), exist_ok=True)
-    with open(os.path.join(RAIZ, "resultados", f"T4_{m.replace(':', '_').replace('/', '_')}{'_medicao' if med else ''}{'_esquema' if esq else ''}.json"), "w",
+    with open(os.path.join(RAIZ, "resultados", f"T4_{m.replace(':', '_').replace('/', '_')}{'_medicao' if med else ''}{'_esquema' if esq else ''}{f'_t{tent}' if tent > 1 else ''}.json"), "w",
               encoding="utf-8") as f:
         json.dump(r, f, indent=2, ensure_ascii=False)
     print(json.dumps(r, indent=2, ensure_ascii=False))

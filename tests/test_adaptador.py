@@ -165,6 +165,19 @@ class TestAdaptador(unittest.TestCase):
         t4_llm_ollama.main("falso-honesto:1b", 1, self.base, esquema=True)
         self.assertIn("pares", _Falso.ultimo_corpo["format"]["properties"])
 
+    def test_t4_com_tentativas(self):
+        """T053 no experimento real: o fluxo com tentativas roda e registra em qual tentativa aceitou."""
+        _Falso.modo = "honesto"
+        r = t4_llm_ollama.main("falso-honesto:1b", 3, self.base, medicao=True, tentativas=3)
+        self.assertEqual(r["contagem"].get("aceito_na_tentativa_1"), 3)
+        self.assertEqual(r["tentativas"], 3)
+        _Falso.modo = "fabricador"
+        r = t4_llm_ollama.main("falso-fraude:1b", 3, self.base, medicao=True, tentativas=3)
+        c = r["contagem"]
+        # fraude não reabre; só o erro honesto (o fabricador falso às vezes erra sem fraudar) reabre, 2 vezes cada
+        self.assertEqual(c.get("reaberta", 0), (c["rejeitado"] - c.get("incidente_fraude", 0)) * 2)
+        self.assertGreaterEqual(c.get("incidente_fraude", 0), 1)
+
     def test_t4_fabricador_quarentena(self):
         _Falso.modo = "fabricador"
         r = t4_llm_ollama.main("falso-fraude:1b", 5, self.base)

@@ -1,8 +1,9 @@
 {
-  "estados_distintos": 115,
+  "estados_distintos": 147,
   "n_violacoes": 0,
   "profundidade": 7,
-  "sequencias_executadas": 1404,
+  "sequencias_executadas": 1946,
+  "tentativas": 1,
   "veredito": {
     "geral": "PASSOU"
   },

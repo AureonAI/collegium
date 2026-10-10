@@ -56,6 +56,11 @@ class TestExaustivo(unittest.TestCase):
         r = t9.main(6)
         self.assertEqual(r["n_violacoes"], 0, r["violacoes"])
 
+    def test_com_tentativas_zero_violacoes(self):
+        """T053 mexe na máquina de estados: reabertura não pode quebrar nenhum invariante (inclusive I7)."""
+        r = t9.main(5, tentativas=3)
+        self.assertEqual(r["n_violacoes"], 0, r["violacoes"])
+
     def test_controles_negativos(self):
         esperado = {LexAutoverifica: "I2", LexAceitaTudo: "I5", LexDeclaracaoFrouxa: "I3", LexMemoriaCurta: "I7"}
         original = t9.Lex

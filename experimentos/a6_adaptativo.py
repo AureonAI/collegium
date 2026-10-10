@@ -67,7 +67,7 @@ def _regimento():
 
 
 def _cenario(tmp: str, n: int) -> Lex:
-    lex = Lex(_regimento(), Ledger(os.path.join(tmp, f"a{n}.jsonl"), chave=b"k"), {})
+    lex = Lex(_regimento(), Ledger(os.path.join(tmp, f"a{n}.jsonl"), chave=b"k", duravel=False), {})
     lex.abrir_tarefa("minha", "revisao_documental", "op-1", plano=["extrato.ler", "pagamento.agendar"])
     lex.abrir_tarefa("alheia", "revisao_documental", "op-2")
     return lex

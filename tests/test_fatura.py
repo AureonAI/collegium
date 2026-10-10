@@ -79,6 +79,15 @@ class TestFatura(unittest.TestCase):
         f = emitir_fatura(self.cam, self.cab, 0, 10_000, PRECOS, bytes([1]) * 32)
         self.assertFalse(conferir_fatura(f, PUB)[0])                               # outra chave
 
+    def test_cobrar_tarefa_de_outro_cliente(self):
+        """Red Team rodada 5: no mesmo ANAIS, o cliente A recebia cobrança da tarefa do cliente B sem como saber."""
+        from collegium.lex import _h
+        ds = dados.gerar(2)
+        meu = {_h({"extrato": ds["extrato"], "razao": ds["razao"]})}          # o cliente só conhece a entrada da tarefa "a"
+        ok, motivos, _ = conferir_fatura(self.f, PUB, entradas_do_cliente=meu)
+        self.assertFalse(ok)
+        self.assertTrue(any(m.startswith("ENTRADA_DE_OUTRO_CLIENTE") for m in motivos), motivos)
+
     def test_periodo_e_metricas(self):
         self.assertEqual(emitir_fatura(self.cam, self.cab, 0, 1, PRECOS, SK)["itens"], [])
         m = metricas(self.cam)

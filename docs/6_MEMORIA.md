@@ -4,13 +4,13 @@
 
 ## ⏸ ONDE PAROU (atualize SEMPRE este bloco primeiro)
 
-- **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
-- **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
-- **Último passo concluído:** T6 com LLM real: 13/20 notas aceitas, contenção intacta, nenhum ganho do LLM sobre a base trivial.
-- **Próximo passo:** Missão 3 — mercado (T011) e dado real (T015). O código chegou ao limite do que dado sintético consegue provar. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
-- **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
-- **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
-- **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
+- **Versão:** 0.2.0 (núcleo) · oráculo de conciliação v0.1.4 · ofício três vias v0.1.1
+- **TRL medido:** 3. Laboratório + LLM real só na contenção. Sem dado real, sem cliente.
+- **Último passo concluído:** Fase SA (estado da arte), T042–T064, mais a rodada 5 do Red Team. Ver o diário de 10/10/2026.
+- **Próximo passo:** Missão 3 (T011, entrevistas: `docs/ROTEIRO_ENTREVISTA.md`). Em paralelo, as missões externas: AgentDojo (T051), Docker real (T016/T046), LLM real com `--esquema` e `--tentativas` (T053/T054), PaddleOCR real (T036).
+- **Decisões pendentes do Renato:** LICENSE (o repositório está sem licença, ou seja, todos os direitos reservados).
+- **Régua anticatedral:** a Fase SA foi pedida explicitamente pelo Renato (10/10/2026). Daqui em diante, de novo: **nenhum módulo novo antes de dado real e de comprador**.
+- **Bloqueios:** nenhum técnico. O risco principal é de **mercado**.
 
 ## Diário
 
@@ -93,3 +93,11 @@
 - **gemma3:4b anotando o resíduo:** 13/20 notas aceitas (P6 confirmada, ≥50%). É o primeiro trabalho de LLM real aceito sob o LEX. 6 incidentes capturados; o operário determinístico não foi contaminado; a conciliação ficou idêntica com e sem LLM, e também entre Windows e Linux.
 - **Valor:** nenhum mensurável. Nos mesmos 148 itens, a base trivial acerta 148 e o LLM 147: ele copiou a ordem da lista e errou a única decisão própria. Custo: 115 s de CPU por nota.
 - **Leitura estratégica:** nesta frente, o que se vende hoje é código determinístico + LEX + recibos + pilha do humano (10% dos lançamentos). O LLM é opcional e ainda sem valor provado. O ativo diferenciado é o **núcleo de governança**, não "agentes".
+
+### 2026-10-10: Fase SA — estado da arte (T042–T064) + Red Team rodada 5
+- **Pedido do Renato:** implementar tudo o que falta para o estado da arte, agnóstico, sem acomodação. Feito em lotes, cada um com teste primeiro, ataque contra o próprio item e hashes conferidos.
+- **Entregue:** Ed25519 + quórum (T042); recibo Merkle verificável offline (T043); anonimizador BR + cofre LGPD (T044/45); portão MCP 2026-07-28 + executor isolado (T046); plano selado e destinos confiáveis (T047); digest do modelo (T048); kit de ofício + mutação + 2º ofício, três vias (T049); garantia estatística (T050); atacante adaptativo (T051); aprendizado governado (T052); tentativas com devolutiva (T053); esquema na geração (T054); conduta e canários (T055); orçamento real (T056); fila e quatro olhos (T057); SQLite e telemetria (T058); CNAB 240 e Open Finance (T059); verificação exaustiva (T060); pré-registro (T061); cadeia de suprimentos (T062); conformidade (T063); fatura conferível (T064).
+- **Ataques que venceram, todos corrigidos com teste:** chave duplicada no quórum; telefone e conta curta vazando; destino disfarçado ou aninhado; falso positivo da correção; 6 quebras do LEX por tipo (atacante adaptativo); burla da declaração por payload; destino sob chave neutra; data 31/02 no CNAB; pagar a 2ª via em duplicidade; pseudônimo parecendo documento (achado pelo CI); reconstrução de aprovações; CPF com espaços; palavra pontuada; cobrança de outro cliente; validações de entrada.
+- **Falsificações registradas:** G3 do T7 (reconfirmada com semente nova); confirmatória 1 do A6 (corrigida; a confirmatória 2 deu 0 vitórias).
+- **Erros meus de processo:** CI vermelho por 3 envios sem eu notar; um commit publicado com teste falhando (`| tail` mascarava o código de saída). Corrigido: verificação em 3 sementes antes de cada commit, e CI com anotações por teste.
+- **Hashes:** T1–T6 e A4/A5 intactos desde a sessão 1; novos: T7, A6, T8, T9.

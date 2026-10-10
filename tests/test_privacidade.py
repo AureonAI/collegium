@@ -62,6 +62,16 @@ class TestAnonimizador(unittest.TestCase):
         self.assertIn("10/09/2026", saida)
         self.assertIn("1.234,56", saida)
 
+    def test_rodada5_espacos_e_pontuacao(self):
+        """Red Team rodada 5: CPF/CNPJ com espaços e palavras com pontuação no meio saíam LITERAIS."""
+        casos = {"PIX CPF 529 982 247 25": ("529", "982", "247"), "CNPJ 11 222 333 0001 81": ("222", "333"),
+                 "EMAIL joao.silva(arroba)mail.com": ("joao", "silva"), "TED SILVA/JOAO": ("SILVA", "JOAO"),
+                 "PIX maria-souza_x": ("maria", "souza")}
+        for texto, vazamentos in casos.items():
+            saida = self.an.texto(texto)
+            for v in vazamentos:
+                self.assertNotIn(v.upper(), saida.upper(), (texto, saida))
+
     def test_mesmo_titular_mesmo_pseudonimo(self):
         a = self.an.texto("PIX RECEBIDO JOÃO DA SILVA")
         b = self.an.texto("TED JOAO DA SILVA")       # sem acento, outro lançamento

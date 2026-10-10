@@ -72,33 +72,40 @@ ABERTA ──(passos ≤ orçamento)──► SUBMETIDA ──► ACEITA ──�
 | Isolamento C0 | Docker/Podman com `--network none` + proxy de egress com lista | O incidente mostrou que confinamento é infraestrutura |
 | Painel C4 | HTML estático + leitura do ANAIS (v0.2) | Sem servidor obrigatório; pode ser aberto offline |
 
-## 6. Estrutura de pastas (v0.1.4)
+## 6. Estrutura de pastas (v0.2.0)
 
 ```
 collegium/
-├── README.md · AGENTS.md          como rodar · instrução para agentes de código
+├── README.md · AGENTS.md · SECURITY.md
 ├── reproduzir.py                  1 comando → toda a evidência + HASHES.txt (--conferir compara)
-├── regimento.exemplo.json         REGIMENTO de exemplo
-├── dossie_exemplo/                Dossiê do Ente: MANDATO, ORGANOGRAMA, REGIMENTO, VOZ, PAUTA
-├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.13 (âncora externa)
-├── collegium/                     ── PRIMITIVO (C1) ──
-│   ├── ledger.py                  ANAIS: append-only, HMAC, âncora, trava entre processos
-│   ├── lex.py                     4 leis + Mandato + assinatura humana + REGIMENTO assinado
-│   ├── autonomia.py               Wilson + estabilidade + janela recente (L0–L3)
-│   ├── dossie.py                  Dossiê + EXAME de admissão (gabarito fora do agente)
-│   ├── equipe.py                  Rector (roteia) + Actuarius (MEMÓRIA.md e painel.html)
-│   ├── adaptadores.py             Ollama (local)
-│   └── __main__.py                CLI do Patronus: verificar · ancora · relatorio · assinar
-├── pacotes/conciliacao/           ── FOLHA (C2) ──
-│   ├── oraculo.py                 v0.1.0→v0.1.4 (grupos N:1, "revisar", parâmetros da entidade)
-│   ├── residuo.py                 decisão A: pacote do humano + oráculo da nota do LLM (T039/T040)
-│   ├── importadores.py            OFX, CSV brasileiro, PaddleOCR (opcional) + prova de saldo
-│   ├── dados.py                   geradores SINTÉTICOS com gabarito (gerar, gerar_v2)
-│   └── operarios.py               operários roteirizados honestos e adversários
-├── experimentos/                  T1 · T2 · T3 · A4 · A5 · T5 (+ T4/T4b com LLM real, no Windows)
-├── resultados/                    JSON + HASHES.txt + historico/ (resultados falsificados arquivados)
-├── tests/                         73 testes unittest
-├── docs/                          os 6 arquivos
+├── regimento.exemplo.json · dossie_exemplo/
+├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.13 + anotações + testemunha
+├── collegium/                     ── PRIMITIVO (C1), só biblioteca padrão ──
+│   ├── lex.py                     constituição executável (leis, plano, destinos, canários, orçamento,
+│   │                              tentativas, quatro olhos, digest do modelo, quórum Ed25519)
+│   ├── ledger.py · ledger_sqlite.py   ANAIS em JSONL ou SQLite (linha idêntica byte a byte)
+│   ├── merkle.py · recibo.py · fatura.py   RFC 9162; recibo e fatura conferíveis pelo cliente
+│   ├── ed25519.py                 RFC 8032 em Python puro (vetores oficiais)
+│   ├── portao.py · isolamento.py  servidor MCP mediador + executor com falha fechada
+│   ├── oficio.py                  kit de ofício + suíte de conformidade (mutação)
+│   ├── garantia.py                Learn-then-Test, Clopper-Pearson, kappa, vigia SPRT
+│   ├── aprendizado.py             proposta → backtest → REGIMENTO assinado
+│   ├── privacidade.py             anonimizador BR + cofre (eliminação LGPD)
+│   ├── conduta.py · fila.py       admissão por conduta; fila do humano e "carimbo"
+│   ├── preregistro.py · telemetria.py
+│   ├── autonomia.py · dossie.py · equipe.py · adaptadores.py
+│   └── __main__.py                CLI: python -m collegium (lista todos os comandos)
+├── pacotes/                       ── FOLHAS (C2) ──
+│   ├── registro.py                ofícios por nome
+│   ├── conciliacao/               oráculo, operários, resíduo, importadores (OFX/CSV/OCR/CNAB/Open Finance),
+│   │                              ferramentas do portão, iscas de conduta, minerador de janela, ofício
+│   └── tres_vias/                 pedido × recebimento × nota fiscal (2º ofício, mesmo núcleo)
+├── experimentos/                  T1–T9, A4–A6 (+ T4/T4b com LLM real)
+├── ferramentas/                   testes_ci.py · testemunha.py · release.py (pacote + SBOM)
+├── preregistros/                  REGISTRO.jsonl (criado no 1º pré-registro)
+├── resultados/                    JSON + HASHES.txt + historico/ (falsificações arquivadas)
+├── tests/                         suíte unittest
+├── docs/                          os 6 arquivos + CONFORMIDADE.md + ROTEIRO_ENTREVISTA.md
 └── forge/                         EVIDENCE · ABSTRACT · ADVERSARIAL_LOG · PRIMITIVE · ANALISE_VIDEO
 ```
 
@@ -120,3 +127,14 @@ collegium/
 | 012 | Prova de saldo na ENTRADA (saldo inicial + Σ = saldo final) | Confiar no importador | OCR errado com confiança alta só é pego pela conservação |
 | 013 | Grupos só com documento de todos os membros OU subconjunto único | Aceitar qualquer soma que feche | Soma que fecha por coincidência é o Goodhart do N:1 |
 | 014 | **Decisão A (10/10/2026, Renato):** onde há lei de conservação, o operário é **código** (`honesto_v5`, família "deterministico", sob o mesmo LEX); o LLM só anota o **resíduo** (classe `nota_residuo`, oráculo próprio) e nunca cria par | LLM como operário da conciliação | LLMs reais ≤4B: 0/79 aceitas; código: 20/20. Custo declarado: a "equipe de agentes" vira híbrida nesta frente; o valor do LLM no resíduo ainda não foi medido (dados sintéticos não têm sinal semântico) |
+| 015 | Assinatura humana Ed25519 em Python puro; quórum do REGIMENTO ANTERIOR autoriza a mudança | Biblioteca `cryptography` | Soberania (zero dependência); o núcleo deixa de conhecer segredo humano. Custo declarado: não é tempo constante (E-1) |
+| 016 | Recibo = linha bruta do ANAIS + prova Merkle RFC 9162 + cabeça assinada | Cadeia linear + âncora | O cliente confere um item com ~log2(n) hashes e detecta reescrita (prova de consistência) |
+| 017 | Pseudonimização por chave aleatória POR TITULAR; eliminação = destruir a chave | Cifrar o ANAIS | Eliminação LGPD sem reescrever registro imutável; sem cripto "caseira" |
+| 018 | Portão MCP como ÚNICA fonte de ferramentas do agente; credencial pelo ambiente | Biblioteca cooperativa | Mediação completa (A1); compatível com qualquer framework que fale MCP |
+| 019 | Plano de capacidades selado na abertura; destinos e argumentos só da lista do REGIMENTO | Detectar injeção no texto | Abordagem "fora do modelo" (família CaMeL/Progent): o dado não muda o fluxo de controle |
+| 020 | Ofício = contrato + suíte de conformidade com mutação | Cada nicho reescreve o que precisa | Agnosticismo verificável; 2º ofício provou o contrato |
+| 021 | Classe sem oráculo só tem aceite automático com garantia Learn-then-Test; vigia SPRT revoga | Júri por maioria | Júri correlacionado: a unanimidade pode ser pior que a maioria (T7) |
+| 022 | Aprendizado só como proposta + backtest + quórum | Ajuste automático em produção | Art. 12; envenenamento ataca a disponibilidade, não a integridade (L-1) |
+| 023 | Canários indistinguíveis testam produtor E verificador | Confiar no histórico | Única verdade de chão para classe sem oráculo |
+| 024 | ANAIS SQLite com a mesma linha do JSONL | Banco com esquema próprio | Mesma raiz Merkle e mesmos recibos; troca de armazenamento sem trocar prova |
+

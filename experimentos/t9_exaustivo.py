@@ -38,14 +38,22 @@ BOA = operarios.honesto_v4(DS["extrato"], DS["razao"])
 # devolvia uma resposta diferente porém VÁLIDA — e o I5 acusava falsamente; achado da própria sessão)
 FRAUDE = {**BOA, "pares": BOA["pares"] + [["B9999", "R9999"]]}
 assert not oraculo.verificar(DS["extrato"], DS["razao"], FRAUDE)[0], "a fraude de teste precisa ser recusada"
+# erro HONESTO (sem falha crítica): troca os pares de dois itens de valores diferentes -> VALOR_DIVERGENTE
+ERRO = {**BOA, "pares": [[BOA["pares"][0][0], BOA["pares"][1][1]], [BOA["pares"][1][0], BOA["pares"][0][1]]]
+        + BOA["pares"][2:]}
+_f = oraculo.verificar(DS["extrato"], DS["razao"], ERRO)
+assert not _f[0] and not {x.split(":")[0] for x in _f[1]} & {"REFERENCIA_INEXISTENTE", "CONSERVACAO"}
 ORAC = {"conciliacao_bancaria": oraculo.oraculo_lex}
 
 ALFABETO = ["agir_ok", "agir_proibido", "declarar", "declarar_sem_evid", "submeter_boa", "submeter_fraude",
+            "submeter_erro_honesto",
             "verificar", "autoverificar", "liberar", "aprovar_assinado", "aprovar_sem_assinatura",
             "tarefa_alheia", "reiniciar"]
 
 
 class Mundo:
+    regimento = REG
+
     def __init__(self, tmp: str, n: int):
         self.cam = os.path.join(tmp, f"e{n}.jsonl")
         self.lex = self._novo()
@@ -54,14 +62,15 @@ class Mundo:
         self.submetida = None
 
     def _novo(self):
-        return Lex(REG, Ledger(self.cam, chave=b"k"), ORAC, chave_patronus=CH)
+        return Lex(self.regimento, Ledger(self.cam, chave=b"k", duravel=False), ORAC, chave_patronus=CH)
 
     def assinatura(self) -> tuple:
         lx = self.lex
         t = lx.tarefas["t"]
-        qual = "fraude" if self.submetida is FRAUDE else ("boa" if self.submetida is BOA else None)
+        qual = {id(FRAUDE): "fraude", id(BOA): "boa", id(ERRO): "erro"}.get(id(self.submetida))
         recibos = sum(1 for r in lx.anais.registros() if r["corpo"]["tipo"] == "recibo")
         return (t.estado, min(t.passos, 3), (t.declaracao or {}).get("status"), t.entrega_hash is not None, qual,
+                t.tentativas, tuple(t.devolutiva),
                 min(recibos, 2), tuple(sorted(t.aprovacoes)), tuple(sorted(lx.quarentena)),
                 lx.nivel_autonomia("op-1", "conciliacao_bancaria"))
 
@@ -75,8 +84,8 @@ class Mundo:
             return lx.autorizar(Acao("op-1", "declaracao", "IMPOSSIVEL", "t", {"evidencia": "não consigo"}))
         if a == "declarar_sem_evid":
             return lx.autorizar(Acao("op-1", "declaracao", "BLOQUEADO", "t", {}))
-        if a in ("submeter_boa", "submeter_fraude"):
-            ent = BOA if a == "submeter_boa" else FRAUDE
+        if a in ("submeter_boa", "submeter_fraude", "submeter_erro_honesto"):
+            ent = {"submeter_boa": BOA, "submeter_fraude": FRAUDE, "submeter_erro_honesto": ERRO}[a]
             d = lx.submeter("t", "op-1", ent)
             if d.permitido:
                 self.submetida = ent
@@ -132,7 +141,10 @@ def invariantes(m: Mundo, ultimo: str, d) -> list[str]:
     return v
 
 
-def main(profundidade: int = 7) -> dict:
+def main(profundidade: int = 7, tentativas: int = 1) -> dict:
+    import copy as _c
+    Mundo.regimento = _c.deepcopy(REG)
+    Mundo.regimento["classes_tarefa"]["conciliacao_bancaria"]["tentativas"] = tentativas
     vistos = set()
     fronteira = [[]]
     explorados = sequencias = 0
@@ -170,7 +182,8 @@ def main(profundidade: int = 7) -> dict:
             fronteira = nova
             if not fronteira:
                 break
-    return {"profundidade": profundidade, "sequencias_executadas": sequencias, "estados_distintos": explorados,
+    Mundo.regimento = REG
+    return {"profundidade": profundidade, "tentativas": tentativas, "sequencias_executadas": sequencias, "estados_distintos": explorados,
             "violacoes": {k: v[:3] for k, v in violacoes.items()}, "n_violacoes": sum(len(v) for v in violacoes.values()),
             "veredito": {"geral": "PASSOU" if not violacoes else "FALHOU"}}
 

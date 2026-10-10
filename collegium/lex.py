@@ -199,6 +199,8 @@ class _Tarefa:
     consumo: dict = field(default_factory=dict)  # T056: tokens, segundos, custo_centavos
     esgotada: bool = False
     aprovacoes: set = field(default_factory=set)  # T057: humanos que já aprovaram (quatro olhos)
+    tentativas: int = 0                            # T053: reaberturas já usadas
+    devolutiva: list = field(default_factory=list)  # T053: só CÓDIGOS visíveis da última rejeição
 
 
 class Mandato:
@@ -282,6 +284,9 @@ class Lex:
                     t.estado = "ACEITA" if d["aceito"] else "REJEITADA"
             elif tipo == "canario":
                 self.canarios[d["tarefa"]] = d["gabarito"]
+            elif tipo == "reabertura" and d.get("tarefa") in self.tarefas:
+                t = self.tarefas[d["tarefa"]]
+                t.estado, t.entrega_hash, t.tentativas, t.devolutiva = "ABERTA", None, d["tentativa"], d["devolutiva"]
             elif tipo == "consumo" and d.get("tarefa") in self.tarefas:
                 t = self.tarefas[d["tarefa"]]
                 for k in ("tokens", "segundos", "custo_centavos"):
@@ -416,6 +421,8 @@ class Lex:
             raise PermissionError(f"{produtor} não passou no EXAME de admissão")
         if classe in self.oraculos and entrada is None:
             raise ValueError(f"classe {classe} tem oráculo: a entrada deve ser vinculada na abertura")
+        if not (isinstance(valor, (int, float)) and valor == valor and valor >= 0 and valor != float("inf")):
+            raise ValueError("valor da tarefa deve ser número finito >= 0 (negativo escaparia da alçada)")  # rodada 5
         eh = _h(entrada) if entrada is not None else None
         if plano is not None:  # T047: o plano só pode ESTREITAR o papel, nunca ampliar
             fora = sorted(set(plano) - set(self._papel(produtor).get("capacidades", [])))
@@ -454,6 +461,8 @@ class Lex:
         """Chamado pelo ORQUESTRADOR com o consumo MEDIDO (ex.: Ollama.ultimo_uso), nunca pelo agente.
         Estourou o orçamento da classe -> a tarefa só aceita declaração (Art. 3)."""
         t = self.tarefas[tarefa_id]
+        if min(int(tokens), float(segundos), int(custo_centavos)) < 0 or float(segundos) != float(segundos):
+            raise ValueError("consumo não pode ser negativo (devolveria orçamento)")  # rodada 5
         for k, v in (("tokens", int(tokens)), ("segundos", float(segundos)), ("custo_centavos", int(custo_centavos))):
             t.consumo[k] = t.consumo.get(k, 0) + v
         lim = self.r["classes_tarefa"][t.classe].get("orcamento") or {}
@@ -669,7 +678,21 @@ class Lex:
         if achadas:
             self._violacao(Acao(t.produtor, "ferramenta", "submeter", tarefa_id),
                            "FABRICACAO", f"falhas críticas na entrega: {achadas}")
+        cfg = self.r["classes_tarefa"][t.classe]
+        limite = int(cfg.get("tentativas", 1))
+        if not aceito and not achadas and t.tentativas + 1 < limite:
+            # T053: erro honesto pode tentar de novo; a devolutiva é só de CÓDIGOS e esconde as checagens ocultas
+            # (defesa contra Goodhart: o agente não aprende a enganar o que não vê). Fraude não reabre.
+            t.tentativas += 1
+            dev = sorted({str(f).split(":", 1)[0] for f in (falhas or [])} - set(cfg.get("falhas_ocultas", [])))
+            t.estado, t.entrega_hash, t.devolutiva = "ABERTA", None, dev
+            self.anais.anexar("reabertura", {"tarefa": tarefa_id, "tentativa": t.tentativas, "devolutiva": dev})
+            return self._decidir(acao, True, "REABERTA", f"tentativa {t.tentativas + 1} de {limite}; devolutiva {dev}")
         return self._decidir(acao, True, t.estado, "recibo emitido")
+
+    def devolutiva(self, tarefa_id: str) -> list[str]:
+        """T053: o que o orquestrador pode mostrar ao agente após uma rejeição (só códigos visíveis)."""
+        return list(self.tarefas[tarefa_id].devolutiva)
 
     def _amostra_l1(self, tarefa_id: str) -> bool:
         """Sorteio IMPREVISÍVEL para o agente (ataque R3): HMAC com a chave do ANAIS."""

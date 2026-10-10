@@ -62,10 +62,11 @@ def _selo(prev: str, corpo: dict, chave: bytes | None) -> str:
 class Ledger:
     """Livro-razão em JSON Lines. Cada linha: {"i", "prev", "selo", "corpo"}."""
 
-    def __init__(self, caminho: str, chave: bytes | None = None, relogio=time.time):
+    def __init__(self, caminho: str, chave: bytes | None = None, relogio=time.time, duravel: bool = True):
         self.caminho = caminho
         self.chave = chave
         self.relogio = relogio
+        self.duravel = duravel  # False só em experimentos descartáveis (fsync no Windows é lento); produção: True
         self._ultimo = GENESE
         self._n = 0
         if os.path.exists(caminho):
@@ -104,7 +105,8 @@ class Ledger:
             with open(self.caminho, "a", encoding="utf-8") as f:
                 f.write(json.dumps(reg, ensure_ascii=False, sort_keys=True) + "\n")
                 f.flush()
-                os.fsync(f.fileno())
+                if self.duravel:
+                    os.fsync(f.fileno())
             self._ultimo, self._n = reg["selo"], self._n + 1
         return reg
 

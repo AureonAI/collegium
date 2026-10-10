@@ -122,6 +122,12 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **W-1** | CI no Windows | Falhas só no Windows (3.11–3.13) com logs inacessíveis desta sessão. Hipótese: conexão SQLite aberta prendia o arquivo ao recusar ANAIS adulterado | Conexão fechada antes de recusar; o CI passa a emitir ANOTAÇÕES com o nome e o erro de cada teste (legíveis pela API) | `ferramentas/testes_ci.py` |
 | **F-1** | Fatura (T064) | Golpes de cobrança testados: total inflado, item duplicado mesmo REASSINADO pelo operador, linha adulterada, chave trocada, período | — | `tests/test_fatura.py` |
 | **F-L** | Fatura | **Limite:** o cliente não PROVA que um item não era canário (exige prova de ausência, como R-1) | Declarado | — |
+| **R5-1** | Anonimizador | **Ataque venceu:** CPF e CNPJ escritos com ESPAÇOS ("529 982 247 25") saíam literais; palavra com pontuação no meio ("joao.silva(arroba)mail.com", "SILVA/JOAO") saía literal | Detecção com separadores + validação de DV; palavra pontuada com parte fora do vocabulário vira pseudônimo | `test_rodada5_espacos_e_pontuacao` (falhou antes, passa depois) |
+| **R5-2** | Fatura | **Ataque venceu:** num ANAIS com vários clientes, o cliente A podia ser cobrado pela tarefa do cliente B sem como saber | A fatura leva a ABERTURA de cada tarefa com prova; o cliente confere que a entrada é dele | `test_cobrar_tarefa_de_outro_cliente` |
+| **R5-3** | Garantia, orçamento, valor | **Ataques venceram:** calibração com tamanhos diferentes era truncada em silêncio (garantia falsa); consumo negativo devolvia orçamento; valor negativo escapava da alçada e dos quatro olhos | Validação com falha fechada | `tests/test_rodada5.py` (3 falharam antes, passam depois) |
+| **R5-4** | Lista de tarefas | **Omissão minha:** o T053 (tentativas) estava na lista e eu não tinha implementado | Implementado com teste primeiro e coberto pela verificação exaustiva | `tests/test_tentativas.py` |
+| **R5-5** | Meu teste do T053 | Mesmo erro do T-1: supus que o fabricador falso sempre frauda; às vezes ele erra honestamente e a reabertura é correta | Teste confere a relação verdadeira | `test_t4_com_tentativas` |
+| **W-2** | CI no Windows | Testes passaram no Windows após o W-1 (conexão SQLite). A reprodução levava 8,5 min por causa de fsync em milhares de registros descartáveis | `Ledger(duravel=False)` só nos experimentos A6 e T9 | — |
 
 ## Ataque-Gödel (contra o próprio método)
 
