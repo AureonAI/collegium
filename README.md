@@ -9,11 +9,12 @@ Por baixo, um núcleo de governança para equipes de trabalho de IA (agentes, c�
 ## Experimentar em 2 minutos (Windows, Linux, macOS; Python 3.10+; nenhuma dependência)
 
 ```
-python -m pip install https://github.com/AureonAI/collegium/archive/refs/heads/main.zip
+python -m pip install https://github.com/AureonAI/collegium/archive/1fc315bc7c2cbf3a782baf57d04ae65c27057195.zip
 python -m collegium exemplo demo
 python -m collegium conciliar --extrato demo/extrato.ofx --razao demo/razao_contabil.csv --saida resultado
 ```
-(Não precisa de Git. Depois de instalado, `collegium ...` também funciona se a pasta de scripts do Python estiver no PATH.)
+(Versão 0.3.0 fixa, a do commit `1fc315b`, aprovada nas 15 máquinas do CI; para a mais nova, troque o final por
+`refs/heads/main.zip`. Não precisa de Git. Depois de instalado, `collegium ...` também funciona se a pasta de scripts do Python estiver no PATH.)
 Abra `resultado/relatorio.html`. O kit de demonstração é **sintético**, mas traz as armadilhas de arquivos reais:
 razão na convenção contábil (sinais invertidos), CP-1252, título antes da tabela, linha de total, documento escrito de
 quatro jeitos e texto hostil (fórmula de Excel, `<script>`).

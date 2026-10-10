@@ -130,7 +130,7 @@ Critério: o trabalho que se vende roda de ponta a ponta, por quem não é o aut
 
 > **MISSÃO 4: o produto no SEU Windows, como um cliente faria (T068), Renato**
 > 1. Abra o PowerShell (não precisa estar na pasta do projeto). Rode, um de cada vez:
->    `python -m pip install https://github.com/AureonAI/collegium/archive/refs/heads/main.zip`
+>    `python -m pip install https://github.com/AureonAI/collegium/archive/1fc315bc7c2cbf3a782baf57d04ae65c27057195.zip`   (versão 0.3.0 fixa: a mesma que você vai mostrar nas entrevistas)
 >    `cd ([Environment]::GetFolderPath("Desktop"))`   (vai para a sua Área de Trabalho, com ou sem OneDrive)
 >    `python -m collegium exemplo demo`
 >    `python -m collegium conciliar --extrato demo\extrato.ofx --razao demo\razao_contabil.csv --saida resultado`
