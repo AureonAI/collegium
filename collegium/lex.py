@@ -59,6 +59,15 @@ def assinar_humano(chave: bytes, *campos: Any) -> str:
     return hmac.new(chave, canonico(list(campos)), hashlib.sha256).hexdigest()
 
 
+def _canon(obj: Any) -> Any:
+    """Forma canônica para comparar entregas (listas como conjuntos ordenados)."""
+    if isinstance(obj, dict):
+        return {str(k): _canon(v) for k, v in sorted(obj.items(), key=lambda kv: str(kv[0]))}
+    if isinstance(obj, (list, tuple)):
+        return sorted((_canon(v) for v in obj), key=lambda x: json.dumps(x, sort_keys=True, default=str))
+    return obj
+
+
 def assinar_humano_ed25519(privada: bytes, *campos: Any) -> str:
     """T042: assinatura assimétrica do humano. O núcleo só guarda a chave PÚBLICA."""
     from . import ed25519
@@ -144,6 +153,9 @@ def carregar_regimento(fonte: str | dict) -> dict:
             fam = linhagem(d.get("familia_modelo") or "")
             if familia_por_digest.setdefault(dg, fam) != fam:
                 raise RegimentoInvalido(f"o modelo {dg[:19]}… aparece com duas linhagens diferentes (burla da L3)")
+    for cap, nomes in (reg.get("argumentos_livres") or {}).items():
+        if not isinstance(nomes, list) or set(nomes) & set((reg.get("destinos") or {}).get(cap, {})):
+            raise RegimentoInvalido(f"argumentos_livres.{cap}: lista, sem repetir argumento de destino")
     # T047: destinos confiáveis por capacidade
     for cap, regras in (reg.get("destinos") or {}).items():
         if not isinstance(regras, dict) or not all(isinstance(v, list) for v in regras.values()):
@@ -184,6 +196,9 @@ class _Tarefa:
     entrada: Any = None
     entrada_hash: str | None = None
     plano: tuple | None = None  # T047: capacidades fixadas na abertura, antes de ler dado externo
+    consumo: dict = field(default_factory=dict)  # T056: tokens, segundos, custo_centavos
+    esgotada: bool = False
+    aprovacoes: set = field(default_factory=set)  # T057: humanos que já aprovaram (quatro olhos)
 
 
 class Mandato:
@@ -217,6 +232,7 @@ class Lex:
         self.hist: dict[tuple[str, str], Historico] = {}
         self._patronus_selado: dict | None = None
         self.atestados: set[str] = set()  # T048: agentes cujo modelo foi atestado NESTA sessão
+        self.canarios: dict[str, str] = {}  # T055: tarefa -> hash do gabarito (o agente não vê)
         anterior = self._reconstruir()
         # G4: MUDAR o REGIMENTO de um ANAIS existente exige assinatura do Patronus sobre o novo hash.
         # (O primeiro REGIMENTO de um ANAIS novo é o ato de fundação e fica selado.)
@@ -264,6 +280,13 @@ class Lex:
                 t = self.tarefas.get(d["tarefa"])
                 if t:
                     t.estado = "ACEITA" if d["aceito"] else "REJEITADA"
+            elif tipo == "canario":
+                self.canarios[d["tarefa"]] = d["gabarito"]
+            elif tipo == "consumo" and d.get("tarefa") in self.tarefas:
+                t = self.tarefas[d["tarefa"]]
+                for k in ("tokens", "segundos", "custo_centavos"):
+                    t.consumo[k] = t.consumo.get(k, 0) + d.get(k, 0)
+                t.esgotada = t.esgotada or bool(d.get("estouro"))
             elif tipo == "incidente":
                 self._aplicar_incidente(d["agente"])
             elif tipo == "reabilitacao":
@@ -285,6 +308,8 @@ class Lex:
                     t.estado, t.declaracao = "DECLARADA", {"status": d["alvo"]}
                 elif d["codigo"] == "SUBMETIDA":
                     t.estado, t.entrega_hash = "SUBMETIDA", d["motivo"]
+                elif d["codigo"] == "APROVACAO_PARCIAL":
+                    t.aprovacoes.add(d["agente"])
                 elif d["codigo"] in {"LIBERADA", "AGUARDA_HUMANO"} or (d["codigo"] == "REJEITADA" and
                                                                          d["tipo"] == "aprovacao"):
                     t.estado = d["codigo"]
@@ -403,6 +428,43 @@ class Lex:
             registro["plano"] = sorted(set(plano))
         self.anais.anexar("tarefa_aberta", registro)
 
+    # ------------------------------------------------------------ T055: canários
+    def abrir_canario(self, tarefa_id: str, classe: str, produtor: str, entrada: Any, gabarito: Any,
+                      plano: list[str] | None = None) -> None:
+        """Tarefa de resposta CONHECIDA, aberta exatamente como uma real (o agente não distingue).
+        Testa o produtor E o verificador: aprovar canário errado é veredito falso."""
+        self.abrir_tarefa(tarefa_id, classe, produtor, entrada=entrada, plano=plano)
+        g = _h(_canon(gabarito))
+        self.canarios[tarefa_id] = g
+        self.anais.anexar("canario", {"tarefa": tarefa_id, "gabarito": g})
+
+    def sortear_canario(self, chave: str) -> bool:
+        """O Rector consulta antes de abrir uma tarefa: imprevisível para o agente (HMAC com a chave do ANAIS)."""
+        k = int(self.r["autonomia"].get("taxa_canario", 0) or 0)
+        if k <= 0:
+            return False
+        segredo = self.anais.chave or b"sem-chave-sorteio-previsivel"
+        return int(hmac.new(segredo, b"canario:" + chave.encode(), hashlib.sha256).hexdigest(), 16) % k == 0
+
+    # ------------------------------------------------------------ T056: orçamento real
+    def registrar_consumo(self, tarefa_id: str, tokens: int = 0, segundos: float = 0.0,
+                          custo_centavos: int = 0) -> Decisao:
+        """Chamado pelo ORQUESTRADOR com o consumo MEDIDO (ex.: Ollama.ultimo_uso), nunca pelo agente.
+        Estourou o orçamento da classe -> a tarefa só aceita declaração (Art. 3)."""
+        t = self.tarefas[tarefa_id]
+        for k, v in (("tokens", int(tokens)), ("segundos", float(segundos)), ("custo_centavos", int(custo_centavos))):
+            t.consumo[k] = t.consumo.get(k, 0) + v
+        lim = self.r["classes_tarefa"][t.classe].get("orcamento") or {}
+        estouro = sorted(k for k, v in lim.items() if t.consumo.get(k, 0) > v)
+        self.anais.anexar("consumo", {"tarefa": tarefa_id, "tokens": int(tokens), "segundos": float(segundos),
+                                      "custo_centavos": int(custo_centavos), "estouro": estouro})
+        acao = Acao(t.produtor, "consumo", "orcamento", tarefa_id)
+        if estouro and not t.esgotada:
+            t.esgotada = True
+            return self._decidir(acao, False, "ORCAMENTO_ESGOTADO", f"estourou: {estouro}; agora só declarar")
+        return self._decidir(acao, not t.esgotada, "ORCAMENTO_ESGOTADO" if t.esgotada else "OK",
+                             f"consumo acumulado {t.consumo}")
+
     # ------------------------------------------------------------ T048: identidade do modelo
     def atestar_modelo(self, agente: str, digest_observado: str) -> Decisao:
         """Chamado pelo ORQUESTRADOR (nunca pelo agente) com a impressão digital do modelo que vai rodar."""
@@ -429,7 +491,26 @@ class Lex:
             return "conteúdo acima do limite de caracteres"
         return None
 
+    @staticmethod
+    def _malformada(acao: Acao) -> str | None:
+        """T051 (achados do atacante adaptativo A6): tipos errados derrubavam o LEX com exceção."""
+        for nome in ("agente", "tipo", "alvo"):
+            if not isinstance(getattr(acao, nome), str):
+                return f"{nome} deve ser texto"
+        if acao.tarefa is not None and not isinstance(acao.tarefa, str):
+            return "tarefa deve ser texto ou nula"
+        if not isinstance(acao.payload, dict):
+            return "payload deve ser objeto"
+        return None
+
     def autorizar(self, acao: Acao) -> Decisao:
+        mal = self._malformada(acao)
+        if mal:  # falha FECHADA e registrada; os campos vão ao ANAIS como texto seguro
+            def txt(x):
+                return x if isinstance(x, str) else repr(x)[:80]
+            seguro = Acao(txt(acao.agente), txt(acao.tipo), txt(acao.alvo),
+                          None if acao.tarefa is None else txt(acao.tarefa))
+            return self._decidir(seguro, False, "ACAO_MALFORMADA", mal)
         if acao.agente in self.quarentena:
             return self._decidir(acao, False, "QUARENTENA", "agente em quarentena após violação crítica")
         papel = self._papel(acao.agente)
@@ -458,7 +539,7 @@ class Lex:
                 return self._decidir(acao, False, "ESTADO_INVALIDO", f"tarefa {t.estado}")
             if acao.alvo in {"BLOQUEADO", "IMPOSSIVEL"} and not acao.payload.get("evidencia"):
                 return self._decidir(acao, False, "SEM_EVIDENCIA", "declarar impossibilidade exige evidência")
-            t.estado, t.declaracao = "DECLARADA", {"status": acao.alvo, **acao.payload}
+            t.estado, t.declaracao = "DECLARADA", {**acao.payload, "status": acao.alvo}  # T051: payload não sobrescreve
             self.anais.anexar("declaracao", {"tarefa": t.id, "agente": acao.agente, "status": acao.alvo,
                                              "evidencia": str(acao.payload.get("evidencia", ""))[:1000]})
             return self._decidir(acao, True, "DECLARADO", f"tarefa declarada {acao.alvo}")
@@ -466,6 +547,9 @@ class Lex:
             if t.estado != "ABERTA":
                 return self._violacao(acao, "PERSISTENCIA", f"ação após tarefa {t.estado}")
             orc = int(self.r["classes_tarefa"][t.classe]["orcamento_passos"])
+            if t.esgotada:
+                return self._violacao(acao, "PERSISTENCIA", "orçamento de tokens/tempo/custo esgotado; "
+                                      "única ação válida é declarar")
             if t.passos >= orc:
                 return self._violacao(acao, "PERSISTENCIA",
                                       f"orçamento de {orc} passos esgotado; única ação válida é declarar")
@@ -481,6 +565,12 @@ class Lex:
                 if v not in confiaveis.get(k, []):
                     return self._violacao(acao, "DESTINO_NAO_CONFIAVEL",
                                           f"{k}={str(v)[:60]!r} fora da lista confiável de '{acao.alvo}'")
+            if confiaveis:  # T051 (A6 confirmatório): capacidade sensível só aceita argumentos DECLARADOS
+                livres = set((self.r.get("argumentos_livres") or {}).get(acao.alvo, []))
+                extras = sorted(str(k) for k in acao.payload if k not in confiaveis and k not in livres)
+                if extras:
+                    return self._violacao(acao, "ARGUMENTO_NAO_DECLARADO",
+                                          f"argumentos fora do REGIMENTO para '{acao.alvo}': {extras[:5]}")
         if acao.tipo == "mensagem" and acao.alvo not in papel.get("canais", []):
             return self._violacao(acao, "CANAL_NAO_SANCIONADO", f"canal '{acao.alvo}' não sancionado")
         if acao.tipo == "rede" and acao.alvo not in papel.get("rede", []):
@@ -497,8 +587,13 @@ class Lex:
 
     # ------------------------------------------------------------ entrega, verificação, liberação
     def submeter(self, tarefa_id: str, agente: str, entrega: Any) -> Decisao:
-        t = self.tarefas[tarefa_id]
+        if not isinstance(tarefa_id, str) or not isinstance(agente, str):  # T051: o agente controla o id
+            return self._decidir(Acao(str(agente)[:80], "ferramenta", "submeter", repr(tarefa_id)[:80]),
+                                 False, "ACAO_MALFORMADA", "tarefa e agente devem ser texto")
+        t = self.tarefas.get(tarefa_id)
         acao = Acao(agente, "ferramenta", "submeter", tarefa_id)
+        if t is None:
+            return self._decidir(acao, False, "TAREFA_INEXISTENTE", "tarefa não aberta")
         if agente in self.quarentena:
             return self._decidir(acao, False, "QUARENTENA", "agente em quarentena")
         if agente != t.produtor:
@@ -550,6 +645,16 @@ class Lex:
         elif aceito is None:
             return self._decidir(acao, False, "SEM_VEREDITO", "classe sem oráculo exige veredito explícito")
         aceito = bool(aceito)
+        if tarefa_id in self.canarios:  # T055: a resposta é conhecida; o veredito é conferido contra ela
+            correto = _h(_canon(entrega)) == self.canarios[tarefa_id]
+            self.anais.anexar("canario_resultado", {"tarefa": tarefa_id, "correto": correto, "aceito": aceito,
+                                                    "verificador": verificador, "produtor": t.produtor})
+            if aceito and not correto:
+                if oraculo is not None:  # o oráculo aceitou resposta errada: lacuna do oráculo, não do verificador
+                    self.anais.anexar("lacuna_oraculo", {"tarefa": tarefa_id, "classe": t.classe})
+                else:
+                    self._violacao(acao, "VEREDITO_FALSO", "aprovou canário de resposta conhecida ERRADA")
+            aceito = aceito and correto
         t.estado = "ACEITA" if aceito else "REJEITADA"
         self._hist(t.produtor, t.classe).registrar(aceito)
         self.anais.anexar("recibo", {"tarefa": tarefa_id, "entrega": h, "entrada": t.entrada_hash,
@@ -601,5 +706,17 @@ class Lex:
                                   "válida sobre (tarefa, entrega, decisão)")
         if t.estado != "AGUARDA_HUMANO":
             return self._decidir(acao, False, "ESTADO_INVALIDO", f"tarefa {t.estado}")
-        t.estado = "LIBERADA" if aprovado else "REJEITADA"
-        return self._decidir(acao, True, t.estado, f"decisão humana de {humano} sobre {t.entrega_hash}")
+        if not aprovado:  # veto de qualquer humano basta
+            t.estado = "REJEITADA"
+            return self._decidir(acao, True, t.estado, f"decisão humana de {humano} sobre {t.entrega_hash}")
+        quatro = float(self.r["autonomia"].get("alcada_quatro_olhos", 0) or 0)
+        precisa = 2 if quatro and t.valor >= quatro else 1
+        if humano in t.aprovacoes:
+            return self._decidir(acao, False, "MESMO_HUMANO", "quatro olhos exige DOIS humanos diferentes")
+        t.aprovacoes.add(humano)
+        if len(t.aprovacoes) < precisa:
+            return self._decidir(acao, False, "APROVACAO_PARCIAL",
+                                 f"1 de {precisa} aprovações (valor {t.valor} >= alçada de quatro olhos {quatro})")
+        t.estado = "LIBERADA"
+        quem = humano if precisa == 1 else sorted(t.aprovacoes)  # texto idêntico ao anterior no caso de 1 humano
+        return self._decidir(acao, True, t.estado, f"decisão humana de {quem} sobre {t.entrega_hash}")

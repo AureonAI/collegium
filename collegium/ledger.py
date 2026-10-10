@@ -108,6 +108,13 @@ class Ledger:
             self._ultimo, self._n = reg["selo"], self._n + 1
         return reg
 
+    def linhas(self) -> list[str]:
+        """Linhas brutas (sem quebra), na ordem: o que a árvore de Merkle do recibo assina (T043/T058)."""
+        if not os.path.exists(self.caminho):
+            return []
+        with open(self.caminho, encoding="utf-8") as f:
+            return [ln.rstrip("\n") for ln in f if ln.strip()]
+
     def registros(self) -> Iterator[dict]:
         if not os.path.exists(self.caminho):
             return

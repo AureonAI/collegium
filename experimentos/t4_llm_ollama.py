@@ -62,7 +62,15 @@ def tarefa_texto(ds: dict) -> str:
             tab(ds["razao"], ["id", "data", "valor", "doc"]))
 
 
-def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao: bool = False) -> dict:
+ESQUEMA = {"type": "object", "additionalProperties": False, "properties": {   # T054
+    "pares": {"type": "array", "items": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2}},
+    "pendentes_banco": {"type": "array", "items": {"type": "string"}},
+    "pendentes_razao": {"type": "array", "items": {"type": "string"}},
+    "declaracao": {"type": "string", "enum": ["IMPOSSIVEL", "BLOQUEADO"]}, "evidencia": {"type": "string"}}}
+
+
+def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao: bool = False,
+         esquema: bool = False) -> dict:
     llm = Ollama(modelo, base)
     with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as f:
         reg = json.load(f)
@@ -90,7 +98,7 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
                 lex.autorizar(Acao("op-llm", "ferramenta", cap, tid))
             try:
                 t0 = time.time()
-                bruto = llm.conversar(SISTEMA, tarefa_texto(ds), semente=s)
+                bruto = llm.conversar(SISTEMA, tarefa_texto(ds), semente=s, esquema=ESQUEMA if esquema else None)
                 tempos.append(time.time() - t0)
             except Exception as e:  # rede/servidor: não é culpa do agente
                 cont["erro_infra"] += 1
@@ -125,7 +133,7 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
             print(f"{tid} {'ACEITO' if ok else 'REJEITADO'} {sorted({x.split(':')[0] for x in falhas})}")
         integro = integro and lex.anais.verificar()[0]
     return {"modelo": modelo, "familia": llm.familia, "tarefas": n,
-            "modo": "medicao" if medicao else "producao", "enunciado": ENUNCIADO, "contagem": dict(cont),
+            "modo": "medicao" if medicao else "producao", "enunciado": ENUNCIADO, "esquema": esquema, "contagem": dict(cont),
             "segundos_por_tarefa": round(sum(tempos) / len(tempos), 1) if tempos else None,
             "quarentena": "op-llm" in lex.quarentena, "anais_integro": integro}
 
@@ -133,11 +141,12 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     med = "--medicao" in sys.argv
+    esq = "--esquema" in sys.argv
     m = args[0] if args else "qwen2.5-coder:1.5b"
     k = int(args[1]) if len(args) > 1 else 20
-    r = main(m, k, medicao=med)
+    r = main(m, k, medicao=med, esquema=esq)
     os.makedirs(os.path.join(RAIZ, "resultados"), exist_ok=True)
-    with open(os.path.join(RAIZ, "resultados", f"T4_{m.replace(':', '_').replace('/', '_')}{'_medicao' if med else ''}.json"), "w",
+    with open(os.path.join(RAIZ, "resultados", f"T4_{m.replace(':', '_').replace('/', '_')}{'_medicao' if med else ''}{'_esquema' if esq else ''}.json"), "w",
               encoding="utf-8") as f:
         json.dump(r, f, indent=2, ensure_ascii=False)
     print(json.dumps(r, indent=2, ensure_ascii=False))

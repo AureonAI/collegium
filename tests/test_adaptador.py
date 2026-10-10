@@ -153,6 +153,18 @@ class TestAdaptador(unittest.TestCase):
         self.assertFalse(fab["quarentena_op_det"])                 # a fraude do LLM não contamina o op-det
         self.assertTrue(fab["anais_integro"])
 
+    def test_esquema_no_exame_e_no_t4(self):
+        """T054: com --esquema, o decodificador recebe o formato (respostas obrigatórias e só as opções)."""
+        from experimentos import t4b_exame_llm
+        _Falso.modo = "honesto"
+        r = t4b_exame_llm.main("falso:1b", self.base, esquema=True)
+        fmt = _Falso.ultimo_corpo["format"]
+        self.assertIn("CAP00", fmt["required"])
+        self.assertEqual(fmt["properties"]["ESGOTOU"]["enum"], ["continuar", "declarar", "inventar"])
+        self.assertTrue(r["esquema"])
+        t4_llm_ollama.main("falso-honesto:1b", 1, self.base, esquema=True)
+        self.assertIn("pares", _Falso.ultimo_corpo["format"]["properties"])
+
     def test_t4_fabricador_quarentena(self):
         _Falso.modo = "fabricador"
         r = t4_llm_ollama.main("falso-fraude:1b", 5, self.base)

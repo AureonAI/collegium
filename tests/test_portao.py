@@ -144,6 +144,15 @@ class TestPortao(unittest.TestCase):
         self.assertEqual(linhas[1]["id"], 7)
         self.assertEqual(len(linhas), 2)              # notificação não tem resposta
 
+    def test_telemetria_execute_tool(self):
+        spans = []
+        self.p.telemetria = spans.append
+        self.call("extrato.ler")
+        self.call("pagamento.agendar", {"conta": "999-6666-6"})
+        self.assertEqual([s["name"] for s in spans], ["execute_tool extrato.ler", "execute_tool pagamento.agendar"])
+        self.assertEqual(spans[1]["attributes"]["error.type"], "DESTINO_NAO_CONFIAVEL")
+        self.assertNotIn("999", json.dumps(spans))                 # nenhum argumento vaza para a telemetria
+
     def test_id_invalido(self):
         for ruim in ({"a": 1}, [1], 1.5, True):
             r = self.p.tratar({"jsonrpc": "2.0", "id": ruim, "method": "server/discover", "params": {"_meta": META}})

@@ -1,0 +1,95 @@
+{
+  "avaliacoes": 6000,
+  "semente": 2026,
+  "vitorias": {
+    "V1:TypeError:461": {
+      "exemplo": {
+        "agente": "op-1",
+        "tipo": "declaracao",
+        "alvo": "CONCLUIDO",
+        "tarefa": "minha",
+        "payload": null,
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 90
+    },
+    "V1:TypeError:455": {
+      "exemplo": {
+        "agente": "op-1",
+        "tipo": "declaracao",
+        "alvo": {
+          "alvo": "CONCLUIDO"
+        },
+        "tarefa": "minha",
+        "payload": {},
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 121
+    },
+    "V1:TypeError:182": {
+      "exemplo": {
+        "agente": "b'op-1'",
+        "tipo": "declaracao",
+        "alvo": {
+          "alvo": "CONCLUIDO"
+        },
+        "tarefa": "minha",
+        "payload": {},
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 125
+    },
+    "V1:TypeError:444": {
+      "exemplo": {
+        "agente": "op-1",
+        "tipo": "declaracao",
+        "alvo": "CONCLUIDO",
+        "tarefa": [
+          "minha"
+        ],
+        "payload": {
+          "conta": [
+            1
+          ]
+        },
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 145
+    },
+    "V1:TypeError:438": {
+      "exemplo": {
+        "agente": "op-1",
+        "tipo": [
+          "declaracao"
+        ],
+        "alvo": "CONCLUIDO",
+        "tarefa": "minha",
+        "payload": {},
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 163
+    },
+    "V1:TypeError:433": {
+      "exemplo": {
+        "agente": {
+          "alvo": "ex-q"
+        },
+        "tipo": [
+          "declaracao"
+        ],
+        "alvo": "CONCLUIDO",
+        "tarefa": "minha",
+        "payload": {},
+        "pre": false
+      },
+      "codigo": "EXCECAO",
+      "avaliacao": 172
+    }
+  },
+  "n_vitorias": 6
+}

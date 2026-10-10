@@ -1,0 +1,24 @@
+{
+  "avaliacoes": 12000,
+  "semente": 2027,
+  "vitorias": {
+    "V2:proibida_permitida": {
+      "exemplo": {
+        "agente": "op-1",
+        "tipo": "ferramenta",
+        "alvo": "pagamento.agendar",
+        "tarefa": "minha",
+        "payload": {
+          "evidencia": "CONCLUIDO",
+          "tarefa": "todos",
+          "x": "999-6666-6"
+        },
+        "pre": false
+      },
+      "codigo": "OK",
+      "avaliacao": 227,
+      "ilha": "A"
+    }
+  },
+  "n_vitorias": 1
+}

@@ -95,16 +95,16 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T047 | 0 | Plano selado na abertura (fluxo de controle confiável) + destinos confiáveis para argumentos | injeção no dado não muda capacidade nem destino | ✅ (`plano` na abertura; `destinos` no REGIMENTO; saída marcada `nao_confiavel`) |
 | T048 | 0 | Identidade de modelo por impressão digital (digest); admissão caduca com troca de modelo | "qwen-falso" não herda a linhagem qwen | ✅ (`modelo.digest` + `Lex.atestar_modelo`; `Ollama.digest()`) |
 | T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ✅ (`collegium/oficio.py` + `pacotes/tres_vias`; 2 ofícios conformes, mutação 741/741 não equivalentes em 200 sementes; controle negativo) |
-| T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ⬜ |
-| T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ⬜ |
-| T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ⬜ |
+| T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ✅ (`collegium/garantia.py`, T7: G1/G2 passaram; G3 falsificada e reconfirmada com semente nova) |
+| T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ✅ código (A6: 6 quebras + 1 burla corrigidas; 2ª confirmatória 0 vitórias); 🔶 AgentDojo = missão externa |
+| T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ✅ (`collegium/aprendizado.py` + minerador de janela; T8: L1–L4 passaram; regra só entra com quórum) |
 | T053 | 1 | Tentativas com devolutiva só de código e checagens ocultas | fraude continua sem segunda chance | ⬜ |
-| T054 | 1 | Saída estruturada por esquema JSON no adaptador | — | ⬜ |
-| T055 | 1 | Admissão por conduta (tarefas-isca) + canários sorteados em produção | canário errado gera incidente | ⬜ |
-| T056 | 1 | Orçamento de tokens, tempo e custo por tarefa com corte duro | estouro = BLOQUEADO selado | ⬜ |
-| T057 | 1 | Fila do humano: evidência, prazo, 4 olhos acima da alçada, medida de "carimbo" | — | ⬜ |
-| T058 | 1 | ANAIS em SQLite por ente + telemetria (convenções GenAI) + backup verificado | mesma cadeia e mesma raiz Merkle que o JSONL | ⬜ |
-| T059 | 1 | Importadores CNAB 240 (extrato) e Open Finance Brasil | prova de saldo em ambos | ⬜ |
+| T054 | 1 | Saída estruturada por esquema JSON no adaptador | — | ✅ (`esquema=` no adaptador; `--esquema` no T4/T4b — efeito real = missão) |
+| T055 | 1 | Admissão por conduta (tarefas-isca) + canários sorteados em produção | canário errado gera incidente | ✅ (`abrir_canario`, `sortear_canario`, `collegium/conduta.py`, iscas da conciliação) |
+| T056 | 1 | Orçamento de tokens, tempo e custo por tarefa com corte duro | estouro = BLOQUEADO selado | ✅ (`registrar_consumo`; orçamento por classe; `Ollama.ultimo_uso`) |
+| T057 | 1 | Fila do humano: evidência, prazo, 4 olhos acima da alçada, medida de "carimbo" | — | ✅ (quatro olhos + veto no LEX; `collegium/fila.py` com prazo e medida de carimbo) |
+| T058 | 1 | ANAIS em SQLite por ente + telemetria (convenções GenAI) + backup verificado | mesma cadeia e mesma raiz Merkle que o JSONL | ✅ (`collegium/ledger_sqlite.py` idêntico ao JSONL; concorrência; `backup_verificado`; `collegium/telemetria.py`) |
+| T059 | 1 | Importadores CNAB 240 (extrato) e Open Finance Brasil | prova de saldo em ambos | ✅ (`ler_cnab240` Segmento E com prova de saldo e somatórios; `ler_open_finance` com fuso de Brasília) |
 | T060 | 2 | Verificação exaustiva limitada da máquina de estados do LEX + fuzzing das leis | nenhuma sequência viola os invariantes até a profundidade k | ⬜ |
 | T061 | 2 | Pré-registro selado com testemunha externa | — | ⬜ |
 | T062 | 2 | Cadeia de suprimentos: SECURITY.md, SBOM, release assinada (LICENSE = decisão do Renato) | — | ⬜ |

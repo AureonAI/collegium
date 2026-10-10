@@ -27,10 +27,13 @@ FORMATO_CABECA = "collegium-cabeca/1"
 FORMATO_RECIBO = "collegium-recibo/1"
 
 
-def _linhas(caminho: str) -> list[str]:
-    if not os.path.exists(caminho):
+def _linhas(fonte) -> list[str]:
+    """fonte = caminho de um ANAIS JSONL ou um objeto ledger com .linhas() (JSONL ou SQLite, T058)."""
+    if hasattr(fonte, "linhas"):
+        return fonte.linhas()
+    if not os.path.exists(fonte):
         return []
-    with open(caminho, encoding="utf-8") as f:
+    with open(fonte, encoding="utf-8") as f:
         return [ln.rstrip("\n") for ln in f if ln.strip()]
 
 

@@ -6,3 +6,5 @@ A4_goodhart 6314e2afba0f8a82
 A5_mundo_sujo b8ed2164b0b84510
 T5_equipe 6cca208b372d7a23
 T6_hibrido 34004db664f8e03a
+T7_garantia c290c54eaa3fb30a
+A6_adaptativo 3a753ad8588d8c29

@@ -1,0 +1,38 @@
+{
+  "independente": {
+    "risco_verdadeiro_por_politica": {
+      "1": 0.0883,
+      "2": 0.0151,
+      "3": 0.0012
+    },
+    "politica_escolhida": {
+      "2": 300
+    },
+    "violacoes": 0,
+    "taxa_violacao": 0.0,
+    "maioria_sem_calibracao_risco": 0.0151
+  },
+  "correlacionado": {
+    "risco_verdadeiro_por_politica": {
+      "1": 0.1182,
+      "2": 0.0713,
+      "3": 0.0923
+    },
+    "politica_escolhida": {
+      "None": 300
+    },
+    "violacoes": 0,
+    "taxa_violacao": 0.0,
+    "maioria_sem_calibracao_risco": 0.0713
+  },
+  "vigia": {
+    "falso_alarme": 0.04,
+    "deteccao": 0.94
+  },
+  "veredito": {
+    "G1": "PASSOU",
+    "G2": "PASSOU",
+    "G3": "FALHOU",
+    "geral": "FALHOU"
+  }
+}

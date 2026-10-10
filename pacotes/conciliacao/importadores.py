@@ -17,7 +17,7 @@ from __future__ import annotations
 import csv
 import io
 import re
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 
 # ------------------------------------------------------------------ números e datas BR
@@ -182,3 +182,126 @@ def ler_imagem_paddle(caminho: str, ano: int, limiar: float = 0.95, motor=None) 
         for txt, sc, bx in zip(dados["rec_texts"], dados["rec_scores"], dados["rec_boxes"]):
             tokens.append((str(txt), float(sc), [float(v) for v in bx]))
     return extrato_de_ocr(tokens, ano, limiar)
+
+
+# ----------------------------------------------------------------- CNAB 240 (T059)
+class CNABInvalido(ValueError):
+    pass
+
+
+def _dmy(s: str) -> str:
+    s = s.strip()
+    if not re.fullmatch(r"\d{8}", s) or s == "00000000":
+        raise CNABInvalido(f"data inválida: {s!r}")
+    iso = f"{s[4:8]}-{s[2:4]}-{s[0:2]}"
+    try:
+        date.fromisoformat(iso)  # 31/02 não existe: antes passava calado
+    except ValueError:
+        raise CNABInvalido(f"data inexistente: {s!r}")
+    return iso
+
+
+def _cents(s: str) -> int:
+    s = s.strip() or "0"
+    if not s.isdigit():
+        raise CNABInvalido(f"valor inválido: {s!r}")
+    return int(s)  # 9(16)V9(02): os dois últimos dígitos são centavos
+
+
+def ler_cnab240(conteudo: str | bytes, prefixo: str = "B") -> dict:
+    """Extrato CNAB 240 (FEBRABAN, Segmento E; posições conferidas no manual da CAIXA, layouts 030/040/089:
+    data 143–150, valor 151–168, D/C 169, categoria 170–172, código 173–176, histórico 177–201,
+    documento 202–208, complemento 209–240; saldo inicial no header de lote (registro 1, 143–169) e
+    saldo final + somatórios no trailer de lote (registro 5, 143–169, 177–194, 195–212)).
+    FALHA FECHADA: linha com mais de 240 posições, data/valor ilegível, ou mais de um lote."""
+    if isinstance(conteudo, bytes):
+        conteudo = conteudo.decode("latin-1")
+    lotes: list[dict] = []
+    atual: dict | None = None
+    for n, bruta in enumerate(conteudo.splitlines(), 1):
+        ln = bruta.rstrip("\r\n")
+        if not ln.strip():
+            continue
+        if len(ln) > 240:
+            raise CNABInvalido(f"linha {n} com {len(ln)} posições (máximo 240)")
+        ln = ln.ljust(240)  # alguns sistemas cortam os brancos finais
+        tipo = ln[7]
+        if tipo == "1":
+            sinal = -1 if ln[168] == "D" else 1
+            atual = {"extrato": [], "saldo_inicial": sinal * _cents(ln[150:168]), "data_saldo_inicial": _dmy(ln[142:150]),
+                     "saldo_final": None, "soma_debitos_trailer": None, "soma_creditos_trailer": None}
+            lotes.append(atual)
+        elif tipo == "3" and ln[13] == "E":
+            if atual is None:
+                raise CNABInvalido(f"linha {n}: detalhe antes do header de lote")
+            dc = ln[168]
+            if dc not in "DC":
+                raise CNABInvalido(f"linha {n}: tipo de lançamento {dc!r} (esperado D ou C)")
+            v = _cents(ln[150:168])
+            desc = " ".join(x for x in (ln[176:201].strip(), ln[201:208].strip(), ln[208:240].strip()) if x)
+            atual["extrato"].append({"id": f"{prefixo}{len(atual['extrato']) + 1:05d}", "data": _dmy(ln[142:150]),
+                                     "valor": -v if dc == "D" else v, "desc": desc,
+                                     "categoria": ln[169:172].strip(), "codigo_historico": ln[172:176].strip()})
+        elif tipo == "5":
+            if atual is None:
+                raise CNABInvalido(f"linha {n}: trailer de lote sem header")
+            sinal = -1 if ln[168] == "D" else 1
+            atual["saldo_final"] = sinal * _cents(ln[150:168])
+            atual["soma_debitos_trailer"] = _cents(ln[176:194])
+            atual["soma_creditos_trailer"] = _cents(ln[194:212])
+    if len(lotes) != 1:
+        raise CNABInvalido(f"esperado 1 lote (uma conta); encontrados {len(lotes)} — separe por conta")
+    lote = lotes[0]
+    deb = sum(-x["valor"] for x in lote["extrato"] if x["valor"] < 0)
+    cred = sum(x["valor"] for x in lote["extrato"] if x["valor"] > 0)
+    lote["conferencia"] = {
+        "saldo": checar_saldo(lote["extrato"], lote["saldo_inicial"], lote["saldo_final"])[1],
+        "somatorios_trailer": "CONFERE" if (lote["soma_debitos_trailer"], lote["soma_creditos_trailer"]) == (deb, cred)
+        else f"DIVERGE: trailer D={lote['soma_debitos_trailer']} C={lote['soma_creditos_trailer']}, lido D={deb} C={cred}"}
+    return lote
+
+
+# ----------------------------------------------------------------- Open Finance Brasil (T059)
+_BRT = timezone(timedelta(hours=-3))  # horário de Brasília; sem horário de verão desde 2019
+
+
+def ler_open_finance(resposta: dict | list, prefixo: str = "B") -> dict:
+    """Transações de conta (Open Finance Brasil, API de contas v2: transactionId, creditDebitType,
+    transactionAmount{amount 'NNN.NN[NN]', currency}, transactionDateTime em UTC).
+    - Data convertida para o horário de Brasília (um PIX às 01h UTC do dia 30 é do dia 29).
+    - Só TRANSACAO_EFETIVADA entra; lançamento futuro ou em processamento fica de fora (contado).
+    - Valor com frações de centavo diferentes de zero, ou moeda diferente de BRL -> item "revisar"
+      (falha fechada: o oráculo proíbe casar item "revisar")."""
+    itens = resposta.get("data", []) if isinstance(resposta, dict) else resposta
+    extrato, fora = [], 0
+    for t in itens:
+        if t.get("completedAuthorisedPaymentType") != "TRANSACAO_EFETIVADA":
+            fora += 1
+            continue
+        revisar = False
+        try:
+            centav = Decimal(str(t["transactionAmount"]["amount"])) * 100
+        except (InvalidOperation, KeyError, TypeError):
+            raise ValueError(f"transação {t.get('transactionId')!r} sem valor legível")
+        if centav != centav.to_integral_value() or t["transactionAmount"].get("currency") != "BRL":
+            revisar = True
+        v = int(centav.to_integral_value())
+        if t.get("creditDebitType") == "DEBITO":
+            v = -v
+        elif t.get("creditDebitType") != "CREDITO":
+            revisar = True
+        dt = datetime.fromisoformat(str(t["transactionDateTime"]).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            revisar = True  # sem fuso: não dá para saber o dia em Brasília com certeza
+            data = dt.date().isoformat()
+        else:
+            data = dt.astimezone(_BRT).date().isoformat()
+        tid = re.sub(r"[^A-Za-z0-9\-]", "", str(t.get("transactionId", "")))[:40]
+        item = {"id": f"{prefixo}{tid}", "data": data, "valor": v,
+                "desc": f"{t.get('type', '')} {t.get('transactionName', '')}".strip()}
+        if t.get("partieCnpjCpf"):
+            item["contraparte"] = str(t["partieCnpjCpf"])
+        if revisar:
+            item["revisar"] = True
+        extrato.append(item)
+    return {"extrato": extrato, "fora_por_nao_efetivada": fora, "saldo_inicial": None, "saldo_final": None}

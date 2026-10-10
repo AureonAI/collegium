@@ -106,6 +106,19 @@ class TestDestinos(Base):
                                            {"contaDestino": "999"})).codigo, "DESTINO_NAO_CONFIAVEL")
 
 
+    def test_argumento_nao_declarado_em_capacidade_sensivel(self):
+        """Achado do A6 confirmatório (semente 2027): destino escondido sob chave neutra ({'x': '999...'})."""
+        r = reg()
+        r["argumentos_livres"] = {"pagamento.agendar": ["valor", "vencimento"]}
+        for i, (payload, esperado) in enumerate((({"x": "999-6666-6"}, "ARGUMENTO_NAO_DECLARADO"),
+                                                 ({"conta": "001-0001-1", "memo": "999"}, "ARGUMENTO_NAO_DECLARADO"),
+                                                 ({"conta": "001-0001-1", "valor": 100}, "OK"))):
+            lx = Lex(r, Ledger(os.path.join(self.tmp.name, f"arg{i}.jsonl"), chave=b"k"), {})
+            lx.abrir_tarefa("t", "revisao_documental", "op-1")
+            self.assertEqual(lx.autorizar(Acao("op-1", "ferramenta", "pagamento.agendar", "t", payload)).codigo,
+                             esperado, payload)
+
+
 class TestIdentidadeModelo(Base):
     def test_sem_atestacao_nao_age(self):
         self.lex.abrir_tarefa("t", "revisao_documental", "op-m")

@@ -13,6 +13,7 @@ import urllib.request
 class Ollama:
     def __init__(self, modelo: str, base: str = "http://localhost:11434", timeout: float = 600):
         self.modelo, self.base, self.timeout = modelo, base.rstrip("/"), timeout
+        self.ultimo_uso: dict = {}
 
     @property
     def familia(self) -> str:
@@ -34,10 +35,12 @@ class Ollama:
         raise LookupError(f"modelo {self.modelo} não está instalado no Ollama")
 
     def conversar(self, sistema: str, usuario: str, temperatura: float = 0.0, semente: int = 0,
-                  max_tokens: int = 2048) -> str:
+                  max_tokens: int = 2048, esquema: dict | None = None) -> str:
+        """esquema (T054): JSON Schema da resposta; o Ollama restringe a GERAÇÃO a ele (decodificação
+        restrita). Elimina a classe de falha "resposta fora do formato" (ex.: o eco do llama3.2:1b)."""
         # M2 (10/10/2026): sem teto, modelo pequeno em modo JSON pode gerar sem parar até o timeout.
         corpo = json.dumps({
-            "model": self.modelo, "stream": False, "format": "json",
+            "model": self.modelo, "stream": False, "format": esquema if esquema else "json",
             "options": {"temperature": temperatura, "seed": semente, "num_predict": max_tokens},
             "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
         }).encode("utf-8")
@@ -46,7 +49,12 @@ class Ollama:
         local = any(h in self.base for h in ("localhost", "127.0.0.1", "[::1]"))
         abrir = urllib.request.build_opener(urllib.request.ProxyHandler({})).open if local else urllib.request.urlopen
         with abrir(req, timeout=self.timeout) as r:
-            return json.loads(r.read().decode("utf-8"))["message"]["content"]
+            resp = json.loads(r.read().decode("utf-8"))
+        # T056: consumo medido pelo próprio servidor, para o LEX cobrar orçamento real
+        self.ultimo_uso = {"tokens_entrada": int(resp.get("prompt_eval_count") or 0),
+                           "tokens_saida": int(resp.get("eval_count") or 0),
+                           "segundos": round(float(resp.get("total_duration") or 0) / 1e9, 3)}
+        return resp["message"]["content"]
 
 
 def extrair_json(texto: str) -> dict | None:

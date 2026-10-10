@@ -69,8 +69,9 @@ class Ferramenta:
 
 class Portao:
     def __init__(self, lex: Lex, ferramentas: list[Ferramenta], segredo: bytes, ficha: str,
-                 relogio: Callable[[], float]):
+                 relogio: Callable[[], float], telemetria: Callable[[dict], None] | None = None):
         self.lex, self.segredo, self.ficha, self.relogio = lex, segredo, ficha, relogio
+        self.telemetria = telemetria  # T058: spans execute_tool (sem conteúdo, só códigos)
         self.ferr = {f.nome: f for f in ferramentas}
         self._legado: str | None = None  # versão negociada por `initialize` (só no modo legado)
 
@@ -179,7 +180,11 @@ class Portao:
             if d.permitido:  # capacidade do papel, mas sem implementação/ficha neste portão
                 return self._resultado_ferramenta("ferramenta indisponível neste portão", True)
             return self._resultado_ferramenta(f"NEGADO {d.codigo}: {d.motivo}", True)
+        from .telemetria import agora_ns, chamada_ferramenta
+        t0 = agora_ns()
         d = self.lex.autorizar(Acao(agente, "ferramenta", nome, tarefa, args))
+        if self.telemetria:
+            self.telemetria(chamada_ferramenta(nome, agente, tarefa, d.codigo, d.permitido, t0, agora_ns()))
         if not d.permitido:
             return self._resultado_ferramenta(f"NEGADO {d.codigo}: {d.motivo}", True)
         try:

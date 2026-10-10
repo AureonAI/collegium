@@ -15,7 +15,7 @@ import time
 
 RAIZ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, RAIZ)
-from experimentos import a4_goodhart, a5_mundo_sujo, t1_contencao, t2_anais, t3_autonomia, t5_equipe, t6_hibrido  # noqa: E402
+from experimentos import a4_goodhart, a6_adaptativo, a5_mundo_sujo, t1_contencao, t2_anais, t3_autonomia, t5_equipe, t6_hibrido, t7_garantia  # noqa: E402
 
 PLANO = [("T1_contencao", lambda: t1_contencao.main(200)),
          ("T2_anais", lambda: t2_anais.main(600)),
@@ -23,7 +23,9 @@ PLANO = [("T1_contencao", lambda: t1_contencao.main(200)),
          ("A4_goodhart", lambda: a4_goodhart.main(300)),
          ("A5_mundo_sujo", lambda: a5_mundo_sujo.main(300)),
          ("T5_equipe", lambda: t5_equipe.main(200)),
-         ("T6_hibrido", lambda: t6_hibrido.main(20))]  # T041: decisão A, só a parte determinística
+         ("T6_hibrido", lambda: t6_hibrido.main(20)),  # T041: decisão A, só a parte determinística
+         ("T7_garantia", lambda: t7_garantia.main()),  # T050: garantia estatística sem oráculo
+         ("A6_adaptativo", lambda: a6_adaptativo.main(4000, 2028))]  # T051: atacante adaptativo (0 vitórias)
 
 
 def _ler_hashes(caminho):
