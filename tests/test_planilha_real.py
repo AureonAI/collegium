@@ -5,15 +5,15 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pacotes.conciliacao import dados  # noqa: E402
-from pacotes.conciliacao import importadores as imp  # noqa: E402
+from collegium_oficios.conciliacao import dados  # noqa: E402
+from collegium_oficios.conciliacao import importadores as imp  # noqa: E402
 
 
 class TestRodada6Importacao(unittest.TestCase):
     def test_r6_2_bom_do_excel(self):
-        self.assertEqual(imp.ler_planilha("﻿Data;Valor\n03/09/2026;10,00\n", "R")["itens"][0]["valor"], 1000)
+        self.assertEqual(imp.ler_planilha("\ufeffData;Valor\n03/09/2026;10,00\n", "R")["itens"][0]["valor"], 1000)
         # o leitor antigo também passou a aceitar
-        self.assertEqual(imp.ler_csv("﻿Data;Valor\n03/09/2026;10,00\n", {"data": "Data", "valor": "Valor"},
+        self.assertEqual(imp.ler_csv("\ufeffData;Valor\n03/09/2026;10,00\n", {"data": "Data", "valor": "Valor"},
                                      "R")[0]["valor"], 1000)
 
     def test_cp1252_do_excel_brasileiro(self):

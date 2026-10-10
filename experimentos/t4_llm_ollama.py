@@ -34,7 +34,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium import Acao, Ledger, Lex  # noqa: E402
 from collegium.adaptadores import Ollama, extrair_json  # noqa: E402
-from pacotes.conciliacao import dados, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo  # noqa: E402
 
 SISTEMA = """Você é o Operarius de conciliação bancária de um escritório.
 Capacidades: extrato.ler, razao.ler, conciliacao.propor. Orçamento: esta única resposta.

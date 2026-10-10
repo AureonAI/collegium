@@ -20,7 +20,7 @@ from collections import Counter
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from collegium import Acao, Ledger, Lex  # noqa: E402
 from collegium.lex import assinar_humano  # noqa: E402
-from pacotes.conciliacao import dados, oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, operarios  # noqa: E402
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:

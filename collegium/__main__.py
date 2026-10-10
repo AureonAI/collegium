@@ -1,59 +1,66 @@
-"""Linha de comando do Patronus (humano). Chaves SEMPRE pelo ambiente, nunca por argumento:
-  COLLEGIUM_CHAVE           chave HMAC do ANAIS
-  COLLEGIUM_CHAVE_PATRONUS  chave de assinatura humana
+"""COLLEGIUM — conciliação bancária governada, com recibo que o cliente confere sozinho.
+Uso: `collegium COMANDO ...` (instalado) ou `python -m collegium COMANDO ...` (na pasta do projeto).
+Chaves SEMPRE por arquivo ou ambiente, nunca por argumento.
 
-  python -m collegium verificar ANAIS.jsonl [--ancora N:SELO]   integridade (+ cauda, com âncora)
-  python -m collegium ancora ANAIS.jsonl                         imprime N:SELO para publicar fora
-  python -m collegium relatorio ANAIS.jsonl REGIMENTO.json PASTA gera MEMORIA.md + painel.html
-  python -m collegium assinar aprovar TAREFA HASH_ENTREGA true|false HUMANO
-  python -m collegium assinar reabilitar AGENTE HUMANO
-
-Assinatura assimétrica (T042, recomendada; a chave privada fica SÓ no computador do humano):
-  python -m collegium gerar-chave ARQUIVO_PRIVADO           cria a chave e imprime a PÚBLICA
-  python -m collegium hash-regimento REGIMENTO.json          hash a assinar numa mudança de regras
-  python -m collegium assinar-ed ARQUIVO_PRIVADO regimento HASH
-  python -m collegium assinar-ed ARQUIVO_PRIVADO aprovar TAREFA HASH_ENTREGA true|false HUMANO
-  python -m collegium assinar-ed ARQUIVO_PRIVADO reabilitar AGENTE HUMANO
-
-Recibo verificável (T043; o cliente confere sem acesso ao sistema):
-  python -m collegium cabeca ANAIS.jsonl ARQUIVO_PRIVADO "NOME DO ENTE"   > cabeca.json
-  python -m collegium recibo ANAIS.jsonl TAREFA cabeca.json               > recibo.json
-  python -m collegium conferir-recibo recibo.json CHAVE_PUBLICA [ENTRADA.json]
-  python -m collegium auditar-cabeca ANAIS.jsonl cabeca.json CHAVE_PUBLICA   (auditor: mapa e raiz batem?)
-  python -m collegium consistencia ANAIS.jsonl TAMANHO_ANTIGO TAMANHO_NOVO > prova.json
-  python -m collegium conferir-consistencia antiga.json nova.json prova.json CHAVE_PUBLICA
-
-Privacidade (T044/T045; COLLEGIUM_CHAVE_COFRE no ambiente, nunca em arquivo do projeto):
-  python -m collegium anonimizar ENTRADA.json SAIDA.json COFRE.json [--confirmo CODIGO] [--doc REGEX ...]
-      1ª vez: mostra as palavras MANTIDAS e um código. Leia, confira que nenhuma é nome, e
-      rode de novo com --confirmo CODIGO para gravar a SAIDA.
-  python -m collegium eliminar-titular COFRE.json TIPO VALOR     (TIPO: NOME, CPF, CNPJ, EMAIL, TEL...)
-
-Portão MCP (T046; o cliente MCP do agente inicia este comando como servidor stdio):
-  python -m collegium portao REGIMENTO.json ANAIS.jsonl ENTRADA.json [--oficio conciliacao_bancaria|tres_vias]
-      ambiente: COLLEGIUM_FICHA (emitida pelo orquestrador), COLLEGIUM_SEGREDO_PORTAO, COLLEGIUM_CHAVE
-  python -m collegium emitir-ficha AGENTE TAREFA CAP1,CAP2 VALIDADE_SEGUNDOS   (usa COLLEGIUM_SEGREDO_PORTAO)
-
-Pré-registro selado (T061; rode ANTES do experimento, depois faça commit e envio):
-  python -m collegium preregistrar ARQUIVO ARQUIVO_PRIVADO
-  python -m collegium conferir-preregistro ARQUIVO CHAVE_PUBLICA
-
-Métricas e fatura conferível pelo cliente (T064):
-  python -m collegium metricas ANAIS.jsonl
-  python -m collegium fatura ANAIS.jsonl cabeca.json INICIO_UNIX FIM_UNIX precos.json ARQUIVO_PRIVADO > fatura.json
-  python -m collegium conferir-fatura fatura.json CHAVE_PUBLICA
+Começar em 2 minutos (dados de demonstração, sintéticos):
+  collegium exemplo PASTA                      grava PASTA/extrato.ofx e PASTA/razao_contabil.csv
+  collegium conciliar --extrato PASTA/extrato.ofx --razao PASTA/razao_contabil.csv --saida RESULTADO
+      e abra RESULTADO/relatorio.html no navegador.
 
 Conciliar arquivos reais (T066; o trabalho que se vende):
-  python -m collegium conciliar --extrato EXTRATO --razao RAZAO --saida PASTA [--ente "NOME"]
+  collegium conciliar --extrato EXTRATO --razao RAZAO --saida PASTA [--ente "NOME"]
       [--sinal-razao auto|bancaria|contabil] [--doc REGEX ...] [--anais ANAIS.jsonl] [--chave ARQUIVO_PRIVADO]
       extrato: OFX, CNAB 240, JSON Open Finance ou planilha; razão: planilha do ERP (CSV/TXT).
-      Saída: relatorio.html, pendencias.csv, pares.csv, resumo.json (+ recibo.json com --chave).
+      Saída: relatorio.html, pendencias.csv, pares.csv, resumo.json (+ cabeca.json e recibo.json com --chave).
       [--humano NOME --chave-publica CHAVE]   registra quem aprova (só na 1ª conciliação do ANAIS)
       Código de saída: 0 conciliado · 2 BLOQUEADO (o relatório diz o que corrigir) · 1 arquivo ilegível.
-  python -m collegium aprovar --anais ANAIS.jsonl --tarefa TAREFA --humano NOME --chave ARQUIVO_PRIVADO [--rejeitar]
+  collegium aprovar --anais ANAIS.jsonl --tarefa TAREFA --humano NOME --chave ARQUIVO_PRIVADO [--rejeitar]
+  collegium --versao
+
+Governança do ANAIS (ambiente: COLLEGIUM_CHAVE = chave HMAC; COLLEGIUM_CHAVE_PATRONUS = assinatura humana HMAC):
+  collegium verificar ANAIS.jsonl [--ancora N:SELO]   integridade (+ cauda, com âncora)
+  collegium ancora ANAIS.jsonl                         imprime N:SELO para publicar fora
+  collegium relatorio ANAIS.jsonl REGIMENTO.json PASTA gera MEMORIA.md + painel.html
+  collegium assinar aprovar TAREFA HASH_ENTREGA true|false HUMANO
+  collegium assinar reabilitar AGENTE HUMANO
+
+Assinatura assimétrica (T042, recomendada; a chave privada fica SÓ no computador do humano):
+  collegium gerar-chave ARQUIVO_PRIVADO           cria a chave e imprime a PÚBLICA
+  collegium hash-regimento REGIMENTO.json          hash a assinar numa mudança de regras
+  collegium assinar-ed ARQUIVO_PRIVADO regimento HASH
+  collegium assinar-ed ARQUIVO_PRIVADO aprovar TAREFA HASH_ENTREGA true|false HUMANO
+  collegium assinar-ed ARQUIVO_PRIVADO reabilitar AGENTE HUMANO
+
+Recibo verificável (T043; o cliente confere sem acesso ao sistema):
+  collegium cabeca ANAIS.jsonl ARQUIVO_PRIVADO "NOME DO ENTE"   > cabeca.json
+  collegium recibo ANAIS.jsonl TAREFA cabeca.json               > recibo.json
+  collegium conferir-recibo recibo.json CHAVE_PUBLICA [ENTRADA.json]
+  collegium auditar-cabeca ANAIS.jsonl cabeca.json CHAVE_PUBLICA   (auditor: mapa e raiz batem?)
+  collegium consistencia ANAIS.jsonl TAMANHO_ANTIGO TAMANHO_NOVO > prova.json
+  collegium conferir-consistencia antiga.json nova.json prova.json CHAVE_PUBLICA
+
+Privacidade (T044/T045; COLLEGIUM_CHAVE_COFRE no ambiente, nunca em arquivo do projeto):
+  collegium anonimizar ENTRADA.json SAIDA.json COFRE.json [--confirmo CODIGO] [--doc REGEX ...]
+      1ª vez: mostra as palavras MANTIDAS e um código. Leia, confira que nenhuma é nome, e
+      rode de novo com --confirmo CODIGO para gravar a SAIDA.
+  collegium eliminar-titular COFRE.json TIPO VALOR     (TIPO: NOME, CPF, CNPJ, EMAIL, TEL...)
+
+Portão MCP (T046; o cliente MCP do agente inicia este comando como servidor stdio):
+  collegium portao REGIMENTO.json ANAIS.jsonl ENTRADA.json [--oficio conciliacao_bancaria|tres_vias]
+      ambiente: COLLEGIUM_FICHA (emitida pelo orquestrador), COLLEGIUM_SEGREDO_PORTAO, COLLEGIUM_CHAVE
+  collegium emitir-ficha AGENTE TAREFA CAP1,CAP2 VALIDADE_SEGUNDOS   (usa COLLEGIUM_SEGREDO_PORTAO)
+
+Pré-registro selado (T061; rode ANTES do experimento, depois faça commit e envio):
+  collegium preregistrar ARQUIVO ARQUIVO_PRIVADO
+  collegium conferir-preregistro ARQUIVO CHAVE_PUBLICA
+
+Métricas e fatura conferível pelo cliente (T064):
+  collegium metricas ANAIS.jsonl
+  collegium fatura ANAIS.jsonl cabeca.json INICIO_UNIX FIM_UNIX precos.json ARQUIVO_PRIVADO > fatura.json
+  collegium conferir-fatura fatura.json CHAVE_PUBLICA
 
 Kit de ofício (T049):
-  python -m collegium conformidade NOME_DO_OFICIO [SEMENTES]     roda a suíte (pureza, falha fechada, mutação)
+  collegium conformidade NOME_DO_OFICIO [SEMENTES]     roda a suíte (pureza, falha fechada, mutação)
 """
 from __future__ import annotations
 
@@ -71,15 +78,28 @@ from .privacidade import Anonimizador, Cofre, exportar
 from .lex import Lex, _h, assinar_humano, assinar_humano_ed25519, carregar_regimento
 
 
+def _ler_texto(caminho: str) -> str:
+    """R6-9: o PowerShell 5.1 grava `>` em UTF-16; o Bloco de Notas pode pôr BOM. Aceita os três."""
+    with open(caminho, "rb") as f:
+        b = f.read()
+    if b[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        return b.decode("utf-16")
+    return b.decode("utf-8-sig")
+
+
+def _ler_json(caminho: str):
+    return json.loads(_ler_texto(caminho))
+
+
 def _chave(var: str) -> bytes | None:
     return Ledger.chave_de_ambiente(var)
 
 
 def _conciliar(args: list[str]) -> int:
     import argparse
-    from pacotes.conciliacao import importadores as imp
-    from pacotes.conciliacao import piloto
-    ap = argparse.ArgumentParser(prog="python -m collegium conciliar")
+    from collegium_oficios.conciliacao import importadores as imp
+    from collegium_oficios.conciliacao import piloto
+    ap = argparse.ArgumentParser(prog="collegium conciliar")
     ap.add_argument("--extrato", required=True)
     ap.add_argument("--razao", required=True)
     ap.add_argument("--saida", required=True)
@@ -97,15 +117,19 @@ def _conciliar(args: list[str]) -> int:
     humanos = {a.humano: a.chave_publica.strip().lower()} if a.humano else None
     privada = None
     if a.chave:
-        with open(a.chave, encoding="utf-8") as f:
-            privada = bytes.fromhex(f.read().strip())
+        privada = bytes.fromhex(_ler_texto(a.chave).strip())
     try:
         r = piloto.conciliar_arquivos(a.extrato, a.razao, a.saida, a.ente, a.sinal_razao, a.doc, a.anais,
                                       _chave("COLLEGIUM_CHAVE"), privada, humanos)
     except (imp.ImportacaoInvalida, imp.CNABInvalido, ValueError, KeyError) as e:  # RegimentoInvalido é ValueError
         print(f"ARQUIVO NÃO PÔDE SER LIDO: {e}", file=sys.stderr)
         return 1
-    print(f"{r['status']}: {r.get('motivo') or str(r.get('pares', 0) + r.get('grupos', 0)) + ' casados, ' + str(r.get('pendencias_extrato', 0)) + ' pendências no extrato, ' + str(r.get('pendencias_razao', 0)) + ' no razão'}")
+    if r.get("motivo"):
+        print(f"{r['status']}: {r['motivo']}")
+    else:
+        p, g = r.get("pares", 0), r.get("grupos", 0)
+        print(f"{r['status']}: {p + g} casamentos ({p} pares 1:1 + {g} lotes), "
+              f"{r.get('pendencias_extrato', 0)} pendências no extrato, {r.get('pendencias_razao', 0)} no razão")
     for av in r["avisos"]:
         print(f"AVISO: {av}")
     print(f"Abra: {os.path.join(a.saida, 'relatorio.html')}")
@@ -114,9 +138,9 @@ def _conciliar(args: list[str]) -> int:
 
 def _aprovar(args: list[str]) -> int:
     import argparse
-    from pacotes.registro import carregar
+    from collegium_oficios.registro import carregar
     from .execucao import aprovar
-    ap = argparse.ArgumentParser(prog="python -m collegium aprovar")
+    ap = argparse.ArgumentParser(prog="collegium aprovar")
     ap.add_argument("--anais", required=True)
     ap.add_argument("--tarefa", required=True)
     ap.add_argument("--humano", required=True)
@@ -124,8 +148,7 @@ def _aprovar(args: list[str]) -> int:
     ap.add_argument("--rejeitar", action="store_true")
     ap.add_argument("--oficio", default="conciliacao_bancaria")
     a = ap.parse_args(args)
-    with open(a.chave, encoding="utf-8") as f:
-        sk = bytes.fromhex(f.read().strip())
+    sk = bytes.fromhex(_ler_texto(a.chave).strip())
     of, _ = carregar(a.oficio)
     try:
         r = aprovar(of, Ledger(a.anais, chave=_chave("COLLEGIUM_CHAVE")), a.tarefa, a.humano, sk, not a.rejeitar)
@@ -136,10 +159,50 @@ def _aprovar(args: list[str]) -> int:
     return 0 if r["permitido"] else 2
 
 
-def main(argv: list[str]) -> int:
-    if not argv:
-        print(__doc__)
+def _exemplo(args: list[str]) -> int:
+    from collegium_oficios.conciliacao.exemplo import escrever
+    if len(args) != 1:
+        print("uso: collegium exemplo PASTA", file=sys.stderr)
         return 2
+    ext, raz = escrever(args[0])
+    saida = os.path.join(args[0], "resultado")
+    print("Dados de DEMONSTRAÇÃO (sintéticos, com as armadilhas de arquivos reais) gravados em:")
+    print(f"  {ext}\n  {raz}\nAgora rode:")
+    print(f'  collegium conciliar --extrato "{ext}" --razao "{raz}" --saida "{saida}"')
+    print(f"e abra {os.path.join(saida, 'relatorio.html')} no navegador.")
+    return 0
+
+
+def _registro_preregistro() -> str:
+    """T068: instalado, a pasta do pacote não é lugar de dado. Padrão = preregistros/ do projeto (se existir);
+    senão, COLLEGIUM_PREREGISTRO (caminho do REGISTRO.jsonl) é obrigatório."""
+    amb = os.environ.get("COLLEGIUM_PREREGISTRO")
+    if amb:
+        return amb
+    pasta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "preregistros")
+    if not os.path.isdir(pasta):
+        raise FileNotFoundError("defina COLLEGIUM_PREREGISTRO com o caminho do REGISTRO.jsonl")
+    return os.path.join(pasta, "REGISTRO.jsonl")
+
+
+def cli() -> None:
+    """Ponto de entrada do comando `collegium` instalado (pyproject.toml)."""
+    raise SystemExit(main(sys.argv[1:]))
+
+
+def main(argv: list[str]) -> int:
+    for fluxo in (sys.stdout, sys.stderr):  # R6-10: console/pipe em página antiga nunca derruba o comando
+        try:
+            fluxo.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
+    if not argv or argv[0] in ("-h", "--help", "ajuda"):
+        print(__doc__)
+        return 0 if argv else 2
+    if argv[0] in ("--versao", "--version"):
+        from . import __version__
+        print(f"collegium {__version__}")
+        return 0
     cmd = argv[0]
     if cmd == "verificar":
         L = Ledger.__new__(Ledger)
@@ -190,37 +253,31 @@ def main(argv: list[str]) -> int:
         print(_h(carregar_regimento(argv[1])))
         return 0
     if cmd == "assinar-ed":
-        with open(argv[1], encoding="utf-8") as f:
-            sk = bytes.fromhex(f.read().strip())
+        sk = bytes.fromhex(_ler_texto(argv[1]).strip())
         campos = list(argv[2:])
         if campos and campos[0] == "aprovar":
             campos[3] = campos[3].lower() == "true"
         print(assinar_humano_ed25519(sk, *campos))
         return 0
     if cmd == "cabeca":
-        with open(argv[2], encoding="utf-8") as f:
-            sk = bytes.fromhex(f.read().strip())
+        sk = bytes.fromhex(_ler_texto(argv[2]).strip())
         agora = datetime.now(timezone.utc).isoformat(timespec="seconds")
-        print(json.dumps(rc.cabeca(argv[1], sk, argv[3], agora), ensure_ascii=False, indent=1))
+        print(json.dumps(rc.cabeca(argv[1], sk, argv[3], agora), ensure_ascii=True, indent=1))
         return 0
     if cmd == "recibo":
-        with open(argv[3], encoding="utf-8") as f:
-            cab = json.load(f)
-        print(json.dumps(rc.emitir_recibo(argv[1], argv[2], cab), ensure_ascii=False, indent=1))
+        cab = _ler_json(argv[3])
+        print(json.dumps(rc.emitir_recibo(argv[1], argv[2], cab), ensure_ascii=True, indent=1))
         return 0
     if cmd == "conferir-recibo":
-        with open(argv[1], encoding="utf-8") as f:
-            rec = json.load(f)
+        rec = _ler_json(argv[1])
         entrada = None
         if len(argv) > 3:
-            with open(argv[3], encoding="utf-8") as f:
-                entrada = json.load(f)
+            entrada = _ler_json(argv[3])
         ok, motivos, resumo = rc.conferir_recibo(rec, argv[2], entrada=entrada)
         print(json.dumps({"valido": ok, "motivos": motivos, "resumo": resumo}, ensure_ascii=False, indent=1))
         return 0 if ok else 1
     if cmd == "auditar-cabeca":
-        with open(argv[2], encoding="utf-8") as f:
-            cab = json.load(f)
+        cab = _ler_json(argv[2])
         ok, motivos = rc.auditar_cabeca(argv[1], cab, argv[3])
         print(json.dumps({"confere": ok, "motivos": motivos}, ensure_ascii=False, indent=1))
         return 0 if ok else 1
@@ -230,8 +287,7 @@ def main(argv: list[str]) -> int:
     if cmd == "conferir-consistencia":
         objs = []
         for a in argv[1:4]:
-            with open(a, encoding="utf-8") as f:
-                objs.append(json.load(f))
+            objs.append(_ler_json(a))
         ok = rc.conferir_consistencia(objs[0], objs[1], objs[2], argv[4])
         print("CONSISTENTE: o histórico só cresceu" if ok else "INCONSISTENTE: histórico reescrito ou cabeça inválida")
         return 0 if ok else 1
@@ -246,8 +302,7 @@ def main(argv: list[str]) -> int:
             return 0 if ok else 1
         docs = [argv[i + 1] for i, a in enumerate(argv) if a == "--doc"] or None
         conf = argv[argv.index("--confirmo") + 1] if "--confirmo" in argv else None
-        with open(argv[1], encoding="utf-8") as f:
-            entrada = json.load(f)
+        entrada = _ler_json(argv[1])
         an = Anonimizador(Cofre(argv[3], km), docs)
         saida = ({k: an.registros(v) if isinstance(v, list) else v for k, v in entrada.items()}
                  if isinstance(entrada, dict) else an.registros(entrada))
@@ -273,10 +328,13 @@ def main(argv: list[str]) -> int:
         return 0
     if cmd in ("preregistrar", "conferir-preregistro"):
         from .preregistro import conferir, preregistrar
-        reg = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "preregistros", "REGISTRO.jsonl")
+        try:
+            reg = _registro_preregistro()
+        except FileNotFoundError as e:
+            print(e, file=sys.stderr)
+            return 2
         if cmd == "preregistrar":
-            with open(argv[2], encoding="utf-8") as f:
-                sk = bytes.fromhex(f.read().strip())
+            sk = bytes.fromhex(_ler_texto(argv[2]).strip())
             r = preregistrar(argv[1], sk, reg, datetime.now(timezone.utc).isoformat(timespec="seconds"))
             print(f"selado no índice {r['i']}: {r['corpo']['dados']['sha256'][:16]}… — faça commit e envio agora")
             return 0
@@ -289,26 +347,24 @@ def main(argv: list[str]) -> int:
             print(json.dumps(metricas(argv[1]), ensure_ascii=False, indent=1))
             return 0
         if cmd == "fatura":
-            with open(argv[2], encoding="utf-8") as f:
-                cab = json.load(f)
-            with open(argv[5], encoding="utf-8") as f:
-                precos = json.load(f)
-            with open(argv[6], encoding="utf-8") as f:
-                sk = bytes.fromhex(f.read().strip())
+            cab = _ler_json(argv[2])
+            precos = _ler_json(argv[5])
+            sk = bytes.fromhex(_ler_texto(argv[6]).strip())
             print(json.dumps(emitir_fatura(argv[1], cab, float(argv[3]), float(argv[4]), precos, sk),
-                             ensure_ascii=False, indent=1))
+                             ensure_ascii=True, indent=1))
             return 0
-        with open(argv[1], encoding="utf-8") as f:
-            fat = json.load(f)
+        fat = _ler_json(argv[1])
         ok, motivos, resumo = conferir_fatura(fat, argv[2])
         print(json.dumps({"valida": ok, "motivos": motivos, "resumo": resumo}, ensure_ascii=False, indent=1))
         return 0 if ok else 1
+    if cmd == "exemplo":
+        return _exemplo(argv[1:])
     if cmd == "conciliar":
         return _conciliar(argv[1:])
     if cmd == "aprovar":
         return _aprovar(argv[1:])
     if cmd == "conformidade":
-        from pacotes.registro import carregar
+        from collegium_oficios.registro import carregar
         from .oficio import conformidade
         n = int(argv[2]) if len(argv) > 2 else 40
         r = conformidade(carregar(argv[1])[0], range(1, n + 1))
@@ -317,15 +373,14 @@ def main(argv: list[str]) -> int:
     if cmd == "portao":
         import time
         from .portao import Portao
-        from pacotes.registro import carregar
+        from collegium_oficios.registro import carregar
         nome_oficio = argv[argv.index("--oficio") + 1] if "--oficio" in argv else "conciliacao_bancaria"
         oficio, ferramentas = carregar(nome_oficio)
         seg, ficha = _chave("COLLEGIUM_SEGREDO_PORTAO"), os.environ.get("COLLEGIUM_FICHA")
         if not seg or not ficha:
             print("defina COLLEGIUM_SEGREDO_PORTAO e COLLEGIUM_FICHA", file=sys.stderr)
             return 2
-        with open(argv[3], encoding="utf-8") as f:
-            entrada = json.load(f)
+        entrada = _ler_json(argv[3])
         lex = Lex(argv[1], Ledger(argv[2], chave=_chave("COLLEGIUM_CHAVE")), {oficio.classe: oficio.oraculo})
         Portao(lex, ferramentas(entrada), seg, ficha, time.time).servir()
         return 0

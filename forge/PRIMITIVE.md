@@ -19,9 +19,9 @@
 
 | Folha | Depende do primitivo | Troca-se quando |
 |---|---|---|
-| `pacotes/conciliacao/` (oráculo v0.1.3, gerador, operários) | sim | muda o ofício (contas a pagar, folha, faturamento…) |
+| `collegium_oficios/conciliacao/` (oráculo v0.1.3, gerador, operários) | sim | muda o ofício (contas a pagar, folha, faturamento…) |
 | `collegium/adaptadores.py` (Ollama) | não, é usada pelos agentes | muda o provedor de modelo |
-| `pacotes/conciliacao/importadores.py` (OFX, CSV, PaddleOCR) | não | muda o formato de entrada do cliente |
+| `collegium_oficios/conciliacao/importadores.py` (OFX, CSV, PaddleOCR) | não | muda o formato de entrada do cliente |
 | `experimentos/` | sim | a hipótese muda |
 | Painel, Rector, Actuarius (F3) | sim | muda a interface com o humano |
 

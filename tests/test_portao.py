@@ -173,7 +173,7 @@ class TestPortaoProcessoReal(unittest.TestCase):
     def test_subprocesso_stdio(self):
         import subprocess
         import time
-        from pacotes.conciliacao import dados
+        from collegium_oficios.conciliacao import dados
         with tempfile.TemporaryDirectory() as d:
             ds = dados.gerar(2, n=6)
             ent = {"extrato": ds["extrato"], "razao": ds["razao"]}

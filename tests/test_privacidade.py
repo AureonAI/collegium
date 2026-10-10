@@ -10,7 +10,7 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium.privacidade import Anonimizador, Cofre, cnpj_valido, cpf_valido, exportar  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo, residuo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo, residuo  # noqa: E402
 
 PARAM = {"padroes_documento": [r"NF\d+", r"BOL\d+", r"PED\d+"]}
 NOMES = ["JOÃO DA SILVA", "MARIA APARECIDA SOUZA", "ACME COMÉRCIO", "José Pereira"]

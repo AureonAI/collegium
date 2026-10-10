@@ -4,7 +4,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pacotes.conciliacao import dados, operarios, residuo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, residuo  # noqa: E402
 
 
 def _caso(seed=1):

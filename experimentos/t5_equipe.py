@@ -29,7 +29,7 @@ sys.path.insert(0, RAIZ)
 from collegium import Ledger, Lex  # noqa: E402
 from collegium.dossie import admitir, carregar_dossie, gerar_exame  # noqa: E402
 from collegium.equipe import Rector, relatorio  # noqa: E402
-from pacotes.conciliacao import dados, oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, operarios  # noqa: E402
 
 P = {"padroes_documento": [r"NF\d+", r"BOL\d+", r"PED\d+"]}
 

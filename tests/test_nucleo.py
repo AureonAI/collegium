@@ -14,7 +14,7 @@ sys.path.insert(0, RAIZ)
 from collegium import Acao, Ledger, Lex, RegimentoInvalido, carregar_regimento, wilson_inferior  # noqa: E402
 from collegium.autonomia import Historico, nivel  # noqa: E402
 from collegium.lex import assinar_humano  # noqa: E402
-from pacotes.conciliacao import dados, oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, operarios  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     REG = json.load(_f)
@@ -241,7 +241,7 @@ class TestCorrecoes(Base):
         self.assertIn("op-1", self.lex.quarentena)
 
     def test_D3_versao_numerica(self):
-        from pacotes.conciliacao.oraculo import _v
+        from collegium_oficios.conciliacao.oraculo import _v
         self.assertGreater(_v("0.1.10"), _v("0.1.2"))
 
     def test_R3_amostragem_imprevisivel_e_proporcional(self):

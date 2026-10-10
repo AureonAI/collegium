@@ -15,7 +15,7 @@ from collegium import ed25519 as ed  # noqa: E402
 from collegium import recibo as rc  # noqa: E402
 from collegium.ledger_sqlite import LedgerSQLite, abrir_ente, backup_verificado  # noqa: E402
 from collegium.telemetria import Exportador, chamada_modelo, ler  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     REG = json.load(_f)

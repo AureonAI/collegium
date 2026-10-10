@@ -151,7 +151,8 @@ def estado_da_tarefa(registros: list[dict]) -> dict:
                 est, entrega = "SUBMETIDA", d.get("motivo")
             elif c in {"LIBERADA", "AGUARDA_HUMANO"} or (c == "REJEITADA" and d.get("tipo") == "aprovacao"):
                 est = c
-            if c and c != "OK":
+            espelho = c == "ACEITA" or (c == "REJEITADA" and d.get("tipo") != "aprovacao")
+            if c and c != "OK" and not espelho:  # o veredito do oráculo já entra pela linha de recibo
                 eventos.append(c)
     return {"estado": est, "entrega": entrega, "recibo_final": recibo_final, "canario": canario,
             "eventos": eventos}

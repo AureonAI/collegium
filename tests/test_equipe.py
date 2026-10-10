@@ -13,7 +13,7 @@ sys.path.insert(0, RAIZ)
 from collegium import Acao, Ledger, Lex  # noqa: E402
 from collegium.dossie import admitir, carregar_dossie, corrigir, gerar_exame  # noqa: E402
 from collegium.equipe import Rector, memoria_md, painel_html, relatorio  # noqa: E402
-from pacotes.conciliacao import dados, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo  # noqa: E402
 
 PASTA = os.path.join(RAIZ, "dossie_exemplo")
 

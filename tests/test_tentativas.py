@@ -9,7 +9,7 @@ import unittest
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium import Ledger, Lex  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     BASE = json.load(_f)

@@ -10,8 +10,8 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium import Ledger, Lex  # noqa: E402
 from collegium.oficio import conformidade  # noqa: E402
-from pacotes import tres_vias as tv  # noqa: E402
-from pacotes.conciliacao.oficio import OFICIO as CONC  # noqa: E402
+from collegium_oficios import tres_vias as tv  # noqa: E402
+from collegium_oficios.conciliacao.oficio import OFICIO as CONC  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     BASE = json.load(_f)

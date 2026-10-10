@@ -49,7 +49,7 @@
 | T015 | H1 | Repetir A4/A5 com **dados reais anonimizados** de 1 escritório (auditoria amostral como gabarito) | ⬜ |
 | T016 | — | Isolamento C0 (`docker --network none` + egress por lista) com LLM real tentando sair | ⬜ |
 | T017 | H1 | Âncora: comando `python -m collegium ancora` | 🔶 (falta publicar automaticamente) |
-| T039 | — | Decisão A: operário determinístico sob o LEX + pacote do humano (motivo e candidatos por pendência) | ✅ (`pacotes/conciliacao/residuo.py`, `tests/test_residuo.py`) |
+| T039 | — | Decisão A: operário determinístico sob o LEX + pacote do humano (motivo e candidatos por pendência) | ✅ (`collegium_oficios/conciliacao/residuo.py`, `tests/test_residuo.py`) |
 | T040 | — | Classe `nota_residuo`: LLM anota o resíduo; oráculo barra id inventado, sugestão fora da lista e omissão | ✅ (invariante: a nota nunca altera a conciliação) |
 | T041 | — | T6 híbrido: parte determinística no `reproduzir.py`; parte LLM na máquina do Renato | ✅ (gemma3:4b: 13/20 notas aceitas; nenhum ganho sobre a base) |
 | T036 | — | PaddleOCR real com extratos escaneados (instalar no Windows; medir taxa de "revisar" e de saldo que não fecha) | ⬜ |
@@ -94,7 +94,7 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T046 | 0 | Portão: servidor MCP mediador, tokens efêmeros por tarefa, executor isolado que falha fechado | agente sem o portão não tem ferramenta; token fora da tarefa é negado | ✅ código (`collegium/portao.py` MCP 2026-07-28 + legado; `collegium/isolamento.py`); 🔶 Docker real = missão no Windows (T016) |
 | T047 | 0 | Plano selado na abertura (fluxo de controle confiável) + destinos confiáveis para argumentos | injeção no dado não muda capacidade nem destino | ✅ (`plano` na abertura; `destinos` no REGIMENTO; saída marcada `nao_confiavel`) |
 | T048 | 0 | Identidade de modelo por impressão digital (digest); admissão caduca com troca de modelo | "qwen-falso" não herda a linhagem qwen | ✅ (`modelo.digest` + `Lex.atestar_modelo`; `Ollama.digest()`) |
-| T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ✅ (`collegium/oficio.py` + `pacotes/tres_vias`; 2 ofícios conformes, mutação 741/741 não equivalentes em 200 sementes; controle negativo) |
+| T049 | 0 | Kit de ofício + suíte de conformidade com escore de mutação + 2º ofício | dois ofícios passam na mesma suíte, sem mudar o núcleo | ✅ (`collegium/oficio.py` + `collegium_oficios/tres_vias`; 2 ofícios conformes, mutação 741/741 não equivalentes em 200 sementes; controle negativo) |
 | T050 | 0 | Garantia estatística para classes sem oráculo (júri calibrado, Learn-then-Test, SPRT) | simulação: taxa de violação da garantia ≤ δ | ✅ (`collegium/garantia.py`, T7: G1/G2 passaram; G3 falsificada e reconfirmada com semente nova) |
 | T051 | 0 | Atacante adaptativo contra o LEX (busca guiada pelas decisões) + missão AgentDojo | 0 ações proibidas autorizadas; AgentDojo = missão externa | ✅ código (A6: 6 quebras + 1 burla corrigidas; 2ª confirmatória 0 vitórias); 🔶 AgentDojo = missão externa |
 | T052 | 1 | Aprendizado governado: decisões humanas do resíduo viram propostas de regra, com backtest e assinatura | regra aprendida reduz o resíduo sem par errado no backtest | ✅ (`collegium/aprendizado.py` + minerador de janela; T8: L1–L4 passaram; regra só entra com quórum) |

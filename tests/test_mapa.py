@@ -14,8 +14,8 @@ from collegium import fatura as ft  # noqa: E402
 from collegium import mapa as mp  # noqa: E402
 from collegium import merkle as mk  # noqa: E402
 from collegium import recibo as rc  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo  # noqa: E402
-from pacotes.registro import carregar  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo  # noqa: E402
+from collegium_oficios.registro import carregar  # noqa: E402
 
 SK = bytes([9]) * 32
 PUB = ed25519.publica(SK).hex()
@@ -65,6 +65,14 @@ class TestRecibo(Base):
         self.assertIn("ENTREGA_REJEITADA", mot)
         self.assertEqual(res["estado_final"], "REJEITADA")
         self.assertEqual(res["completude"], "PROVADA (mapa assinado)")
+
+    def test_eventos_sem_duplicata_e_estado_datado(self):
+        """T068 (usado como estranho): 'ACEITA' aparecia 2x (decisão do LEX + linha de recibo = 1 evento),
+        e nada dizia que o estado é o da cabeça, não o de agora."""
+        _, _, res = rc.conferir_recibo(rc.emitir_recibo(self.cam, self.t1, self.cab), PUB)
+        self.assertEqual(res["eventos"], ["SUBMETIDA", "ACEITA", "AGUARDA_HUMANO", "REJEITADA"])
+        self.assertIn(str(self.cab["tamanho"]), res["estado_valido_em"])
+        self.assertIn(self.cab["instante"], res["estado_valido_em"])
 
     def test_tarefa_aguardando_humano_continua_valida(self):
         ok, mot, res = rc.conferir_recibo(rc.emitir_recibo(self.cam, self.t2, self.cab), PUB)

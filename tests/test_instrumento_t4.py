@@ -12,7 +12,7 @@ from datetime import date
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from experimentos import t4_llm_ollama  # noqa: E402
-from pacotes.conciliacao import dados, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo  # noqa: E402
 
 
 def literal(ex, rz):

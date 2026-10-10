@@ -13,7 +13,7 @@ from collegium import ed25519 as ed  # noqa: E402
 from collegium.aprendizado import Proposta, aplicar, backtest  # noqa: E402
 from collegium.lex import assinar_humano_ed25519  # noqa: E402
 from experimentos import t8_aprendizado as t8  # noqa: E402
-from pacotes.conciliacao.aprendizado import minerar_janela, rodar  # noqa: E402
+from collegium_oficios.conciliacao.aprendizado import minerar_janela, rodar  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     BASE = json.load(_f)

@@ -157,7 +157,7 @@ def sanidade(ext: dict, raz: dict, sinal: str) -> dict:
         conv = sinal
     if conv == "contabil":
         itens_r = imp.inverter(itens_r)
-        avisos.append("ATENÇÃO: o razão foi lido na convenção CONTÁBIL (entrada no banco = débito) e os sinais foram "
+        avisos.append("O razão foi lido na convenção CONTÁBIL (entrada no banco = débito) e os sinais foram "
                       f"invertidos para comparar com o extrato ({det['casam_invertido']} casamentos invertidos contra "
                       f"{det['casam_direto']} diretos). Confira se isso faz sentido para este ERP.")
     if raz["saldo_inicial"] is not None and raz["saldo_final"] is not None:

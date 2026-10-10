@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "collegium"
+dynamic = ["version"]
+description = "Conciliação bancária governada: o código concilia, o oráculo confere, o humano aprova com assinatura, e o cliente confere o recibo sozinho."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []  # núcleo SÓ com a biblioteca padrão (REGRAS, Parte III)
+# Licença: decisão pendente do titular. Sem licença declarada, nenhum direito de uso é concedido.
+authors = [{ name = "Aureon AI" }]
+keywords = ["conciliacao bancaria", "OFX", "CNAB", "Open Finance", "agentes", "governanca", "Merkle", "Ed25519"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Natural Language :: Portuguese (Brazilian)",
+    "Topic :: Office/Business :: Financial :: Accounting",
+]
+
+[project.urls]
+Repositorio = "https://github.com/AureonAI/collegium"
+
+[project.scripts]
+collegium = "collegium.__main__:cli"
+
+[tool.setuptools.dynamic]
+version = { attr = "collegium.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["collegium", "collegium.*", "collegium_oficios", "collegium_oficios.*"]

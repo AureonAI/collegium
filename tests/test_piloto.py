@@ -15,8 +15,8 @@ sys.path.insert(0, RAIZ)
 sys.path.insert(0, os.path.join(RAIZ, "ferramentas"))
 from collegium import Ledger, ed25519, execucao  # noqa: E402
 from collegium import recibo as rc  # noqa: E402
-from pacotes.conciliacao import dados, oraculo, piloto  # noqa: E402
-import gerar_exemplo_piloto as kit  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, piloto  # noqa: E402
+from collegium_oficios.conciliacao import exemplo as kit  # noqa: E402
 
 EXT = os.path.join(RAIZ, "exemplos", "piloto", "extrato.ofx")
 RAZ = os.path.join(RAIZ, "exemplos", "piloto", "razao_contabil.csv")

@@ -11,7 +11,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium.adaptadores import Ollama, extrair_json  # noqa: E402
 from experimentos import t4_llm_ollama  # noqa: E402
-from pacotes.conciliacao import dados, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios  # noqa: E402
 
 
 class _Falso(BaseHTTPRequestHandler):
@@ -38,7 +38,7 @@ class _Falso(BaseHTTPRequestHandler):
             self.wfile.write(out)
             return
         if "ITENS PENDENTES" in texto:  # T6: nota de resíduo (reconstrói o pacote pela semente)
-            from pacotes.conciliacao import residuo
+            from collegium_oficios.conciliacao import residuo
             ds = dados.gerar_v2(corpo["options"]["seed"], n=60)
             pac = residuo.pacote_humano(ds["extrato"], ds["razao"], operarios.honesto_v5(ds["extrato"], ds["razao"]))
             itens = [{"id": i["id"], "sugestao": residuo.sugestao_base(i), "texto": "ok"} for i in pac]

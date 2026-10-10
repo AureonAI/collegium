@@ -340,9 +340,23 @@ def _norm(t: str) -> str:
 
 
 def decodificar(conteudo: str | bytes) -> tuple[str, str]:
-    """utf-8 (com ou sem BOM) e, se falhar, cp1252 (Excel brasileiro). Devolve (texto, encoding)."""
+    """UTF-16 (Excel "Texto Unicode", R6-11), utf-8 (com ou sem BOM) e, se falhar, cp1252 (Excel
+    brasileiro). Devolve (texto, encoding). UTF-16 sem BOM é reconhecido pelos zeros intercalados."""
     if isinstance(conteudo, str):
-        return conteudo.lstrip("﻿"), "texto"
+        return conteudo.lstrip("\ufeff"), "texto"
+    if conteudo[:2] in (b"\xff\xfe", b"\xfe\xff"):
+        return conteudo.decode("utf-16").lstrip("\ufeff"), "utf-16"
+    amostra = conteudo[:400]
+    if len(amostra) >= 4 and b"\x00" in amostra:
+        pares, impares = amostra[0::2].count(0), amostra[1::2].count(0)
+        if max(pares, impares) > len(amostra) // 4 and min(pares, impares) == 0:
+            enc = "utf-16-le" if impares else "utf-16-be"
+            try:
+                return conteudo.decode(enc), enc
+            except UnicodeDecodeError:
+                pass
+    if b"\x00" in conteudo:
+        raise ImportacaoInvalida("arquivo binário (bytes nulos): exporte como CSV ou texto")
     for enc in ("utf-8-sig", "cp1252"):
         try:
             return conteudo.decode(enc), enc

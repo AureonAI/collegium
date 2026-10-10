@@ -95,7 +95,7 @@ collegium/
 │   ├── preregistro.py · telemetria.py
 │   ├── autonomia.py · dossie.py · equipe.py · adaptadores.py
 │   └── __main__.py                CLI: python -m collegium (lista todos os comandos)
-├── pacotes/                       ── FOLHAS (C2) ──
+├── collegium_oficios/                       ── FOLHAS (C2) ──
 │   ├── registro.py                ofícios por nome
 │   ├── conciliacao/               oráculo, operários, resíduo, importadores (OFX/CSV/OCR/CNAB/Open Finance),
 │   │                              ferramentas do portão, iscas de conduta, minerador de janela, ofício

@@ -26,7 +26,7 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium import Acao, Ledger, Lex  # noqa: E402
 from collegium.lex import assinar_humano  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     REG = json.load(_f)

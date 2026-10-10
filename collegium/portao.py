@@ -24,13 +24,14 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
+from . import __version__
 from .ledger import canonico
 from .lex import Acao, Lex
 
 MODERNAS = ["2026-07-28"]
 LEGADAS = ["2025-11-25", "2025-06-18", "2025-03-26"]
 PREFIXO = "io.github.aureonai/"
-SERVIDOR = {"name": "collegium-portao", "version": "0.2.0"}
+SERVIDOR = {"name": "collegium-portao", "version": __version__}
 MAX_SAIDA = 200_000  # bytes de resposta de uma ferramenta (contenção de exfiltração e de contexto)
 
 

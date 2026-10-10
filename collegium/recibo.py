@@ -166,7 +166,10 @@ def conferir_recibo(rec: Any, chave_confiavel: str, entrada: Any = None,
                   "verificador": r.get("verificador"), "falhas": r.get("falhas", []),
                   "eventos": est["eventos"], "estado_final": est["estado"], "canario": est["canario"],
                   "completude": "NAO_PROVADA (recibo legado)" if legado else "PROVADA (mapa assinado)",
-                  "ente": cab.get("ente"), "instante_cabeca": cab.get("instante")}
+                  "ente": cab.get("ente"), "instante_cabeca": cab.get("instante"),
+                  "estado_valido_em": (f"cabeça de {cab.get('instante')} (registro com {cab.get('tamanho')} linhas). "
+                                       "Para o estado de agora, peça cabeça nova e confira a consistência com esta "
+                                       "(conferir-consistencia).")}
         if est["estado"] == "REJEITADA":
             motivos.append("ENTREGA_REJEITADA")  # pelo oráculo ou pelo humano: não é trabalho aceito
         if est["canario"]:

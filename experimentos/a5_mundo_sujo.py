@@ -17,7 +17,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pacotes.conciliacao import dados, oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, operarios  # noqa: E402
 
 ENTIDADE = {"padroes_documento": [r"NF\d+", r"BOL\d+", r"PED\d+"]}
 ERRADA = {"padroes_documento": [r"NF\d+"]}

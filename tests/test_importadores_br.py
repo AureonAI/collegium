@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pacotes.conciliacao.importadores import CNABInvalido, ler_cnab240, ler_open_finance  # noqa: E402
+from collegium_oficios.conciliacao.importadores import CNABInvalido, ler_cnab240, ler_open_finance  # noqa: E402
 
 
 def linha(campos: dict) -> str:

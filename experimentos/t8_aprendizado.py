@@ -28,8 +28,8 @@ from datetime import date, timedelta
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
 from collegium.aprendizado import backtest  # noqa: E402
-from pacotes.conciliacao import dados  # noqa: E402
-from pacotes.conciliacao.aprendizado import minerar_janela, rodar  # noqa: E402
+from collegium_oficios.conciliacao import dados  # noqa: E402
+from collegium_oficios.conciliacao.aprendizado import minerar_janela, rodar  # noqa: E402
 
 BASE = {"janela_dias": 5, "padroes_documento": [r"NF\d+", r"BOL\d+", r"PED\d+"]}
 

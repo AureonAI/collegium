@@ -13,7 +13,7 @@ sys.path.insert(0, RAIZ)
 from collegium import Ledger, Lex, RegimentoInvalido  # noqa: E402
 from collegium import ed25519 as ed  # noqa: E402
 from collegium.lex import assinar_humano, assinar_humano_ed25519, _h  # noqa: E402
-from pacotes.conciliacao import dados, operarios, oraculo  # noqa: E402
+from collegium_oficios.conciliacao import dados, operarios, oraculo  # noqa: E402
 
 with open(os.path.join(RAIZ, "regimento.exemplo.json"), encoding="utf-8") as _f:
     REG = json.load(_f)

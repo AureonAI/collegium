@@ -5,8 +5,8 @@ import unittest
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, RAIZ)
-from pacotes.conciliacao import importadores as imp  # noqa: E402
-from pacotes.conciliacao import oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import importadores as imp  # noqa: E402
+from collegium_oficios.conciliacao import oraculo, operarios  # noqa: E402
 
 OFX_SGML = """OFXHEADER:100
 DATA:OFXSGML

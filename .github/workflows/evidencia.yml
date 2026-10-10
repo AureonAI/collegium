@@ -18,6 +18,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Testes
         run: python ferramentas/testes_ci.py
+      - name: Instalação como estranho (pip install + ciclo do produto fora da pasta do projeto)
+        run: python ferramentas/instalacao_limpa.py
       - name: Reproduzir e conferir hashes
         run: python reproduzir.py --conferir
       - name: Testemunha do pré-registro (anotação com carimbo de tempo do GitHub)

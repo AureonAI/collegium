@@ -19,7 +19,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from pacotes.conciliacao import dados, oraculo, operarios  # noqa: E402
+from collegium_oficios.conciliacao import dados, oraculo, operarios  # noqa: E402
 
 
 def rodada(versao: str, operario, taxa_dup: float, n: int) -> dict:

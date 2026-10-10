@@ -6,7 +6,7 @@ também `reproduzir.py --conferir`. Sai com código diferente de zero se QUALQUE
 nada de `| tail` escondendo o código de saída.
 
 Uso:  python ferramentas/pre_envio.py            (suíte × 3 sementes, ~1 min)
-      python ferramentas/pre_envio.py --completo (+ reprodução de todos os hashes, ~10 min)
+      python ferramentas/pre_envio.py --completo (+ instalação limpa e reprodução dos hashes, ~6 min)
 """
 import os
 import subprocess
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     etapas = [(f"suíte, PYTHONHASHSEED={s}", [py, "ferramentas/testes_ci.py"], {"PYTHONHASHSEED": s})
               for s in ("0", "1", "4242")]
     if "--completo" in sys.argv:
+        etapas.append(("instalação como estranho", [py, "ferramentas/instalacao_limpa.py"], None))
         etapas.append(("reproduzir.py --conferir", [py, "reproduzir.py", "--conferir"], None))
     falhas = [n for n, c, e in etapas if not etapa(n, c, e)]
     print("PODE ENVIAR" if not falhas else f"NÃO ENVIE: {falhas}")
