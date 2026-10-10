@@ -58,8 +58,15 @@ class _Ctx:
         desc = b.get("desc", "")
         return {m for rx in self.rx for m in rx.findall(desc)}
 
+    estrito = True  # v0.1.5: documento só é evidência como PALAVRA INTEIRA (R6-6)
+
     def evidencia(self, b, r) -> bool:
-        return bool(r.get("doc")) and r["doc"] in b.get("desc", "")
+        doc, desc = r.get("doc"), b.get("desc", "")
+        if not doc:
+            return False
+        if not self.estrito:  # <= v0.1.4: "contém" — "4512" virava evidência em "14512" (R6-6)
+            return doc in desc
+        return re.search(r"(?<![0-9A-Za-z])" + re.escape(doc) + r"(?![0-9A-Za-z])", desc) is not None
 
     def contradiz(self, b, r) -> bool:
         c = self.citados(b)
@@ -72,10 +79,11 @@ class _Ctx:
         return [b for b in self.idx_b[r["valor"]] if self.janela(b, r)]
 
 
-def verificar(extrato: list[dict], razao: list[dict], proposta: dict, versao: str = "0.1.4",
+def verificar(extrato: list[dict], razao: list[dict], proposta: dict, versao: str = "0.1.5",
               parametros: dict | None = None) -> tuple[bool, list[str]]:
     V = _v(versao)
     c = _Ctx(extrato, razao, parametros)
+    c.estrito = V >= (0, 1, 5)
     B, R = c.B, c.R
     falhas: list[str] = []
     pares = [tuple(p) for p in proposta.get("pares", [])]

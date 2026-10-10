@@ -26,9 +26,14 @@ _NUM = re.compile(r"^\(?-?\s*(R\$\s*)?[\d.]+(,\d{1,2})?\)?-?$|^-?\d+(\.\d{1,2})?
 
 
 def centavos(texto: str) -> int:
-    """'1.234,56' | '-1.234,56' | '(1.234,56)' | '1234.56' | '1.234,56-' -> centavos (int)."""
+    """'1.234,56' | '-1.234,56' | '(1.234,56)' | '1234.56' | '1.234,56-' -> centavos (int).
+    R6-4 (10/10/2026): sufixo de extrato/razão '1.234,56 D' (negativo) ou '1.234,56C' (positivo),
+    na convenção BANCÁRIA (D = saída). A convenção contábil é tratada por detectar_convencao()."""
     t = str(texto).strip().replace("R$", "").replace(" ", "")
-    negativo = t.startswith("-") or t.endswith("-") or (t.startswith("(") and t.endswith(")"))
+    sufixo_d = bool(re.search(r"\d[Dd]$", t))
+    if re.search(r"\d[CcDd]$", t):
+        t = t[:-1]
+    negativo = sufixo_d or t.startswith("-") or t.endswith("-") or (t.startswith("(") and t.endswith(")"))
     t = t.strip("()-")
     if "," in t:
         t = t.replace(".", "").replace(",", ".")
@@ -99,7 +104,7 @@ def ler_csv(conteudo: str, colunas: dict, prefixo: str, sep: str = ";") -> list[
     linhas = csv.DictReader(io.StringIO(conteudo), delimiter=sep)
     out, vistos = [], set()
     for i, ln in enumerate(linhas):
-        ln = {k.strip(): (v or "").strip() for k, v in ln.items() if k}
+        ln = {k.strip().lstrip("\ufeff"): (v or "").strip() for k, v in ln.items() if k}  # R6-2: BOM do Excel
         ident = ln.get(colunas.get("id", ""), "") or str(i)
         if ident in vistos:
             raise ValueError(f"id repetido no CSV: {ident}")
@@ -305,3 +310,176 @@ def ler_open_finance(resposta: dict | list, prefixo: str = "B") -> dict:
             item["revisar"] = True
         extrato.append(item)
     return {"extrato": extrato, "fora_por_nao_efetivada": fora, "saldo_inicial": None, "saldo_final": None}
+
+
+# ------------------------------------------------------------------ planilha real (T065, rodada 6)
+
+class ImportacaoInvalida(ValueError):
+    """Falha fechada com o NÚMERO DA LINHA: o humano sabe exatamente o que corrigir."""
+
+
+ALIASES = {
+    "data": ("data", "dt", "data lancamento", "data lanc", "data mov", "data movimento", "data movimentacao",
+             "dt lanc", "dt lancamento", "data do lancamento", "data operacao"),
+    "valor": ("valor", "valor r$", "valor (r$)", "montante", "quantia", "valor lancamento", "vlr", "vl"),
+    "debito": ("debito", "debitos", "saida", "saidas", "deb", "valor debito", "vlr debito"),
+    "credito": ("credito", "creditos", "entrada", "entradas", "cred", "valor credito", "vlr credito"),
+    "desc": ("historico", "descricao", "complemento", "memo", "historico complementar"),
+    "doc": ("documento", "doc", "n doc", "no doc", "num doc", "numero documento", "n documento", "nf",
+            "nota", "nota fiscal", "num documento"),
+    "id": ("id", "n", "no", "num", "numero", "sequencial", "seq", "codigo", "cod", "n lanc", "lancamento",
+           "n lancamento", "numero lancamento", "lanc"),
+}
+_RODAPE = re.compile(r"^(total|totais|subtotal|sub total|saldo|soma|transporte|a transportar|de transporte)\b")
+
+
+def _norm(t: str) -> str:
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(t)).encode("ascii", "ignore").decode().lower()
+    return re.sub(r"\s+", " ", re.sub(r"[^a-z0-9$() ]+", " ", t)).strip()
+
+
+def decodificar(conteudo: str | bytes) -> tuple[str, str]:
+    """utf-8 (com ou sem BOM) e, se falhar, cp1252 (Excel brasileiro). Devolve (texto, encoding)."""
+    if isinstance(conteudo, str):
+        return conteudo.lstrip("﻿"), "texto"
+    for enc in ("utf-8-sig", "cp1252"):
+        try:
+            return conteudo.decode(enc), enc
+        except UnicodeDecodeError:
+            continue
+    raise ImportacaoInvalida("arquivo não é texto em UTF-8 nem em CP-1252")
+
+
+def _mapear(cabecalho: list[str], colunas: dict | None) -> dict | None:
+    nomes = [_norm(c) for c in cabecalho]
+    if colunas:  # mapeamento explícito: nomes do arquivo, comparados sem acento/caixa
+        m = {}
+        for chave, nome in colunas.items():
+            if _norm(nome) not in nomes:
+                return None
+            m[chave] = nomes.index(_norm(nome))
+        return m
+    m = {}
+    for chave, alias in ALIASES.items():
+        for i, n in enumerate(nomes):
+            if i not in m.values() and (n in alias or n.replace("$", "").strip() in alias):
+                m[chave] = i
+                break
+    if "data" in m and ("valor" in m or ("debito" in m and "credito" in m)):
+        return m
+    return None
+
+
+def _separador(linhas: list[str]) -> str:
+    candidatos = [";", "\t", ",", "|"]
+    contagem = {c: sum(ln.count(c) for ln in linhas[:30]) for c in candidatos}
+    return max(candidatos, key=lambda c: (contagem[c], c == ";"))
+
+
+def ler_planilha(conteudo: str | bytes, prefixo: str, colunas: dict | None = None, sep: str | None = None) -> dict:
+    """Lê extrato ou razão exportado de banco/ERP como CSV/TXT. Robusto ao mundo real:
+    BOM do Excel, CP-1252, título antes da tabela, separador ; , TAB |, valor com sufixo D/C,
+    débito e crédito em colunas separadas, linhas de TOTAL/SALDO/TRANSPORTE no meio ou no fim.
+    Linhas de saldo alimentam a prova de saldo; as demais de rodapé ficam listadas em 'ignoradas'.
+    Qualquer outra linha não reconhecida = ImportacaoInvalida com o número da linha (falha fechada).
+    Os valores saem na convenção BANCÁRIA (entrada positiva); ver detectar_convencao()."""
+    texto, enc = decodificar(conteudo)
+    linhas = texto.splitlines()
+    sep = sep or _separador(linhas)
+    tabela = list(csv.reader(linhas, delimiter=sep))
+    inicio, mapa = None, None
+    for i, celulas in enumerate(tabela[:50]):
+        mapa = _mapear(celulas, colunas)
+        if mapa:
+            inicio = i
+            break
+    if inicio is None:
+        raise ImportacaoInvalida("cabeçalho não encontrado nas 50 primeiras linhas: preciso de uma coluna de DATA "
+                                 "e de VALOR (ou DÉBITO e CRÉDITO); informe o mapeamento de colunas")
+    itens, ignoradas, vistos = [], [], set()
+    saldo_ini = saldo_fim = None
+
+    def cel(cs, chave):
+        j = mapa.get(chave)
+        return cs[j].strip() if j is not None and j < len(cs) else ""
+
+    def valor_de(cs):
+        if "valor" in mapa:
+            return centavos(cel(cs, "valor"))
+        cr, db = cel(cs, "credito"), cel(cs, "debito")
+        if cr and db and centavos(cr) and centavos(db):
+            raise ValueError("linha com débito E crédito preenchidos")
+        return (abs(centavos(cr)) if cr else 0) - (abs(centavos(db)) if db else 0)
+
+    for n, cs in enumerate(tabela[inicio + 1:], start=inicio + 2):
+        if not any(c.strip() for c in cs):
+            continue
+        primeira = _norm(next(c for c in cs if c.strip()))
+        if _RODAPE.match(primeira):
+            ignoradas.append({"linha": n, "texto": sep.join(cs)[:200]})
+            num = [c for c in cs if re.search(r"\d", c) and not re.search(r"\d{1,2}/\d{1,2}/\d{2,4}", c)]
+            if primeira.startswith("saldo") and num:
+                try:
+                    v = centavos(num[-1])
+                    if any(k in primeira for k in ("anterior", "inicial", "abertura")):
+                        saldo_ini = v
+                    elif any(k in primeira for k in ("final", "atual", "fechamento")):
+                        saldo_fim = v
+                except ValueError:
+                    pass
+            continue
+        try:
+            dt = data_iso(cel(cs, "data"))
+            v = valor_de(cs)
+        except ValueError as e:
+            raise ImportacaoInvalida(f"linha {n} não reconhecida ({e}): {sep.join(cs)[:120]!r}") from e
+        ident = cel(cs, "id") or f"L{n}"
+        if ident in vistos:
+            raise ImportacaoInvalida(f"linha {n}: identificador repetido {ident!r}")
+        vistos.add(ident)
+        item = {"id": f"{prefixo}-{ident}", "data": dt, "valor": v}
+        if "desc" in mapa:
+            item["desc"] = cel(cs, "desc")
+        if "doc" in mapa:
+            item["doc"] = cel(cs, "doc")
+        itens.append(item)
+    if not itens:
+        raise ImportacaoInvalida("nenhum lançamento encontrado depois do cabeçalho")
+    return {"itens": itens, "ignoradas": ignoradas, "saldo_inicial": saldo_ini, "saldo_final": saldo_fim,
+            "mapa": {k: tabela[inicio][j].strip() for k, j in mapa.items()}, "separador": sep, "encoding": enc,
+            "linha_cabecalho": inicio + 1}
+
+
+def detectar_convencao(extrato: list[dict], razao: list[dict], janela: int = 5) -> dict:
+    """R6-1 (10/10/2026): o razão da conta BANCO, do ponto de vista contábil, registra a entrada
+    como DÉBITO — o inverso do extrato. Lido sem cuidado, todo sinal sai trocado e nada casa, EM
+    SILÊNCIO. Aqui a convenção é decidida pelos DADOS: conta quantos lançamentos do razão têm par
+    de mesmo valor e data próxima no extrato com o sinal como está e com o sinal invertido.
+    Regra pré-registrada: decide só se o vencedor tiver >= 2x os casamentos do perdedor E
+    >= max(3, 20% do menor arquivo); senão 'indeterminado' (o humano precisa dizer)."""
+    from collections import defaultdict
+    idx = defaultdict(list)
+    for b in extrato:
+        idx[b["valor"]].append(date.fromisoformat(b["data"]))
+
+    def casam(sinal):
+        k = 0
+        for r in razao:
+            d = date.fromisoformat(r["data"])
+            if any(abs((d - x).days) <= janela for x in idx.get(sinal * r["valor"], ())):
+                k += 1
+        return k
+    direto, invertido = casam(1), casam(-1)
+    minimo = max(3, int(0.2 * min(len(extrato), len(razao))))
+    if direto >= 2 * invertido and direto >= minimo:
+        conv = "bancaria"
+    elif invertido >= 2 * direto and invertido >= minimo:
+        conv = "contabil"
+    else:
+        conv = "indeterminado"
+    return {"convencao": conv, "casam_direto": direto, "casam_invertido": invertido, "minimo": minimo}
+
+
+def inverter(itens: list[dict]) -> list[dict]:
+    return [dict(x, valor=-x["valor"]) for x in itens]

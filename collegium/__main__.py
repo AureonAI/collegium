@@ -42,6 +42,15 @@ Métricas e fatura conferível pelo cliente (T064):
   python -m collegium fatura ANAIS.jsonl cabeca.json INICIO_UNIX FIM_UNIX precos.json ARQUIVO_PRIVADO > fatura.json
   python -m collegium conferir-fatura fatura.json CHAVE_PUBLICA
 
+Conciliar arquivos reais (T066; o trabalho que se vende):
+  python -m collegium conciliar --extrato EXTRATO --razao RAZAO --saida PASTA [--ente "NOME"]
+      [--sinal-razao auto|bancaria|contabil] [--doc REGEX ...] [--anais ANAIS.jsonl] [--chave ARQUIVO_PRIVADO]
+      extrato: OFX, CNAB 240, JSON Open Finance ou planilha; razão: planilha do ERP (CSV/TXT).
+      Saída: relatorio.html, pendencias.csv, pares.csv, resumo.json (+ recibo.json com --chave).
+      [--humano NOME --chave-publica CHAVE]   registra quem aprova (só na 1ª conciliação do ANAIS)
+      Código de saída: 0 conciliado · 2 BLOQUEADO (o relatório diz o que corrigir) · 1 arquivo ilegível.
+  python -m collegium aprovar --anais ANAIS.jsonl --tarefa TAREFA --humano NOME --chave ARQUIVO_PRIVADO [--rejeitar]
+
 Kit de ofício (T049):
   python -m collegium conformidade NOME_DO_OFICIO [SEMENTES]     roda a suíte (pureza, falha fechada, mutação)
 """
@@ -63,6 +72,67 @@ from .lex import Lex, _h, assinar_humano, assinar_humano_ed25519, carregar_regim
 
 def _chave(var: str) -> bytes | None:
     return Ledger.chave_de_ambiente(var)
+
+
+def _conciliar(args: list[str]) -> int:
+    import argparse
+    from pacotes.conciliacao import importadores as imp
+    from pacotes.conciliacao import piloto
+    ap = argparse.ArgumentParser(prog="python -m collegium conciliar")
+    ap.add_argument("--extrato", required=True)
+    ap.add_argument("--razao", required=True)
+    ap.add_argument("--saida", required=True)
+    ap.add_argument("--ente", default="Cliente")
+    ap.add_argument("--sinal-razao", default="auto", choices=["auto", "bancaria", "contabil"])
+    ap.add_argument("--doc", action="append", default=[])
+    ap.add_argument("--anais")
+    ap.add_argument("--chave")
+    ap.add_argument("--humano", help="nome do responsável que aprova (registrado só na 1ª conciliação do ANAIS)")
+    ap.add_argument("--chave-publica", help="chave PÚBLICA Ed25519 do humano (saída de gerar-chave)")
+    a = ap.parse_args(args)
+    if bool(a.humano) != bool(a.chave_publica):
+        print("--humano e --chave-publica vão juntos", file=sys.stderr)
+        return 1
+    humanos = {a.humano: a.chave_publica.strip().lower()} if a.humano else None
+    privada = None
+    if a.chave:
+        with open(a.chave, encoding="utf-8") as f:
+            privada = bytes.fromhex(f.read().strip())
+    try:
+        r = piloto.conciliar_arquivos(a.extrato, a.razao, a.saida, a.ente, a.sinal_razao, a.doc, a.anais,
+                                      _chave("COLLEGIUM_CHAVE"), privada, humanos)
+    except (imp.ImportacaoInvalida, imp.CNABInvalido, ValueError, KeyError) as e:  # RegimentoInvalido é ValueError
+        print(f"ARQUIVO NÃO PÔDE SER LIDO: {e}", file=sys.stderr)
+        return 1
+    print(f"{r['status']}: {r.get('motivo') or str(r.get('pares', 0) + r.get('grupos', 0)) + ' casados, ' + str(r.get('pendencias_extrato', 0)) + ' pendências no extrato, ' + str(r.get('pendencias_razao', 0)) + ' no razão'}")
+    for av in r["avisos"]:
+        print(f"AVISO: {av}")
+    print(f"Abra: {os.path.join(a.saida, 'relatorio.html')}")
+    return {"CONCILIADO": 0, "BLOQUEADO": 2}.get(r["status"], 3)
+
+
+def _aprovar(args: list[str]) -> int:
+    import argparse
+    from pacotes.registro import carregar
+    from .execucao import aprovar
+    ap = argparse.ArgumentParser(prog="python -m collegium aprovar")
+    ap.add_argument("--anais", required=True)
+    ap.add_argument("--tarefa", required=True)
+    ap.add_argument("--humano", required=True)
+    ap.add_argument("--chave", required=True, help="arquivo da SUA chave privada (gerar-chave)")
+    ap.add_argument("--rejeitar", action="store_true")
+    ap.add_argument("--oficio", default="conciliacao_bancaria")
+    a = ap.parse_args(args)
+    with open(a.chave, encoding="utf-8") as f:
+        sk = bytes.fromhex(f.read().strip())
+    of, _ = carregar(a.oficio)
+    try:
+        r = aprovar(of, Ledger(a.anais, chave=_chave("COLLEGIUM_CHAVE")), a.tarefa, a.humano, sk, not a.rejeitar)
+    except (KeyError, ValueError) as e:
+        print(f"NÃO APROVADO: {e}", file=sys.stderr)
+        return 1
+    print(f"{r['codigo']}: {r['motivo']}")
+    return 0 if r["permitido"] else 2
 
 
 def main(argv: list[str]) -> int:
@@ -226,6 +296,10 @@ def main(argv: list[str]) -> int:
         ok, motivos, resumo = conferir_fatura(fat, argv[2])
         print(json.dumps({"valida": ok, "motivos": motivos, "resumo": resumo}, ensure_ascii=False, indent=1))
         return 0 if ok else 1
+    if cmd == "conciliar":
+        return _conciliar(argv[1:])
+    if cmd == "aprovar":
+        return _aprovar(argv[1:])
     if cmd == "conformidade":
         from pacotes.registro import carregar
         from .oficio import conformidade
