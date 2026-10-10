@@ -96,6 +96,32 @@ class TestAnonimizador(unittest.TestCase):
             for n in ("SILVA", "APARECIDA", "ACME", "PEREIRA"):
                 self.assertNotIn(n, texto)
 
+    def test_pseudonimo_nunca_parece_documento(self):
+        """Achado pelo CI (falha intermitente em 4 de 12 máquinas): pseudônimo aleatório em base32 às vezes
+        continha 'PED7'/'NF2...', que o oráculo lia como DOCUMENTO CITADO — contradição falsa e, no pior
+        caso, evidência falsa. Aqui a colisão é forçada de forma determinística."""
+        original = self.cofre.pseudonimo
+        colisoes = iter(["NOME_PED2345XY", "NOME_NF77ABCDE"])
+
+        def colide(tipo, valor, variante=0):
+            if variante == 0:
+                return next(colisoes, original(tipo, valor, variante))
+            return original(tipo, valor, variante)
+        self.cofre.pseudonimo = colide
+        import re as _re
+        for texto in ("PIX RECEBIDO FULANO", "TED SICRANO"):
+            saida = self.an.texto(texto)
+            for rx in PARAM["padroes_documento"]:
+                self.assertIsNone(_re.search(rx, saida), saida)
+
+    def test_padrao_so_de_letras_tambem_nao_colide(self):
+        """Entidade com padrão de documento SEM dígitos: a troca de alfabeto não basta; vale a checagem."""
+        import re as _re
+        an = Anonimizador(self.cofre, [r"[A-Z]{2}Q"])
+        for i in range(300):
+            saida = an.texto(f"PIX RECEBIDO FULANO{chr(65 + i % 26)} DE TAL{i % 7}")
+            self.assertIsNone(_re.search(r"[A-Z]{2}Q", saida.replace("PIX RECEBIDO", "")), saida)
+
     def test_exportar_exige_revisao_humana(self):
         dados_anon = self.an.registros([{"desc": "PIX RECEBIDO FULANO"}])
         rel = self.an.relatorio()

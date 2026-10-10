@@ -151,7 +151,7 @@ class TestPortao(unittest.TestCase):
         self.call("pagamento.agendar", {"conta": "999-6666-6"})
         self.assertEqual([s["name"] for s in spans], ["execute_tool extrato.ler", "execute_tool pagamento.agendar"])
         self.assertEqual(spans[1]["attributes"]["error.type"], "DESTINO_NAO_CONFIAVEL")
-        self.assertNotIn("999", json.dumps(spans))                 # nenhum argumento vaza para a telemetria
+        self.assertNotIn("999-6666-6", json.dumps(spans))          # nenhum argumento vaza para a telemetria
 
     def test_id_invalido(self):
         for ruim in ({"a": 1}, [1], 1.5, True):

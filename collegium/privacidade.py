@@ -14,7 +14,6 @@ Falha fechada: a exportação exige que um humano confirme a lista de palavras M
 """
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
@@ -79,7 +78,7 @@ class Cofre:
             os.fsync(f.fileno())
         os.replace(tmp, self.caminho)
 
-    def pseudonimo(self, tipo: str, valor: str) -> str:
+    def pseudonimo(self, tipo: str, valor: str, variante: int = 0) -> str:
         i = self._indice(tipo, valor)
         if i not in self._d:
             self._d[i] = {"k": secrets.token_hex(32), "tipo": tipo}
@@ -87,8 +86,10 @@ class Cofre:
                 self._d[i]["original"] = valor
             self._salvar()
         k = bytes.fromhex(self._d[i]["k"])
-        cod = base64.b32encode(hmac.new(k, tipo.encode(), hashlib.sha256).digest()).decode()[:10]
-        return f"{tipo}_{cod}"
+        # SÓ LETRAS (achado pelo CI): base32 tinha dígitos e às vezes formava 'PED7'/'NF2…', que o oráculo
+        # lia como documento citado. Sem dígitos, padrões do tipo NF\d+ não podem casar.
+        dig = hmac.new(k, f"{tipo}:{variante}".encode(), hashlib.sha256).digest()
+        return f"{tipo}_" + "".join(chr(65 + b % 26) for b in dig[:12])
 
     def eliminar(self, tipo: str, valor: str) -> bool:
         """LGPD art. 18, VI: destrói a chave do titular. Pseudônimos antigos ficam órfãos para sempre."""
@@ -153,7 +154,11 @@ class Anonimizador:
 
     def _p(self, tipo: str, valor: str) -> str:
         self.cont[tipo] += 1
-        return self.cofre.pseudonimo(tipo, _normalizar(tipo, valor))
+        for variante in range(16):  # padrão da entidade pode ser só de letras: nunca deixar parecer documento
+            ps = self.cofre.pseudonimo(tipo, _normalizar(tipo, valor), variante)
+            if not any(rx.search(ps) for rx in self.doc):
+                return ps
+        raise ValueError("pseudônimo colide com padrão de documento em todas as variantes (falha fechada)")
 
     def texto(self, s: str) -> str:
         if not isinstance(s, str) or not s:

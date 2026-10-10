@@ -110,6 +110,9 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **L-3** | T8 | **Limite (como G7):** o mundo foi construído com atraso de 5–7 dias; achar 7 é esperado. Prova o mecanismo (governança, backtest, envenenamento), não o valor em dado real | Declarado | — |
 | **S-1** | ANAIS SQLite (T058) | Nome de arquivo por ente quebrava com acento ("escrit-rio") | Remoção de acento antes do slug | `test_backup_verificado_e_um_arquivo_por_ente` |
 | **O-1** | Telemetria (T058) | Convenções GenAI do OpenTelemetry ainda em DESENVOLVIMENTO (2026); `gen_ai.provider.name` substituiu `gen_ai.system` na v1.37. Nomes isolados num módulo; nenhum conteúdo de prompt, resposta ou argumento é gravado | Declarado | `test_telemetria_execute_tool` |
+| **P-A3** | Anonimizador × oráculo (T044) — **achado pelo CI** | **Ataque venceu (defeito real, intermitente):** o pseudônimo aleatório em base32 às vezes formava `PED7`/`NF2…`, lido pelo oráculo como DOCUMENTO CITADO: contradição falsa (item correto ia ao humano) e, no pior caso, evidência documental FALSA criada pela anonimização. Falhava em 4 de 12 máquinas do GitHub porque as chaves do cofre são aleatórias | Pseudônimo só com letras + checagem contra os padrões da entidade com variantes determinísticas (falha fechada se todas colidirem) | `test_pseudonimo_nunca_parece_documento` (falhou antes, passa depois), `test_padrao_so_de_letras_tambem_nao_colide` |
+| **P-A4** | Processo | **Falha minha de método:** o CI ficou vermelho em 3 envios seguidos (T044, T046, T049) e eu só percebi depois. Passo a conferir o resultado do CI a cada envio, e a suíte agora roda com várias sementes de hash antes de publicar | — | — |
+| **T-2** | Teste de telemetria | Meu teste procurava "999" na saída; identificadores aleatórios às vezes contêm "999" (falso positivo) | Procura o valor exato do argumento | `test_telemetria_execute_tool` |
 
 ## Ataque-Gödel (contra o próprio método)
 
