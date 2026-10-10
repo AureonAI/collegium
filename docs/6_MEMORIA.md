@@ -10,6 +10,7 @@
 - **Próximo passo:** Missão 4 (o produto no Windows do Renato, `docs/5_TAREFAS.md`), depois Missão 3 (entrevistas) com o relatório na mesa. Missões externas seguem: AgentDojo (T051), Docker real (T016/T046), LLM real com `--esquema`/`--tentativas` (T053/T054), PaddleOCR real (T036).
 - **Decisões pendentes do Renato:** LICENSE (o repositório está sem licença, ou seja, todos os direitos reservados).
 - **Régua anticatedral:** a Fase SA foi pedida explicitamente pelo Renato (10/10/2026). Daqui em diante, de novo: **nenhum módulo novo antes de dado real e de comprador**.
+- **Lacunas de produto CONHECIDAS e adiadas de propósito (decidir com a entrevista, não antes):** (1) o contador não registra a decisão de cada pendência na ferramenta (resolve no ERP; sem isso, o aprendizado governado T052 não tem dado real); (2) PDF e .xlsx não são lidos (a ferramenta diz o que fazer); (3) o recibo é conferido por comando, não por uma página que um leigo abra; (4) 24% do extrato do kit volta ao humano (valor repetido sem documento), acima da meta de 15%; (5) API e mensagens só em português.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**.
 
 ## Diário

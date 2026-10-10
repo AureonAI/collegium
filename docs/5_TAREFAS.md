@@ -122,7 +122,7 @@ Critério: o trabalho que se vende roda de ponta a ponta, por quem não é o aut
 | T067 | Prova de completude: mapa assinado de tarefas no recibo e na fatura; auditoria da cabeça | recibo não esconde a recusa humana; fatura não cobra canário nem recusada | ✅ (`collegium/mapa.py`; `tests/test_mapa.py`; R6-7, R6-8; fecha R-1 e F-L) |
 | T068 | Instalável por `pip`, comando `collegium`, kit empacotado (`collegium exemplo`), versão única | ciclo inteiro rodado como estranho no CI de 3 sistemas | ✅ (`pyproject.toml`; `ferramentas/instalacao_limpa.py`; R6-9..R6-12) · 🔶 prova no Windows do Renato = Missão 4 |
 | T069 | Documentação na v0.3.0 (README produto primeiro, ARQUITETURA, ADR 025–028, EVIDENCE, MEMÓRIA, ADVERSARIAL_LOG) | nenhum documento contradiz o código | ✅ |
-| T070 | Red Team rodada 6, continuação: arquivos hostis e usuário descuidado | cada ataque vira teste | ✅ (`tests/test_rodada6_hostil.py`; R6-14..R6-18; sondagem com 13 ataques, 5 venceram) |
+| T070 | Red Team rodada 6, continuação: arquivos hostis e usuário descuidado | cada ataque vira teste | ✅ (`tests/test_rodada6_hostil.py`, `tests/test_formatos.py`; R6-14..R6-27: arquivos hostis, mesmos dados em OFX/CNAB/Open Finance, tipo de arquivo errado; `honesto_v6` nunca recusado pelo oráculo em 420 casos) |
 | T072 | Escala: conciliação de dezenas de milhares de lançamentos em segundos, com resultado idêntico | 10 mil < 3 s; teste diferencial contra a versão antiga | ✅ (`tests/test_escala.py`; 30 mil: 60 s → 7,8 s) |
 | T071 | `collegium aprovar`: humano com chave Ed25519 registrado no 1º uso; aprovação assinada → LIBERADA → aparece no recibo | ciclo conciliar → aprovar → recibo conferido offline | ✅ (`execucao.aprovar`; `tests/test_piloto.py`, `instalacao_limpa.py`) |
 
