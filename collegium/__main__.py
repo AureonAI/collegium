@@ -19,6 +19,7 @@ Recibo verificável (T043; o cliente confere sem acesso ao sistema):
   python -m collegium cabeca ANAIS.jsonl ARQUIVO_PRIVADO "NOME DO ENTE"   > cabeca.json
   python -m collegium recibo ANAIS.jsonl TAREFA cabeca.json               > recibo.json
   python -m collegium conferir-recibo recibo.json CHAVE_PUBLICA [ENTRADA.json]
+  python -m collegium auditar-cabeca ANAIS.jsonl cabeca.json CHAVE_PUBLICA   (auditor: mapa e raiz batem?)
   python -m collegium consistencia ANAIS.jsonl TAMANHO_ANTIGO TAMANHO_NOVO > prova.json
   python -m collegium conferir-consistencia antiga.json nova.json prova.json CHAVE_PUBLICA
 
@@ -216,6 +217,12 @@ def main(argv: list[str]) -> int:
                 entrada = json.load(f)
         ok, motivos, resumo = rc.conferir_recibo(rec, argv[2], entrada=entrada)
         print(json.dumps({"valido": ok, "motivos": motivos, "resumo": resumo}, ensure_ascii=False, indent=1))
+        return 0 if ok else 1
+    if cmd == "auditar-cabeca":
+        with open(argv[2], encoding="utf-8") as f:
+            cab = json.load(f)
+        ok, motivos = rc.auditar_cabeca(argv[1], cab, argv[3])
+        print(json.dumps({"confere": ok, "motivos": motivos}, ensure_ascii=False, indent=1))
         return 0 if ok else 1
     if cmd == "consistencia":
         print(json.dumps(rc.prova_consistencia(argv[1], int(argv[2]), int(argv[3]))))
