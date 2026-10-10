@@ -110,8 +110,11 @@ class TestPiloto(Base):
                 self.assertRegex(linha[col], r"^-?\d+,\d{2}$", (nome, linha))
                 for c in filter(None, linha):  # o resto: nada que vire fórmula, salvo número puro nosso
                     self.assertFalse(c[:1] in "=+@" or (c[:1] == "-" and not numero.fullmatch(c)), (nome, linha))
-        self.assertIn("'=", open(os.path.join(s, "pendencias.csv"), encoding="utf-8-sig").read()
-                      + open(os.path.join(s, "pares.csv"), encoding="utf-8-sig").read())  # o texto hostil do kit
+        texto = ""
+        for nome in ("pendencias.csv", "pares.csv"):
+            with open(os.path.join(s, nome), encoding="utf-8-sig") as f:
+                texto += f.read()
+        self.assertIn("'=", texto)  # o texto hostil do kit continua neutralizado
 
     def test_anais_nao_guarda_historico_do_cliente(self):
         s = os.path.join(self.tmp, "s")

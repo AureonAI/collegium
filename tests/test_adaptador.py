@@ -76,6 +76,7 @@ class TestAdaptador(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.srv.shutdown()
+        cls.srv.server_close()  # shutdown() para o laço mas não fecha o socket (ResourceWarning)
 
     def test_familia(self):
         self.assertEqual(Ollama("qwen2.5-coder:1.5b").familia, "qwen")
