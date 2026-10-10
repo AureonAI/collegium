@@ -73,6 +73,26 @@ class TestPiloto(Base):
         self.assertGreater(len(um_a_um), 30)
         self.assertEqual([p for p in um_a_um if (p[0], mapa[p[4]]) not in gab], [])
 
+    def test_r6_22_kit_coerente_para_um_contador(self):
+        """R6-22: o kit (o que se MOSTRA na entrevista) tinha 'PIX RECEBIDO' com valor NEGATIVO. Um contador
+        vê isso em 2 segundos e deixa de confiar na demonstração inteira."""
+        from collegium_oficios.conciliacao import importadores as imp
+        ext = imp.ler_ofx(kit.gerar()[0])["extrato"]
+        entrada, saida = ("RECEBID", "LIQUIDADO", "CREDITO"), ("ENVIAD", "PAGAMENTO", "TARIFA", "DEBITO")
+        for x in ext:
+            d = x["desc"].upper()
+            if x["valor"] < 0:
+                self.assertFalse(any(p in d for p in entrada), x)
+            else:
+                self.assertFalse(any(p in d for p in saida), x)
+        s = os.path.join(self.tmp, "s")
+        r = piloto.conciliar_arquivos(EXT, RAZ, s, "E")
+        self.assertEqual((r["pares"] + r["grupos"], r["pendencias_extrato"], r["pendencias_razao"]), (47, 15, 12))
+        with open(os.path.join(s, "relatorio.html"), encoding="utf-8") as f:
+            h = f.read()
+        self.assertIn("75,8%", h)  # número em português
+        self.assertIn("overflow-wrap:anywhere", h.replace(" ", ""))  # linha longa não estoura o celular
+
     def test_texto_hostil_nao_executa(self):
         s = os.path.join(self.tmp, "s")
         piloto.conciliar_arquivos(EXT, RAZ, s, "Empresa Exemplo Ltda")

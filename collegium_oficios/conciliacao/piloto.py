@@ -157,7 +157,9 @@ def sanidade(ext: dict, raz: dict, sinal: str) -> dict:
         return {"bloqueio": f"S1 {msg}. O extrato está incompleto ou foi lido errado: exporte de novo o período inteiro.",
                 "avisos": avisos}
     if msg.startswith("SALDOS_DESCONHECIDOS"):
-        avisos.append("O extrato não traz saldo inicial e final: a prova de saldo (S1) NÃO pôde ser feita.")
+        falta = [n for n, v in (("inicial", ext["saldo_inicial"]), ("final", ext["saldo_final"])) if v is None]
+        avisos.append(f"O extrato não traz o saldo {' nem o '.join(falta)}: a prova de saldo (S1) NÃO pôde ser "
+                      "feita. Se o banco oferecer, exporte com saldo inicial e final.")
     (e0, e1), (r0, r1) = _periodo(ext["itens"]), _periodo(raz["itens"])
     sobre = max(0, (min(e1, r1) - max(e0, r0)).days + 1) / ((e1 - e0).days + 1)
     if sobre < SOBREPOSICAO_MINIMA:
@@ -365,6 +367,14 @@ def _como_aprovar(resumo: dict) -> str:
             "Para recusar a entrega, acrescente <code>--rejeitar</code>.</section>")
 
 
+def _quando_br(iso: str) -> str:
+    """'2026-10-10T12:29:12+00:00' -> '10/10/2026 09:29 (horário deste computador)'; o ISO fica no resumo.json."""
+    try:
+        return datetime.fromisoformat(iso).astimezone().strftime("%d/%m/%Y %H:%M") + " (horário deste computador)"
+    except ValueError:
+        return iso
+
+
 def relatorio_html(resumo: dict, entrada: dict, r: dict) -> str:
     e = html.escape
     st = resumo["status"]
@@ -373,7 +383,8 @@ def relatorio_html(resumo: dict, entrada: dict, r: dict) -> str:
     R = {x["id"]: x for x in entrada["razao"]}
     avisos = "".join(f"<li>{e(a)}</li>" for a in resumo["avisos"]) or "<li>nenhum</li>"
     ign = [(lado, x) for lado in ("extrato", "razao") for x in resumo["linhas_ignoradas"][lado]]
-    ign_html = "".join(f"<li>{e(lado)}: linha {e(str(x.get('linha')))} — <code>{e(x['texto'])}</code></li>"
+    nome_lado = {"extrato": "extrato", "razao": "razão"}
+    ign_html = "".join(f"<li>{e(nome_lado.get(lado, lado))}: linha {e(str(x.get('linha')))} — <code>{e(x['texto'])}</code></li>"
                        for lado, x in ign) or "<li>nenhuma</li>"
     corpo = ""
     if st == "BLOQUEADO":
@@ -396,11 +407,12 @@ def relatorio_html(resumo: dict, entrada: dict, r: dict) -> str:
         tabela = ("<table><tr><th>lado</th><th>id</th><th>data</th><th>valor</th><th>histórico / documento</th>"
                   "<th>motivo</th><th>candidatos</th></tr>" + "".join(linhas) + "</table>") if linhas else \
             "<p class='ok'>Nenhuma pendência.</p>"
+        pct = f"{resumo['cobertura_extrato'] * 100:.1f}%".replace(".", ",")  # número em português
         corpo = (f"<section class='grade'>"
                  f"<div><b class='n'>{resumo['pares'] + resumo['grupos']}</b><span>pares e lotes casados</span></div>"
                  f"<div><b class='n'>{resumo['pendencias_extrato']}</b><span>pendências do extrato</span></div>"
                  f"<div><b class='n'>{resumo['pendencias_razao']}</b><span>pendências do razão</span></div>"
-                 f"<div><b class='n'>{resumo['cobertura_extrato']:.1%}</b><span>do extrato casado</span></div>"
+                 f"<div><b class='n'>{pct}</b><span>do extrato casado</span></div>"
                  f"</section><h2>Pendências para sua decisão</h2>{tabela}"
                  f"<p>Pares casados: ver <code>pares.csv</code>. Pendências em planilha: <code>pendencias.csv</code>.</p>")
     rodape = (f"<p class='meta'>Tarefa <code>{e(resumo['tarefa'])}</code> · ANAIS "
@@ -409,7 +421,7 @@ def relatorio_html(resumo: dict, entrada: dict, r: dict) -> str:
               + (f" · entrada <code>{e(resumo['entrada_sha256'][:16])}</code> · entrega "
                  f"<code>{e(resumo['entrega_sha256'][:16])}</code>" if resumo.get("entrada_sha256") else "")
               + (" · recibo assinado: <code>recibo.json</code>" if resumo.get("recibo") else "")
-              + f" · gerado em {e(resumo['gerado_em'])}</p>")
+              + f" · gerado em {e(_quando_br(resumo['gerado_em']))}</p>")
     return f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
@@ -420,6 +432,7 @@ def relatorio_html(resumo: dict, entrada: dict, r: dict) -> str:
 h1{{font-family:Fraunces,Georgia,serif;color:var(--selo);margin:.2em 0}}h2{{font-size:1.1em;margin-top:1.6em}}
 table{{border-collapse:collapse;width:100%;font-size:.92em}}td,th{{border-bottom:1px solid var(--linha);padding:6px;text-align:left;vertical-align:top}}
 .n,code{{font-family:"JetBrains Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;white-space:nowrap}}
+li code{{white-space:normal;overflow-wrap:anywhere}}
 .ok{{color:var(--aceito)}}.mau{{color:var(--incidente)}}.pend{{color:var(--pendente)}}.meta{{color:var(--neutro);font-size:.85em}}
 .selo{{display:inline-block;border:2px solid currentColor;border-radius:4px;padding:2px 10px;font-weight:700}}
 .grade{{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:16px 0}}
