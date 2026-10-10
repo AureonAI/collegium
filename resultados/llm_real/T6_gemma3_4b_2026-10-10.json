@@ -1,0 +1,87 @@
+{
+  "nota": "LLM REAL, máquina do Renato (Windows, CPU), 10/10/2026 ~05:00, T6 com gemma3:4b. Transcrito sem alteração da mensagem colada (a primeira chave '{' foi cortada na cópia).",
+  "por_nota": {
+    "N001": [],
+    "N002": [],
+    "N003": [
+      "SUGESTAO_FORA_DOS_CANDIDATOS"
+    ],
+    "N004": [
+      "SUGESTAO_FORA_DOS_CANDIDATOS"
+    ],
+    "N005": [],
+    "N006": [],
+    "N007": [],
+    "N008": [
+      "REUSO"
+    ],
+    "N009": [],
+    "N010": [],
+    "N011": [],
+    "N012": [],
+    "N013": [
+      "SUGESTAO_FORA_DOS_CANDIDATOS"
+    ],
+    "N014": [],
+    "N015": [],
+    "N016": [],
+    "N017": [
+      "CONSERVACAO"
+    ],
+    "N018": [],
+    "N019": [
+      "CONSERVACAO"
+    ],
+    "N020": [
+      "SUGESTAO_FORA_DOS_CANDIDATOS"
+    ]
+  },
+  "tarefas": 20,
+  "modelo": "gemma3:4b",
+  "contagem": {
+    "base_acertou": 245,
+    "candidatos_contem_verdade": 150,
+    "conciliacao_ACEITA": 20,
+    "itens_com_par_1a1": 150,
+    "itens_residuo": 248,
+    "julgaveis": 248,
+    "lancamentos_extrato": 1200,
+    "llm_acertou": 147,
+    "llm_julgaveis": 148,
+    "llm_mesma_que_base": 147,
+    "nota_aceita": 13,
+    "nota_falha_CONSERVACAO": 2,
+    "nota_falha_REUSO": 1,
+    "nota_falha_SUGESTAO_FORA_DOS_CANDIDATOS": 4,
+    "nota_incidente": 6,
+    "nota_rejeitada": 7,
+    "residuo_banco": 123,
+    "residuo_razao": 125
+  },
+  "motivos": {
+    "SEM_CANDIDATO_1A1": 97,
+    "VALOR_REPETIDO_SEM_DOC": 151
+  },
+  "residuo_pct_extrato": 10.2,
+  "H1_recall_candidatos_pct": 100.0,
+  "H2_base_acerto_pct": 98.8,
+  "quarentena_op_det": false,
+  "anais_integro": true,
+  "impressao_conciliacoes": "37eaad7a82d9750e",
+  "veredito": {
+    "D1": "PASSOU",
+    "H1": "PASSOU",
+    "H2": "PASSOU",
+    "P6": "PASSOU",
+    "geral": "PASSOU"
+  },
+  "P6_notas_aceitas_pct": 65.0,
+  "P7_llm_acerto_pct": 99.3,
+  "segundos_por_nota": 115.3,
+  "analise_posterior_10_10_2026": {
+    "base_nos_mesmos_148_itens": "148/148 (calculado no Linux, mesmo gerador e sementes)",
+    "llm": "147/148",
+    "llm_igual_a_base": 147,
+    "leitura": "o LLM copiou o 1º candidato em 147/148; na única divergência, errou"
+  }
+}

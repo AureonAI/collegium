@@ -36,7 +36,7 @@
 |---|---|---|---|---|
 | T009 | — | **Missão 1 (Renato):** `python reproduzir.py --conferir` no Windows | 🔶 Windows já confirmado pelo GitHub (T034); rodar na máquina do Renato vira apenas preparação da Missão 2 | Todos "IGUAL" |
 | T010 | H6 | **Missão 2 (Renato):** T4 (conciliação) e T4b (EXAME) com `qwen2.5-coder:1.5b`, `gemma3:4b`, `llama3.2:1b` | ⬜ | Previsões P1–P5 |
-| T011 | — | **Missão 3 (Renato):** 10 conversas com escritórios | ⬜ | ≥ 3 SIM ao piloto pago |
+| T011 | — | **Missão 3 (Renato):** 10 conversas com escritórios, roteiro em `docs/ROTEIRO_ENTREVISTA.md` | 🔶 roteiro pronto | S1: ≥3/10 aceitam piloto com dado anonimizado · S2: ≥3/10 dão custo concreto (registrado em 10/10/2026) |
 | T012 | — | Busca de marca COLLEGIUM no INPI (classes 9 e 42) | ⬜ | Sem colidência |
 | T013 | — | Consulta jurídica sobre a conciliação automatizada | ⬜ | Parecer escrito |
 | T035 | — | Publicar o repositório (conta AureonAI) para o workflow rodar nas máquinas do GitHub | ✅ `github.com/AureonAI/collegium`, 12/12 verdes | 12 combinações verdes = primeira âncora externa |
@@ -51,7 +51,7 @@
 | T017 | H1 | Âncora: comando `python -m collegium ancora` | 🔶 (falta publicar automaticamente) |
 | T039 | — | Decisão A: operário determinístico sob o LEX + pacote do humano (motivo e candidatos por pendência) | ✅ (`pacotes/conciliacao/residuo.py`, `tests/test_residuo.py`) |
 | T040 | — | Classe `nota_residuo`: LLM anota o resíduo; oráculo barra id inventado, sugestão fora da lista e omissão | ✅ (invariante: a nota nunca altera a conciliação) |
-| T041 | — | T6 híbrido: parte determinística no `reproduzir.py`; parte LLM na máquina do Renato | 🔶 (falta a execução com gemma3:4b) |
+| T041 | — | T6 híbrido: parte determinística no `reproduzir.py`; parte LLM na máquina do Renato | ✅ (gemma3:4b: 13/20 notas aceitas; nenhum ganho sobre a base) |
 | T036 | — | PaddleOCR real com extratos escaneados (instalar no Windows; medir taxa de "revisar" e de saldo que não fecha) | ⬜ |
 
 ## Fase F2: Admissão por prova
@@ -83,9 +83,9 @@
 
 ## Missão atual (uma de cada vez)
 
-> **MISSÃO 2b: o LLM no resíduo (T041), na máquina do Renato, PowerShell**
-> 1. `cd D:\COLLEGIUM` e `git pull`.
-> 2. `python experimentos/t6_hibrido.py 20 --modelo gemma3:4b` (cerca de 20–30 min).
-> 3. **Me reporte** o bloco `{ ... }` final inteiro e as linhas `N001 ... N020`.
-> **Por que importa:** mede se um LLM de 4B consegue, ao menos, anotar pendências sem inventar (P6).
-> Missões anteriores (1: reproduzir no Windows; 2: T4/T4b com 3 modelos) estão concluídas: ver MEMÓRIA.
+> **MISSÃO 3: ouvir o mercado (T011), Renato**
+> 1. Abra `docs/ROTEIRO_ENTREVISTA.md` (no GitHub ele aparece formatado).
+> 2. Faça as **3 primeiras** conversas com escritórios contábeis ou de BPO financeiro.
+> 3. Preencha o bloco "O que anotar" de cada uma e cole aqui.
+> **Por que importa:** o código chegou ao limite do que dado sintético prova. O maior risco agora é não haver comprador.
+> Missões 1, 2 e 2b concluídas: ver MEMÓRIA.
