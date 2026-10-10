@@ -23,6 +23,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any, Callable
 
@@ -36,6 +37,11 @@ TIPOS = {"ferramenta", "mensagem", "rede", "declaracao"}
 FAMILIAS_INDEPENDENTES = {"deterministico", "humano"}
 STATUS_DECLARACAO = {"BLOQUEADO", "IMPOSSIVEL", "CONCLUIDO"}
 TIPOS_MENSAGEM = {"pedido", "resposta", "alerta"}
+# T047: argumentos que DIRECIONAM uma ação (para onde vai dinheiro, dado ou mensagem). Só valem
+# valores da lista confiável do REGIMENTO — um texto injetado no extrato nunca escolhe o destino.
+CHAVES_DESTINO = {"destino", "para", "conta", "chave_pix", "email", "url", "host", "favorecido", "telefone"}
+_PALAVRAS_DESTINO = {"destino", "para", "conta", "pix", "email", "url", "host", "favorecido", "telefone",
+                     "iban", "beneficiario", "recebedor", "endereco", "webhook"}
 
 
 class RegimentoInvalido(ValueError):
@@ -65,6 +71,23 @@ def _ed_ok(publica_hex: str, assinatura: Any, *campos: Any) -> bool:
         return ed25519.verificar(bytes.fromhex(publica_hex), canonico(list(campos)), bytes.fromhex(assinatura))
     except (TypeError, ValueError):
         return False
+
+
+def _campos_destino(obj: Any, _prof: int = 0):
+    """T047: acha argumentos de destino em QUALQUER nível e com qualquer grafia da chave
+    ('Conta', 'conta_destino', {'dados': {'conta': ...}}). Grafia diferente da lista = negado."""
+    if _prof > 8:
+        yield ("profundidade", obj)  # aninhamento absurdo é tratado como destino desconhecido
+        return
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            partes = set(re.split(r"[^a-z0-9]+", re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", str(k)).lower()))
+            if partes & _PALAVRAS_DESTINO or str(k).lower() in CHAVES_DESTINO:
+                yield (str(k), v)
+            yield from _campos_destino(v, _prof + 1)
+    elif isinstance(obj, (list, tuple)):
+        for v in obj:
+            yield from _campos_destino(v, _prof + 1)
 
 
 def linhagem(declarada: str | list[str]) -> frozenset[str]:
@@ -110,6 +133,21 @@ def carregar_regimento(fonte: str | dict) -> dict:
             raise RegimentoInvalido("patronus.quorum deve estar entre 1 e o número de chaves")
         if rev & set(chaves.values()) or any(d.get("chave_publica") in rev for d in reg["agentes"].values()):
             raise RegimentoInvalido("chave revogada não pode voltar ao REGIMENTO")
+    # T048: impressão digital do modelo; o mesmo modelo não pode ter duas linhagens
+    familia_por_digest: dict[str, frozenset] = {}
+    for ag, d in reg["agentes"].items():
+        if "modelo" in d:
+            dg = (d["modelo"] or {}).get("digest", "") if isinstance(d["modelo"], dict) else ""
+            if not (isinstance(dg, str) and dg.startswith("sha256:") and len(dg) == 71
+                    and all(c in "0123456789abcdef" for c in dg[7:])):
+                raise RegimentoInvalido(f"agente {ag}: modelo.digest deve ser 'sha256:' + 64 hex minúsculos")
+            fam = linhagem(d.get("familia_modelo") or "")
+            if familia_por_digest.setdefault(dg, fam) != fam:
+                raise RegimentoInvalido(f"o modelo {dg[:19]}… aparece com duas linhagens diferentes (burla da L3)")
+    # T047: destinos confiáveis por capacidade
+    for cap, regras in (reg.get("destinos") or {}).items():
+        if not isinstance(regras, dict) or not all(isinstance(v, list) for v in regras.values()):
+            raise RegimentoInvalido(f"destinos.{cap}: dicionário argumento -> lista de valores confiáveis")
     niveis = [r["nivel"] for r in reg["autonomia"]["niveis"]]
     if sorted(niveis) != list(range(1, len(niveis) + 1)):
         raise RegimentoInvalido("níveis de autonomia devem ser 1..k sem lacunas")
@@ -145,6 +183,7 @@ class _Tarefa:
     declaracao: dict | None = None
     entrada: Any = None
     entrada_hash: str | None = None
+    plano: tuple | None = None  # T047: capacidades fixadas na abertura, antes de ler dado externo
 
 
 class Mandato:
@@ -177,6 +216,7 @@ class Lex:
         self.admitidos: set[str] = set()
         self.hist: dict[tuple[str, str], Historico] = {}
         self._patronus_selado: dict | None = None
+        self.atestados: set[str] = set()  # T048: agentes cujo modelo foi atestado NESTA sessão
         anterior = self._reconstruir()
         # G4: MUDAR o REGIMENTO de um ANAIS existente exige assinatura do Patronus sobre o novo hash.
         # (O primeiro REGIMENTO de um ANAIS novo é o ato de fundação e fica selado.)
@@ -235,7 +275,8 @@ class Lex:
             elif tipo == "tarefa_aberta":
                 self.tarefas[d["tarefa"]] = _Tarefa(d["tarefa"], d["classe"], d["produtor"],
                                                     irreversivel=d["irreversivel"], valor=d["valor"],
-                                                    entrada_hash=d.get("entrada"))
+                                                    entrada_hash=d.get("entrada"),
+                                                    plano=tuple(d["plano"]) if d.get("plano") is not None else None)
             elif tipo == "decisao" and d.get("tarefa") in self.tarefas:
                 t = self.tarefas[d["tarefa"]]
                 if d["permitido"] and d["codigo"] == "OK":
@@ -335,7 +376,8 @@ class Lex:
 
     # ------------------------------------------------------------ ciclo da tarefa
     def abrir_tarefa(self, tarefa_id: str, classe: str, produtor: str,
-                     irreversivel: bool = False, valor: float = 0.0, entrada: Any = None) -> None:
+                     irreversivel: bool = False, valor: float = 0.0, entrada: Any = None,
+                     plano: list[str] | None = None) -> None:
         if classe not in self.r["classes_tarefa"]:
             raise KeyError(f"classe de tarefa fora do REGIMENTO: {classe}")
         if produtor not in self.r["agentes"]:
@@ -348,10 +390,33 @@ class Lex:
         if classe in self.oraculos and entrada is None:
             raise ValueError(f"classe {classe} tem oráculo: a entrada deve ser vinculada na abertura")
         eh = _h(entrada) if entrada is not None else None
+        if plano is not None:  # T047: o plano só pode ESTREITAR o papel, nunca ampliar
+            fora = sorted(set(plano) - set(self._papel(produtor).get("capacidades", [])))
+            if fora:
+                raise PermissionError(f"plano pede capacidades fora do papel de {produtor}: {fora}")
         self.tarefas[tarefa_id] = _Tarefa(tarefa_id, classe, produtor, irreversivel=irreversivel,
-                                          valor=valor, entrada=entrada, entrada_hash=eh)
-        self.anais.anexar("tarefa_aberta", {"tarefa": tarefa_id, "classe": classe, "produtor": produtor,
-                                            "irreversivel": irreversivel, "valor": valor, "entrada": eh})
+                                          valor=valor, entrada=entrada, entrada_hash=eh,
+                                          plano=tuple(sorted(set(plano))) if plano is not None else None)
+        registro = {"tarefa": tarefa_id, "classe": classe, "produtor": produtor,
+                    "irreversivel": irreversivel, "valor": valor, "entrada": eh}
+        if plano is not None:
+            registro["plano"] = sorted(set(plano))
+        self.anais.anexar("tarefa_aberta", registro)
+
+    # ------------------------------------------------------------ T048: identidade do modelo
+    def atestar_modelo(self, agente: str, digest_observado: str) -> Decisao:
+        """Chamado pelo ORQUESTRADOR (nunca pelo agente) com a impressão digital do modelo que vai rodar."""
+        acao = Acao(agente, "atestacao", "modelo")
+        dec = (self.r["agentes"].get(agente) or {}).get("modelo", {}).get("digest")
+        self.anais.anexar("atestacao_modelo", {"agente": agente, "declarado": dec, "observado": digest_observado})
+        if dec is None:
+            return self._decidir(acao, True, "SEM_DIGEST_DECLARADO",
+                                 "linhagem só declarada por nome: atestação fraca (registrada)")
+        if digest_observado != dec:
+            self.atestados.discard(agente)
+            return self._violacao(acao, "MODELO_TROCADO", f"declarado {dec[:19]}…, rodando {str(digest_observado)[:19]}…")
+        self.atestados.add(agente)
+        return self._decidir(acao, True, "ATESTADO", "modelo confere com o REGIMENTO")
 
     def _mensagem_valida(self, acao: Acao) -> str | None:
         cfg = self.r.get("forum", {})
@@ -372,6 +437,9 @@ class Lex:
             return self._violacao(acao, "NAO_ADMITIDO", "agente fora do REGIMENTO")
         if acao.tipo not in TIPOS:
             return self._violacao(acao, "TIPO_DESCONHECIDO", f"tipo de ação '{acao.tipo}' inexistente")
+        if "modelo" in self.r["agentes"][acao.agente] and acao.agente not in self.atestados:
+            return self._decidir(acao, False, "SEM_ATESTACAO", "modelo declarado no REGIMENTO ainda não "
+                                 "atestado nesta sessão (T048)")
 
         t = self.tarefas.get(acao.tarefa) if acao.tarefa else None
         if acao.tarefa and t is None:
@@ -405,6 +473,14 @@ class Lex:
         # L1 — negação por padrão
         if acao.tipo == "ferramenta" and acao.alvo not in papel.get("capacidades", []):
             return self._violacao(acao, "CAPACIDADE_NEGADA", f"capacidade '{acao.alvo}' fora do papel")
+        if acao.tipo == "ferramenta" and t is not None and t.plano is not None and acao.alvo not in t.plano:
+            return self._violacao(acao, "PLANO_VIOLADO", f"'{acao.alvo}' não está no plano selado na abertura")
+        if acao.tipo == "ferramenta":
+            confiaveis = (self.r.get("destinos") or {}).get(acao.alvo, {})
+            for k, v in _campos_destino(acao.payload):
+                if v not in confiaveis.get(k, []):
+                    return self._violacao(acao, "DESTINO_NAO_CONFIAVEL",
+                                          f"{k}={str(v)[:60]!r} fora da lista confiável de '{acao.alvo}'")
         if acao.tipo == "mensagem" and acao.alvo not in papel.get("canais", []):
             return self._violacao(acao, "CANAL_NAO_SANCIONADO", f"canal '{acao.alvo}' não sancionado")
         if acao.tipo == "rede" and acao.alvo not in papel.get("rede", []):

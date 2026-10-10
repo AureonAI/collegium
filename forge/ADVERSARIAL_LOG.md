@@ -87,6 +87,12 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **P-A2** | Nome colado em documento ("JOAONF123") | Testado: o documento é protegido antes e o nome é separado e pseudonimizado | — | `test_nome_colado_ao_documento` |
 | **P-L1** | Sobrenome que é palavra do vocabulário bancário (ex.: "JOSÉ BANCO") | **Limite:** "BANCO" é mantido. Mitigação: a lista de palavras mantidas vai ao humano e a exportação exige o código de confirmação (falha fechada) | Declarado | `test_exportar_exige_revisao_humana` |
 | **P-L2** | Natureza jurídica | **Limite:** com o cofre existindo, é PSEUDONIMIZAÇÃO (LGPD art. 13 §4º), não anonimização; o dado segue pessoal para o controlador. Eliminar exige destruir também os backups do cofre | Declarado no módulo | — |
+| **D-1** | Destinos confiáveis (T047), 1ª versão | **Ataque venceu:** `Conta`, `conta_destino` e `{"dados": {"conta": ...}}` escapavam da lista | Busca em qualquer profundidade e grafia | `test_destino_disfarcado_na_chave_ou_aninhado` (falhou antes, passa depois) |
+| **D-2** | A própria correção D-1 | **Ataque venceu contra a correção:** busca por trecho tratava `parametros` como destino (contém "para") e quarentenaria agente honesto | Separação por palavras, inclusive camelCase | `test_chave_parecida_mas_legitima_nao_e_destino` |
+| **M-1** | Portão MCP (T046) | `id` não validado (objeto, lista, booleano eram aceitos), contra a especificação | `id` só texto ou inteiro | `test_id_invalido` (falhou antes, passa depois) |
+| **M-2** | Especificação MCP | A versão vigente (2026-07-28, sem sessão, `server/discover`) é posterior ao meu conhecimento; implementada a partir da leitura da especificação publicada, com suporte também à era legada (`initialize`) | — | `tests/test_portao.py` |
+| **I-1** | Executor isolado | **Limites:** (a) `unshare -rn` isola SÓ a rede, não o disco; (b) o nível `container` (Docker) não pôde ser executado aqui (serviço parado na sessão): está coberto só pela construção do comando. Prova real = missão T016 no Windows | Declarado no módulo | `test_rede_cortada_de_verdade` (rede real cortada com unshare) |
+| **F-1** | Linhagem (L3) por nome | Fechado: o REGIMENTO assinado declara o digest; o mesmo digest com duas linhagens é recusado; troca de pesos vira incidente; o agente não se atesta | — | `tests/test_fluxo_confiavel.py` |
 
 ## Ataque-Gödel (contra o próprio método)
 

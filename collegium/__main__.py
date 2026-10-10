@@ -27,6 +27,11 @@ Privacidade (T044/T045; COLLEGIUM_CHAVE_COFRE no ambiente, nunca em arquivo do p
       1ª vez: mostra as palavras MANTIDAS e um código. Leia, confira que nenhuma é nome, e
       rode de novo com --confirmo CODIGO para gravar a SAIDA.
   python -m collegium eliminar-titular COFRE.json TIPO VALOR     (TIPO: NOME, CPF, CNPJ, EMAIL, TEL...)
+
+Portão MCP (T046; o cliente MCP do agente inicia este comando como servidor stdio):
+  python -m collegium portao REGIMENTO.json ANAIS.jsonl ENTRADA.json
+      ambiente: COLLEGIUM_FICHA (emitida pelo orquestrador), COLLEGIUM_SEGREDO_PORTAO, COLLEGIUM_CHAVE
+  python -m collegium emitir-ficha AGENTE TAREFA CAP1,CAP2 VALIDADE_SEGUNDOS   (usa COLLEGIUM_SEGREDO_PORTAO)
 """
 from __future__ import annotations
 
@@ -167,6 +172,28 @@ def main(argv: list[str]) -> int:
         with open(argv[2], "w", encoding="utf-8") as f:
             json.dump(saida, f, ensure_ascii=False, indent=1)
         print(f"gravado {argv[2]}: {rel['substituicoes']}")
+        return 0
+    if cmd == "emitir-ficha":
+        import time
+        from .portao import emitir_ficha
+        seg = _chave("COLLEGIUM_SEGREDO_PORTAO")
+        if not seg:
+            print("defina COLLEGIUM_SEGREDO_PORTAO", file=sys.stderr)
+            return 2
+        print(emitir_ficha(seg, argv[1], argv[2], argv[3].split(","), time.time() + float(argv[4])))
+        return 0
+    if cmd == "portao":
+        import time
+        from .portao import Portao
+        from pacotes.conciliacao.ferramentas import ferramentas
+        seg, ficha = _chave("COLLEGIUM_SEGREDO_PORTAO"), os.environ.get("COLLEGIUM_FICHA")
+        if not seg or not ficha:
+            print("defina COLLEGIUM_SEGREDO_PORTAO e COLLEGIUM_FICHA", file=sys.stderr)
+            return 2
+        with open(argv[3], encoding="utf-8") as f:
+            entrada = json.load(f)
+        lex = Lex(argv[1], Ledger(argv[2], chave=_chave("COLLEGIUM_CHAVE")))
+        Portao(lex, ferramentas(entrada), seg, ficha, time.time).servir()
         return 0
     print(__doc__)
     return 2

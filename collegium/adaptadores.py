@@ -19,6 +19,20 @@ class Ollama:
         """Família = prefixo do nome (qwen2.5-coder:1.5b -> qwen). Usada pela lei L3."""
         return re.split(r"[0-9.:\-]", self.modelo, maxsplit=1)[0].lower() or self.modelo
 
+    def digest(self) -> str:
+        """T048: impressão digital dos pesos que o Ollama vai rodar (via /api/tags), como 'sha256:<hex>'.
+        Quem chama é o ORQUESTRADOR, que então informa ao LEX (Lex.atestar_modelo)."""
+        req = urllib.request.Request(self.base + "/api/tags")
+        local = any(h in self.base for h in ("localhost", "127.0.0.1", "[::1]"))
+        abrir = urllib.request.build_opener(urllib.request.ProxyHandler({})).open if local else urllib.request.urlopen
+        with abrir(req, timeout=60) as r:
+            modelos = json.loads(r.read().decode("utf-8")).get("models", [])
+        for m in modelos:
+            if self.modelo in (m.get("name"), m.get("model")):
+                d = str(m.get("digest", ""))
+                return d if d.startswith("sha256:") else "sha256:" + d
+        raise LookupError(f"modelo {self.modelo} não está instalado no Ollama")
+
     def conversar(self, sistema: str, usuario: str, temperatura: float = 0.0, semente: int = 0,
                   max_tokens: int = 2048) -> str:
         # M2 (10/10/2026): sem teto, modelo pequeno em modo JSON pode gerar sem parar até o timeout.
