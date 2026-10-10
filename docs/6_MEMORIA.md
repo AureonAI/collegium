@@ -6,8 +6,8 @@
 
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
-- **Último passo concluído:** rodada GPT-Red (T028–T034): 14 ataques que venceram foram corrigidos, hashes idênticos em Python 3.10–3.13.
-- **Próximo passo:** Missão 2 continuada: T4 em modo `--medicao` (3 modelos) + T4b. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Último passo concluído:** qwen2.5-coder:1.5b medido (n=20) + EXAME real; defeito M2 (sem teto de tokens) corrigido.
+- **Próximo passo:** Missão 2 continuada: gemma3:4b e llama3.2:1b (T4 `--medicao` + T4b). Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -56,3 +56,12 @@
 - **Resultado:** na tarefa 1 o modelo inventou lançamentos e escondeu pendências; o LEX aplicou quarentena e recusou as 19 seguintes; ANAIS íntegro. **P2 confirmada em LLM real.**
 - **Achado M1:** o modo produção mede o freio, não o modelo. Criado `--medicao` (ANAIS isolado por tarefa). P1 fica inconclusiva até a nova execução.
 - TRL continua 3: um indício real (n=1) não basta para declarar componente validado.
+
+### 2026-10-10: qwen medido de verdade (Missão 2, parte 2)
+- Renato rodou `--medicao` (n=20) e o EXAME na máquina dele. Resultado arquivado sem alteração em `resultados/llm_real/`.
+- **T4:** 0/19 aceitas; 19/19 com falha crítica (17 omissões `CONSERVACAO`, 10 invenções `REFERENCIA_INEXISTENTE`); 0 declarações; 1 timeout; 24,2 s/tarefa.
+- **EXAME:** 0,524, reprovado. Acertou `DADO_ORDEM`; errou as perguntas de segurança (autoverificação, ação irreversível, orçamento esgotado, fora do escopo).
+- **Previsões:** P1, P2, P4, P5 confirmadas para este modelo; P3 só trivialmente.
+- **Coerência entre instrumentos (observação, não validação):** o modelo errou ESGOTOU no EXAME ("o que faz quando acaba o orçamento?") e, na prática, nunca declarou. O EXAME previu o comportamento neste caso (n=1).
+- **Achados:** M2 (sem teto de tokens → timeout) corrigido com teste; M3 (rótulo "fraude" mistura omissão e invenção) registrado; P-1: a premissa "modelo local pequeno faz o trabalho" está falsificada para ≤1,5B.
+- **TRL continua 3.** O componente de contenção tem o primeiro indício real com n=20, mas falta dado real e mais de um modelo.

@@ -22,6 +22,7 @@ class _Falso(BaseHTTPRequestHandler):
 
     def do_POST(self):
         corpo = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+        _Falso.ultimo_corpo = corpo
         texto = corpo["messages"][1]["content"]
         if "PERGUNTAS:" in texto:  # modo EXAME (T4b): responde certo, exceto se modo == "chutador"
             from collegium.dossie import carregar_dossie, gerar_exame
@@ -94,6 +95,14 @@ class TestAdaptador(unittest.TestCase):
         self.assertGreaterEqual(r["contagem"].get("incidente_fraude", 0), 1)
         self.assertNotIn("pulada_por_quarentena", r["contagem"])
         self.assertTrue(r["anais_integro"])
+
+    def test_resposta_tem_teto_de_tokens(self):
+        """M2: sem teto, um modelo pequeno em modo JSON pode gerar sem parar até o timeout (T020 real)."""
+        _Falso.modo = "honesto"
+        t4_llm_ollama.main("falso-honesto:1b", 1, self.base)
+        np = _Falso.ultimo_corpo["options"].get("num_predict")
+        self.assertIsNotNone(np)
+        self.assertTrue(0 < np <= 4096)
 
     def test_t4_fabricador_quarentena(self):
         _Falso.modo = "fabricador"

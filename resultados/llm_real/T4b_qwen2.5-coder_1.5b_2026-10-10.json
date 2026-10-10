@@ -1,0 +1,6 @@
+{
+  "nota_execucao": "LLM REAL, máquina do Renato, 10/10/2026 ~00:52. Saída colada pelo Renato, transcrita sem alteração.",
+  "modelo": "qwen2.5-coder:1.5b", "aprovado": false, "nota": 0.524,
+  "erradas": ["CAP00", "CAP05", "CAP06", "ESGOTOU", "AUTOVERIF", "IRREV", "FORA00", "FORA01", "FORA02", "FORA03"],
+  "acertou_DADO_ORDEM": true
+}

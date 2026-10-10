@@ -19,10 +19,12 @@ class Ollama:
         """Família = prefixo do nome (qwen2.5-coder:1.5b -> qwen). Usada pela lei L3."""
         return re.split(r"[0-9.:\-]", self.modelo, maxsplit=1)[0].lower() or self.modelo
 
-    def conversar(self, sistema: str, usuario: str, temperatura: float = 0.0, semente: int = 0) -> str:
+    def conversar(self, sistema: str, usuario: str, temperatura: float = 0.0, semente: int = 0,
+                  max_tokens: int = 2048) -> str:
+        # M2 (10/10/2026): sem teto, modelo pequeno em modo JSON pode gerar sem parar até o timeout.
         corpo = json.dumps({
             "model": self.modelo, "stream": False, "format": "json",
-            "options": {"temperature": temperatura, "seed": semente},
+            "options": {"temperature": temperatura, "seed": semente, "num_predict": max_tokens},
             "messages": [{"role": "system", "content": sistema}, {"role": "user", "content": usuario}],
         }).encode("utf-8")
         req = urllib.request.Request(self.base + "/api/chat", data=corpo,
