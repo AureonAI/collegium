@@ -91,6 +91,7 @@ collegium/
 │   └── __main__.py                CLI do Patronus: verificar · ancora · relatorio · assinar
 ├── pacotes/conciliacao/           ── FOLHA (C2) ──
 │   ├── oraculo.py                 v0.1.0→v0.1.4 (grupos N:1, "revisar", parâmetros da entidade)
+│   ├── residuo.py                 decisão A: pacote do humano + oráculo da nota do LLM (T039/T040)
 │   ├── importadores.py            OFX, CSV brasileiro, PaddleOCR (opcional) + prova de saldo
 │   ├── dados.py                   geradores SINTÉTICOS com gabarito (gerar, gerar_v2)
 │   └── operarios.py               operários roteirizados honestos e adversários
