@@ -168,6 +168,20 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class TestPortaoBytes(unittest.TestCase):
+    def test_r6_19_utf8_invalido_vira_parse_error_e_saida_e_utf8(self):
+        import io
+        lex = Lex(BASE, Ledger(os.path.join(tempfile.mkdtemp(), "a.jsonl"), chave=b"k"), {})
+        p = Portao(lex, [], b"s", "ficha-invalida", lambda: 0)
+        entrada = io.BytesIO(b'\xff\xfe lixo\n' + json.dumps({"jsonrpc": "2.0", "id": 7, "method": "server/discover",
+                                                                "params": {"_meta": META}}).encode() + b"\n")
+        saida = io.BytesIO()
+        p.servir(entrada, saida)
+        linhas = saida.getvalue().decode("utf-8").splitlines()  # UTF-8 estrito
+        self.assertEqual(json.loads(linhas[0])["error"]["code"], -32700)
+        self.assertEqual(json.loads(linhas[1])["id"], 7)
+
+
 class TestPortaoProcessoReal(unittest.TestCase):
     """Ponta a ponta: um cliente MCP de verdade (subprocesso stdio) fala com o portão."""
     def test_subprocesso_stdio(self):
@@ -189,10 +203,15 @@ class TestPortaoProcessoReal(unittest.TestCase):
                      "params": {"_meta": META, "name": "extrato.ler", "arguments": {}}},
                     {"jsonrpc": "2.0", "id": 3, "method": "tools/call",
                      "params": {"_meta": META, "name": "razao.ler", "arguments": {}}}]
+            # R6-19: a especificação MCP exige UTF-8 no stdio. O filho roda como no Windows (página de código
+            # cp1252) e a saída TEM de ser UTF-8 estrito, uma mensagem por linha, sem \r.
+            env["PYTHONIOENCODING"] = "cp1252"
             p = subprocess.run([sys.executable, "-m", "collegium", "portao", os.path.join(RAIZ, "regimento.exemplo.json"),
-                                cam_anais, cam_ent], input="\n".join(json.dumps(m) for m in msgs) + "\n",
-                               capture_output=True, text=True, cwd=RAIZ, env=env, timeout=60)
-            resp = {r["id"]: r for r in map(json.loads, p.stdout.splitlines())}
+                                cam_anais, cam_ent], input=("\n".join(json.dumps(m) for m in msgs) + "\n").encode("utf-8"),
+                               capture_output=True, cwd=RAIZ, env=env, timeout=60)
+            self.assertNotIn(b"\r", p.stdout)
+            self.assertIn("ã".encode("utf-8"), p.stdout)  # descrições das ferramentas, em português
+            resp = {r["id"]: r for r in map(json.loads, p.stdout.decode("utf-8").splitlines())}
             self.assertEqual(resp[1]["result"]["resultType"], "complete")
             self.assertEqual(resp[2]["result"]["structuredContent"], ds["extrato"])
             self.assertFalse(resp[2]["result"]["isError"])

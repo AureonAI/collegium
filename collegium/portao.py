@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import io
 import json
 import sys
 from dataclasses import dataclass, field
@@ -198,16 +199,30 @@ class Portao:
         return self._resultado_ferramenta(texto, False, saida)
 
     # ------------------------------------------------------------- stdio
-    def servir(self, entrada=sys.stdin, saida=sys.stdout) -> None:
+    def servir(self, entrada=None, saida=None) -> None:
+        """R6-19: a especificação MCP exige UTF-8 no stdio, uma mensagem por linha. Com os fluxos padrão,
+        lê e escreve BYTES em UTF-8 (no Windows o texto sairia na página de código local, cp1252, e com
+        \r\n): o cliente MCP quebrava na 1ª mensagem com acento. Fluxos de texto passados (testes) seguem."""
+        entrada = sys.stdin.buffer if entrada is None else entrada
+        saida = sys.stdout.buffer if saida is None else saida
+        binario = not isinstance(saida, io.TextIOBase)
         for linha in entrada:
-            if not linha.strip():
+            if isinstance(linha, bytes):
+                try:
+                    linha = linha.decode("utf-8")
+                except UnicodeDecodeError:
+                    linha = None
+            if linha is not None and not linha.strip():
                 continue
             try:
+                if linha is None:
+                    raise json.JSONDecodeError("UTF-8 inválido", "", 0)
                 msg = json.loads(linha)
             except json.JSONDecodeError:
                 resp = self._erro(None, -32700, "Parse error")
             else:
                 resp = self.tratar(msg)
             if resp is not None:
-                saida.write(json.dumps(resp, ensure_ascii=False) + "\n")
+                texto = json.dumps(resp, ensure_ascii=False) + "\n"
+                saida.write(texto.encode("utf-8") if binario else texto)
                 saida.flush()

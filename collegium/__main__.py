@@ -191,9 +191,9 @@ def cli() -> None:
 
 
 def main(argv: list[str]) -> int:
-    for fluxo in (sys.stdout, sys.stderr):  # R6-10: console/pipe em página antiga nunca derruba o comando
-        try:
-            fluxo.reconfigure(errors="replace")
+    for fluxo in (sys.stdout, sys.stderr):  # R6-10/R6-20: saída SEMPRE em UTF-8 (determinística para quem lê:
+        try:                                # scripts, testes, outros programas); nunca derruba o comando
+            fluxo.reconfigure(encoding="utf-8", errors="replace")
         except (AttributeError, ValueError):
             pass
     if not argv or argv[0] in ("-h", "--help", "ajuda"):

@@ -123,7 +123,7 @@ class TestRecibo(Base):
         with open(cp, "w", encoding="utf-8") as f:
             json.dump(self.cab, f)
         r = subprocess.run([sys.executable, "-m", "collegium", "auditar-cabeca", self.cam, cp, PUB],
-                           cwd=RAIZ, capture_output=True, text=True)
+                           cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertTrue(json.loads(r.stdout)["confere"])
 

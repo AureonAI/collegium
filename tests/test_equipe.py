@@ -94,7 +94,7 @@ class TestCLI(unittest.TestCase):
                 L.anexar("x", {"i": i})
             env = dict(os.environ, COLLEGIUM_CHAVE="segredo", COLLEGIUM_CHAVE_PATRONUS="pp")
             run = lambda *a: subprocess.run([sys.executable, "-m", "collegium", *a], cwd=RAIZ, env=env,
-                                            capture_output=True, text=True)
+                                            capture_output=True, text=True, encoding="utf-8")
             r = run("ancora", cam)
             self.assertEqual(r.returncode, 0, r.stderr)
             anc = r.stdout.strip().split()[-1]

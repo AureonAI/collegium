@@ -96,7 +96,7 @@ class TestHostil(Base):
     def test_cli_nunca_mostra_traceback(self):
         e, r = self.arquivos(ofx=re.sub(r"<STMTTRN>.*?</STMTTRN>", "", OFX, flags=re.S))
         p = subprocess.run([sys.executable, "-m", "collegium", "conciliar", "--extrato", e, "--razao", r,
-                            "--saida", os.path.join(self.tmp, "s")], cwd=RAIZ, capture_output=True, text=True)
+                            "--saida", os.path.join(self.tmp, "s")], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(p.returncode, 1)
         self.assertNotIn("Traceback", p.stderr)
         self.assertIn("sem lançamentos", p.stderr + p.stdout)

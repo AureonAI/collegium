@@ -5,7 +5,6 @@ Roda no CI em Windows, macOS e Linux. Sai com código ≠ 0 e anotação ::error
 Uso: python ferramentas/instalacao_limpa.py
 """
 import json
-import locale
 import os
 import subprocess
 import sys
@@ -22,11 +21,13 @@ def falhar(passo: str, r: subprocess.CompletedProcess | None = None, msg: str = 
 
 
 def main() -> None:
+    for fluxo in (sys.stdout, sys.stderr):
+        fluxo.reconfigure(errors="replace")
     with tempfile.TemporaryDirectory() as tmp:
         venv.EnvBuilder(with_pip=True).create(os.path.join(tmp, "v"))
         bindir = os.path.join(tmp, "v", "Scripts" if os.name == "nt" else "bin")
         py = os.path.join(bindir, "python.exe" if os.name == "nt" else "python")
-        r = subprocess.run([py, "-m", "pip", "install", "-q", RAIZ], capture_output=True, text=True)
+        r = subprocess.run([py, "-m", "pip", "install", "-q", RAIZ], capture_output=True, text=True, errors="replace")
         if r.returncode:
             falhar("pip install", r)
         exe = os.path.join(bindir, "collegium.exe" if os.name == "nt" else "collegium")
@@ -35,9 +36,9 @@ def main() -> None:
         env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "COLLEGIUM_CHAVE")}
 
         def c(passo: str, *args: str, codigo: int = 0) -> str:
-            # decodifica como o Windows entrega (página de código local); JSON de máquina sai em ASCII (R6-10)
+            # o `collegium` escreve SEMPRE UTF-8 (R6-20); JSON de máquina em ASCII (R6-10)
             r = subprocess.run([exe, *args], cwd=fora, capture_output=True, text=True,
-                               encoding=locale.getpreferredencoding(False), errors="replace", env=env)
+                               encoding="utf-8", errors="replace", env=env)
             if r.returncode != codigo:
                 falhar(f"{passo} (saída {r.returncode}, esperado {codigo})", r)
             return r.stdout
@@ -66,7 +67,8 @@ def main() -> None:
         c("repetir a mesma entrada é recusado", "conciliar", "--extrato", os.path.join("demo", "extrato.ofx"),
           "--razao", os.path.join("demo", "razao_contabil.csv"), "--saida", "res2", "--anais", "anais.jsonl",
           codigo=1)
-    print("OK: instalado como estranho; exemplo → conciliar → aprovar → recibo LIBERADA conferido e auditado")
+    # W-5: esta linha, com setas, derrubou o passo no Windows (cp1252) DEPOIS de o produto passar inteiro
+    print("OK: instalado como estranho; exemplo -> conciliar -> aprovar -> recibo LIBERADA conferido e auditado")
 
 
 if __name__ == "__main__":

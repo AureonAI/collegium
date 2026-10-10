@@ -25,7 +25,7 @@ RAZ = os.path.join(RAIZ, "exemplos", "piloto", "razao_contabil.csv")
 def _cli(*args, env_extra=None):
     env = dict(os.environ, **(env_extra or {}))
     env.pop("COLLEGIUM_CHAVE", None)
-    return subprocess.run([sys.executable, "-m", "collegium", *args], cwd=RAIZ, capture_output=True, text=True,
+    return subprocess.run([sys.executable, "-m", "collegium", *args], cwd=RAIZ, capture_output=True, text=True, encoding="utf-8",
                           env=env)
 
 
