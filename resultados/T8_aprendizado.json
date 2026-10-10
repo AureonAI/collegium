@@ -1,0 +1,37 @@
+{
+  "L1_proposta": 7,
+  "L3_futuro": {
+    "pares_errados": 0,
+    "residuo_antigo": 952,
+    "residuo_novo": 386
+  },
+  "L4_envenenado": 7,
+  "backtest": {
+    "alfa": null,
+    "casos": 30,
+    "contradicoes": 0,
+    "limite_superior_contradicao": 0.0106,
+    "pares_automaticos_novos": 281,
+    "residuo_antes": 938,
+    "residuo_depois": 376
+  },
+  "evidencia": {
+    "fora_da_janela_por_dia": {
+      "6": 151,
+      "7": 158
+    },
+    "pares_humanos": 398,
+    "suporte_exigido": 15.450000000000001
+  },
+  "quedas": {
+    "backtest": 0.599,
+    "futuro": 0.595
+  },
+  "veredito": {
+    "L1": "PASSOU",
+    "L2": "PASSOU",
+    "L3": "PASSOU",
+    "L4": "PASSOU",
+    "geral": "PASSOU"
+  }
+}

@@ -23,6 +23,7 @@ class LedgerSQLite:
         self._db.execute("CREATE TABLE IF NOT EXISTS anais (i INTEGER PRIMARY KEY, linha TEXT NOT NULL)")
         ok, ruim = self.verificar()
         if not ok:
+            self._db.close()  # no Windows, conexão aberta prende o arquivo (achado pelo CI)
             raise ValueError(f"ANAIS corrompido no registro {ruim}; recuso-me a continuar escrevendo")
 
     def _ultimo(self) -> tuple[str, int]:
@@ -87,6 +88,12 @@ class LedgerSQLite:
 
     def fechar(self) -> None:
         self._db.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self.fechar()
 
 
 def abrir_ente(pasta: str, ente: str, chave: bytes | None) -> LedgerSQLite:

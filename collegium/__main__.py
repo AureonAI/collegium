@@ -33,6 +33,15 @@ Portão MCP (T046; o cliente MCP do agente inicia este comando como servidor std
       ambiente: COLLEGIUM_FICHA (emitida pelo orquestrador), COLLEGIUM_SEGREDO_PORTAO, COLLEGIUM_CHAVE
   python -m collegium emitir-ficha AGENTE TAREFA CAP1,CAP2 VALIDADE_SEGUNDOS   (usa COLLEGIUM_SEGREDO_PORTAO)
 
+Pré-registro selado (T061; rode ANTES do experimento, depois faça commit e envio):
+  python -m collegium preregistrar ARQUIVO ARQUIVO_PRIVADO
+  python -m collegium conferir-preregistro ARQUIVO CHAVE_PUBLICA
+
+Métricas e fatura conferível pelo cliente (T064):
+  python -m collegium metricas ANAIS.jsonl
+  python -m collegium fatura ANAIS.jsonl cabeca.json INICIO_UNIX FIM_UNIX precos.json ARQUIVO_PRIVADO > fatura.json
+  python -m collegium conferir-fatura fatura.json CHAVE_PUBLICA
+
 Kit de ofício (T049):
   python -m collegium conformidade NOME_DO_OFICIO [SEMENTES]     roda a suíte (pureza, falha fechada, mutação)
 """
@@ -185,6 +194,38 @@ def main(argv: list[str]) -> int:
             return 2
         print(emitir_ficha(seg, argv[1], argv[2], argv[3].split(","), time.time() + float(argv[4])))
         return 0
+    if cmd in ("preregistrar", "conferir-preregistro"):
+        from .preregistro import conferir, preregistrar
+        reg = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "preregistros", "REGISTRO.jsonl")
+        if cmd == "preregistrar":
+            with open(argv[2], encoding="utf-8") as f:
+                sk = bytes.fromhex(f.read().strip())
+            r = preregistrar(argv[1], sk, reg, datetime.now(timezone.utc).isoformat(timespec="seconds"))
+            print(f"selado no índice {r['i']}: {r['corpo']['dados']['sha256'][:16]}… — faça commit e envio agora")
+            return 0
+        ok, info = conferir(argv[1], reg, argv[2])
+        print(json.dumps({"selado": ok, "registro": info}, ensure_ascii=False, indent=1))
+        return 0 if ok else 1
+    if cmd in ("metricas", "fatura", "conferir-fatura"):
+        from .fatura import conferir_fatura, emitir_fatura, metricas
+        if cmd == "metricas":
+            print(json.dumps(metricas(argv[1]), ensure_ascii=False, indent=1))
+            return 0
+        if cmd == "fatura":
+            with open(argv[2], encoding="utf-8") as f:
+                cab = json.load(f)
+            with open(argv[5], encoding="utf-8") as f:
+                precos = json.load(f)
+            with open(argv[6], encoding="utf-8") as f:
+                sk = bytes.fromhex(f.read().strip())
+            print(json.dumps(emitir_fatura(argv[1], cab, float(argv[3]), float(argv[4]), precos, sk),
+                             ensure_ascii=False, indent=1))
+            return 0
+        with open(argv[1], encoding="utf-8") as f:
+            fat = json.load(f)
+        ok, motivos, resumo = conferir_fatura(fat, argv[2])
+        print(json.dumps({"valida": ok, "motivos": motivos, "resumo": resumo}, ensure_ascii=False, indent=1))
+        return 0 if ok else 1
     if cmd == "conformidade":
         from pacotes.registro import carregar
         from .oficio import conformidade

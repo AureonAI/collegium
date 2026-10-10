@@ -105,11 +105,11 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T057 | 1 | Fila do humano: evidência, prazo, 4 olhos acima da alçada, medida de "carimbo" | — | ✅ (quatro olhos + veto no LEX; `collegium/fila.py` com prazo e medida de carimbo) |
 | T058 | 1 | ANAIS em SQLite por ente + telemetria (convenções GenAI) + backup verificado | mesma cadeia e mesma raiz Merkle que o JSONL | ✅ (`collegium/ledger_sqlite.py` idêntico ao JSONL; concorrência; `backup_verificado`; `collegium/telemetria.py`) |
 | T059 | 1 | Importadores CNAB 240 (extrato) e Open Finance Brasil | prova de saldo em ambos | ✅ (`ler_cnab240` Segmento E com prova de saldo e somatórios; `ler_open_finance` com fuso de Brasília) |
-| T060 | 2 | Verificação exaustiva limitada da máquina de estados do LEX + fuzzing das leis | nenhuma sequência viola os invariantes até a profundidade k | ⬜ |
-| T061 | 2 | Pré-registro selado com testemunha externa | — | ⬜ |
-| T062 | 2 | Cadeia de suprimentos: SECURITY.md, SBOM, release assinada (LICENSE = decisão do Renato) | — | ⬜ |
-| T063 | 2 | Mapa de conformidade (OWASP ASI01–ASI10, LGPD) | — | ⬜ |
-| T064 | 2 | Métricas de valor + fatura derivada dos recibos | fatura conferível pelo cliente | ⬜ |
+| T060 | 2 | Verificação exaustiva limitada da máquina de estados do LEX + fuzzing das leis | nenhuma sequência viola os invariantes até a profundidade k | ✅ (`experimentos/t9_exaustivo.py`: profundidade 7, 0 violações; 4 defeitos plantados encontrados) |
+| T061 | 2 | Pré-registro selado com testemunha externa | — | ✅ (`collegium/preregistro.py`; testemunha = anotação do GitHub a cada envio); limite: sem RFC 3161 |
+| T062 | 2 | Cadeia de suprimentos: SECURITY.md, SBOM, release assinada (LICENSE = decisão do Renato) | — | ✅ (`SECURITY.md`, `ferramentas/release.py`: pacote reprodutível e assinado + SBOM CycloneDX); 🔶 LICENSE = decisão do Renato |
+| T063 | 2 | Mapa de conformidade (OWASP ASI01–ASI10, LGPD) | — | ✅ (`docs/CONFORMIDADE.md`: OWASP ASI01–10, LGPD, PL 2338, AI Act) |
+| T064 | 2 | Métricas de valor + fatura derivada dos recibos | fatura conferível pelo cliente | ✅ (`collegium/fatura.py`: métricas do ANAIS + fatura conferível pelo cliente) |
 
 ## Missão atual (uma de cada vez)
 

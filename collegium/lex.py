@@ -313,6 +313,8 @@ class Lex:
                 elif d["codigo"] in {"LIBERADA", "AGUARDA_HUMANO"} or (d["codigo"] == "REJEITADA" and
                                                                          d["tipo"] == "aprovacao"):
                     t.estado = d["codigo"]
+                    if d["codigo"] == "LIBERADA" and d["tipo"] == "aprovacao":
+                        t.aprovacoes.add(d["agente"])  # T9/I7: a aprovação final também é reconstruída
         return ultimo_regimento
 
     def vincular_entrada(self, tarefa_id: str, entrada: Any) -> Decisao:

@@ -115,6 +115,13 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **T-2** | Teste de telemetria | Meu teste procurava "999" na saída; identificadores aleatórios às vezes contêm "999" (falso positivo) | Procura o valor exato do argumento | `test_telemetria_execute_tool` |
 | **P-A5** | Teste de padrão só de letras | Meu teste estava errado, mas revelou: padrão de documento amplo demais preserva PEDAÇO DE NOME como documento ("FULANOQ" → "NOQ") e o humano não via isso na confirmação | O relatório que o humano confirma agora lista os documentos preservados (e o código de confirmação cobre os dois) | `test_documentos_preservados_aparecem_para_o_humano` |
 | **P-A6** | Processo | **Erro meu:** publiquei um commit com teste falhando porque `| tail -1` mascarava o código de saída | Verificador que roda a suíte em 3 sementes e só então libera o commit | — |
+| **X-1** | Verificação exaustiva (T060), 1ª versão | **Ataque venceu contra o meu verificador:** a assinatura de estado não distinguia entrega boa de fraudulenta; a poda descartava o caminho "fraude → verificar" e o "0 violações" era vazio | Assinatura completa (com teto nos contadores) | `tests/test_exaustivo.py` |
+| **X-2** | Fixture do T9 | Minha "fraude" de teste era VÁLIDA naquele conjunto (sem pendências para esconder): 2.990 falsas violações | Fraude inequívoca + trava que impede rodar se o oráculo não a recusar | `experimentos/t9_exaustivo.py` |
+| **X-3** | LEX × verificação exaustiva | **Ataque venceu (defeito real, menor):** depois de aprovação simples, reiniciar perdia quem aprovou (I7). E a 1ª correção criou REGRESSÃO (a tarefa voltava a "aguarda humano" após reiniciar) — pega pelo próprio T9, não pelo meu teste unitário | Reconstrução no ramo certo; teste confere estado E aprovações | `test_aprovacao_final_tambem_e_reconstruida` |
+| **X-4** | O próprio T9 | Controle negativo: 4 defeitos plantados (autoverificação, oráculo ignorado, declaração frouxa, memória curta) — todos encontrados | — | `test_controles_negativos` |
+| **W-1** | CI no Windows | Falhas só no Windows (3.11–3.13) com logs inacessíveis desta sessão. Hipótese: conexão SQLite aberta prendia o arquivo ao recusar ANAIS adulterado | Conexão fechada antes de recusar; o CI passa a emitir ANOTAÇÕES com o nome e o erro de cada teste (legíveis pela API) | `ferramentas/testes_ci.py` |
+| **F-1** | Fatura (T064) | Golpes de cobrança testados: total inflado, item duplicado mesmo REASSINADO pelo operador, linha adulterada, chave trocada, período | — | `tests/test_fatura.py` |
+| **F-L** | Fatura | **Limite:** o cliente não PROVA que um item não era canário (exige prova de ausência, como R-1) | Declarado | — |
 
 ## Ataque-Gödel (contra o próprio método)
 

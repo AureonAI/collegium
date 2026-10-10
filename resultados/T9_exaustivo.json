@@ -1,0 +1,10 @@
+{
+  "estados_distintos": 115,
+  "n_violacoes": 0,
+  "profundidade": 7,
+  "sequencias_executadas": 1404,
+  "veredito": {
+    "geral": "PASSOU"
+  },
+  "violacoes": {}
+}

@@ -79,6 +79,14 @@ class TestFila(unittest.TestCase):
         self.assertEqual(novo.aprovar_humano("grande", "renato", True, self._sig("grande", h, True, "renato")).codigo,
                          "MESMO_HUMANO")
 
+    def test_aprovacao_final_tambem_e_reconstruida(self):
+        """Achado pela verificação exaustiva (T9, I7): após aprovação simples, reiniciar perdia quem aprovou."""
+        h = self._aguardando("p", 100)
+        self.lex.aprovar_humano("p", "renato", True, self._sig("p", h, True, "renato"))
+        novo = Lex(self.reg, Ledger(self.cam, chave=b"k"), {"conciliacao_bancaria": oraculo.oraculo_lex}, CH)
+        self.assertEqual(novo.tarefas["p"].aprovacoes, self.lex.tarefas["p"].aprovacoes)
+        self.assertEqual(novo.tarefas["p"].estado, "LIBERADA")   # a 1ª correção quebrou isto (pego pelo T9)
+
     def test_fila_ordenada_com_prazo_e_carimbo(self):
         h1 = self._aguardando("a", 50_000)
         self._aguardando("b", 100)
