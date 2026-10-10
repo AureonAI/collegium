@@ -83,6 +83,10 @@ Ainda em aberto (código não resolve sozinho): A1 (isolamento de SO), A5 (esteg
 | **E-1** | Ed25519 em Python puro | **Limite que não se corrige:** não é tempo constante. Uso restrito a assinar no computador do humano; nunca em servidor exposto | Declarado no módulo | — |
 | **R-1** | Recibo (T043) | **Limite:** o recibo prova que as linhas EXISTEM, não que não existe linha POSTERIOR sobre a mesma tarefa (prova de ausência). Hoje cada tarefa tem um único recibo; com tentativas (T053) isso muda | A registrar: índice por tarefa com prova de ausência | — |
 | **R-2** | Teste do recibo | Meu teste de "histórico reescrito" não reescrevia nada (linha errada) e falhou por isso. Erro do teste, não do código | Teste passa a garantir que a reescrita ocorreu e está no trecho já visto | `test_reescrita_do_historico_depois_da_cabeca` |
+| **P-A1** | Anonimizador (T044), 2ª rodada da minha revisão | **Ataque venceu:** telefone com espaços ("61 99876 5432") e conta curta ("CC 12345") vazavam; datas viravam pseudônimo (destruição inútil) | TEL aceita espaço; número após AG/CC/CONTA vira NUM em qualquer tamanho; datas e valores em R$ preservados | `test_segunda_rodada_de_vazamentos` (falhou antes, passa depois) |
+| **P-A2** | Nome colado em documento ("JOAONF123") | Testado: o documento é protegido antes e o nome é separado e pseudonimizado | — | `test_nome_colado_ao_documento` |
+| **P-L1** | Sobrenome que é palavra do vocabulário bancário (ex.: "JOSÉ BANCO") | **Limite:** "BANCO" é mantido. Mitigação: a lista de palavras mantidas vai ao humano e a exportação exige o código de confirmação (falha fechada) | Declarado | `test_exportar_exige_revisao_humana` |
+| **P-L2** | Natureza jurídica | **Limite:** com o cofre existindo, é PSEUDONIMIZAÇÃO (LGPD art. 13 §4º), não anonimização; o dado segue pessoal para o controlador. Eliminar exige destruir também os backups do cofre | Declarado no módulo | — |
 
 ## Ataque-Gödel (contra o próprio método)
 

@@ -89,8 +89,8 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 |---|---|---|---|---|
 | T042 | 0 | Ed25519 só com biblioteca padrão (RFC 8032) + chave pública do humano no REGIMENTO + quórum m-de-n + revogação | vetores oficiais da RFC passam; o núcleo não conhece chave privada humana | ✅ (`collegium/ed25519.py`, vetores RFC 8032; `tests/test_patronus.py`) |
 | T043 | 0 | Recibo verificável offline: árvore de Merkle (RFC 9162), cabeça assinada, provas de inclusão e consistência | um verificador sem acesso ao sistema confere um recibo e detecta reescrita do histórico | ✅ (`collegium/merkle.py`, `collegium/recibo.py`; raízes de referência do CT) |
-| T044 | 1 | Anonimizador BR (CPF/CNPJ com dígito verificador, e-mail, telefone, conta, nomes) com pseudônimo por titular | falha fechada: arquivo com risco residual não sai sem revisão | ⬜ |
-| T045 | 1 | Cofre de titulares: eliminação LGPD (art. 18) por destruição de chave, sem tocar no ANAIS | após eliminar, o pseudônimo não é mais ligável ao titular | ⬜ |
+| T044 | 1 | Anonimizador BR (CPF/CNPJ com dígito verificador, e-mail, telefone, conta, nomes) com pseudônimo por titular | falha fechada: arquivo com risco residual não sai sem revisão | ✅ (`collegium/privacidade.py`; CNPJ alfanumérico; conciliação idêntica antes e depois) |
+| T045 | 1 | Cofre de titulares: eliminação LGPD (art. 18) por destruição de chave, sem tocar no ANAIS | após eliminar, o pseudônimo não é mais ligável ao titular | ✅ (`Cofre.eliminar`; ANAIS intocado) |
 | T046 | 0 | Portão: servidor MCP mediador, tokens efêmeros por tarefa, executor isolado que falha fechado | agente sem o portão não tem ferramenta; token fora da tarefa é negado | ⬜ |
 | T047 | 0 | Plano selado na abertura (fluxo de controle confiável) + destinos confiáveis para argumentos | injeção no dado não muda capacidade nem destino | ⬜ |
 | T048 | 0 | Identidade de modelo por impressão digital (digest); admissão caduca com troca de modelo | "qwen-falso" não herda a linhagem qwen | ⬜ |

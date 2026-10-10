@@ -21,6 +21,12 @@ Recibo verificável (T043; o cliente confere sem acesso ao sistema):
   python -m collegium conferir-recibo recibo.json CHAVE_PUBLICA [ENTRADA.json]
   python -m collegium consistencia ANAIS.jsonl TAMANHO_ANTIGO TAMANHO_NOVO > prova.json
   python -m collegium conferir-consistencia antiga.json nova.json prova.json CHAVE_PUBLICA
+
+Privacidade (T044/T045; COLLEGIUM_CHAVE_COFRE no ambiente, nunca em arquivo do projeto):
+  python -m collegium anonimizar ENTRADA.json SAIDA.json COFRE.json [--confirmo CODIGO] [--doc REGEX ...]
+      1ª vez: mostra as palavras MANTIDAS e um código. Leia, confira que nenhuma é nome, e
+      rode de novo com --confirmo CODIGO para gravar a SAIDA.
+  python -m collegium eliminar-titular COFRE.json TIPO VALOR     (TIPO: NOME, CPF, CNPJ, EMAIL, TEL...)
 """
 from __future__ import annotations
 
@@ -34,6 +40,7 @@ from datetime import datetime, timezone
 
 from . import ed25519
 from . import recibo as rc
+from .privacidade import Anonimizador, Cofre, exportar
 from .lex import Lex, _h, assinar_humano, assinar_humano_ed25519, carregar_regimento
 
 
@@ -134,6 +141,33 @@ def main(argv: list[str]) -> int:
         ok = rc.conferir_consistencia(objs[0], objs[1], objs[2], argv[4])
         print("CONSISTENTE: o histórico só cresceu" if ok else "INCONSISTENTE: histórico reescrito ou cabeça inválida")
         return 0 if ok else 1
+    if cmd in ("anonimizar", "eliminar-titular"):
+        km = _chave("COLLEGIUM_CHAVE_COFRE")
+        if not km:
+            print("defina COLLEGIUM_CHAVE_COFRE (16+ caracteres)", file=sys.stderr)
+            return 2
+        if cmd == "eliminar-titular":
+            ok = Cofre(argv[1], km).eliminar(argv[2].upper(), argv[3])
+            print("ELIMINADO: pseudônimos antigos deste titular não são mais religáveis" if ok else "titular não encontrado")
+            return 0 if ok else 1
+        docs = [argv[i + 1] for i, a in enumerate(argv) if a == "--doc"] or None
+        conf = argv[argv.index("--confirmo") + 1] if "--confirmo" in argv else None
+        with open(argv[1], encoding="utf-8") as f:
+            entrada = json.load(f)
+        an = Anonimizador(Cofre(argv[3], km), docs)
+        saida = ({k: an.registros(v) if isinstance(v, list) else v for k, v in entrada.items()}
+                 if isinstance(entrada, dict) else an.registros(entrada))
+        rel = an.relatorio()
+        try:
+            exportar(saida, rel, conf)
+        except PermissionError:
+            print(json.dumps(rel, ensure_ascii=False, indent=1))
+            print(f"\nNADA FOI GRAVADO. Confira 'palavras_mantidas' e rode com --confirmo {rel['confirmacao']}")
+            return 3
+        with open(argv[2], "w", encoding="utf-8") as f:
+            json.dump(saida, f, ensure_ascii=False, indent=1)
+        print(f"gravado {argv[2]}: {rel['substituicoes']}")
+        return 0
     print(__doc__)
     return 2
 
