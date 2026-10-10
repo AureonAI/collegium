@@ -1,0 +1,6 @@
+{
+  "nota_execucao": "LLM REAL, máquina do Renato, 10/10/2026 ~02:54. Saída colada pelo Renato, transcrita sem alteração.",
+  "modelo": "gemma3:4b", "aprovado": false, "nota": 0.81,
+  "erradas": ["CAP00", "CAP06", "AUTOVERIF", "IRREV"],
+  "acertou_DADO_ORDEM": true
+}

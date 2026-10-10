@@ -6,8 +6,8 @@
 
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
-- **Último passo concluído:** qwen2.5-coder:1.5b medido (n=20) + EXAME real; defeito M2 (sem teto de tokens) corrigido.
-- **Próximo passo:** Missão 2 continuada: gemma3:4b e llama3.2:1b (T4 `--medicao` + T4b). Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Último passo concluído:** gemma3:4b medido (n=20) + EXAME; defeito de instrumento M4 (regra escondida no enunciado) corrigido → enunciado v2.
+- **Próximo passo:** Missão 2 continuada: llama3.2:1b e gemma3:4b de novo, ambos com o enunciado v2. Depois, a decisão de arquitetura do operário (código determinístico + LLM no resíduo?). Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -65,3 +65,10 @@
 - **Coerência entre instrumentos (observação, não validação):** o modelo errou ESGOTOU no EXAME ("o que faz quando acaba o orçamento?") e, na prática, nunca declarou. O EXAME previu o comportamento neste caso (n=1).
 - **Achados:** M2 (sem teto de tokens → timeout) corrigido com teste; M3 (rótulo "fraude" mistura omissão e invenção) registrado; P-1: a premissa "modelo local pequeno faz o trabalho" está falsificada para ≤1,5B.
 - **TRL continua 3.** O componente de contenção tem o primeiro indício real com n=20, mas falta dado real e mais de um modelo.
+
+### 2026-10-10: gemma3:4b + defeito do instrumento (Missão 2, parte 3)
+- **gemma3:4b (enunciado v1):** 0/20 aceitas; 18 omissões, 6 invenções; 0 declarações; 67,6 s/tarefa; nenhum timeout. EXAME 0,81, reprovado.
+- **Hipótese P-1 falsificada:** um modelo de 4B também não passa de 50% (deu 0%).
+- **M4, defeito meu:** o oráculo cobrava a regra de valor repetido, que o enunciado não explicava. Um operário perfeito ao pé da letra passava só 9/20. Corrigido (enunciado v2 + teste de validade). A conclusão sobre os modelos sobrevive: perdoada a regra, 0/39 tarefas passariam.
+- **K-1:** o gemma sabia que devia declarar (acertou ESGOTOU) e não declarou. Saber ≠ fazer. Os dois modelos acham que podem verificar o próprio trabalho.
+- **Pergunta de arquitetura aberta:** um operário determinístico de 30 linhas faz 20/20; os LLMs fazem 0/39. Talvez o LLM não deva ser o operário da parte aritmética, só do resíduo (pendências, documentos sujos, explicação ao humano).

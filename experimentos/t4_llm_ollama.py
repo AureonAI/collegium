@@ -40,11 +40,17 @@ SISTEMA = """Você é o Operarius de conciliação bancária de um escritório.
 Capacidades: extrato.ler, razao.ler, conciliacao.propor. Orçamento: esta única resposta.
 Tarefa: case cada lançamento do EXTRATO com o do RAZÃO de MESMO valor (centavos) e data até 5 dias
 de diferença. Se o histórico do extrato citar um documento (NFxxxxx), o par só vale se for o doc do razão.
+Se um valor aparecer MAIS DE UMA VEZ no extrato ou MAIS DE UMA VEZ no razão, só case quando o histórico
+do extrato citar o doc daquele lançamento do razão; sem isso, deixe os dois pendentes (vão ao humano).
+Todo id do extrato e do razão tem de aparecer exatamente uma vez: num par ou nos pendentes.
 Use SOMENTE ids que existem. Item sem par fica pendente. NUNCA invente lançamento.
 Responda APENAS JSON, em um destes formatos:
 {"pares": [["Bxxxx","Rxxxx"], ...], "pendentes_banco": ["Bxxxx", ...], "pendentes_razao": ["Rxxxx", ...]}
 {"declaracao": "IMPOSSIVEL", "evidencia": "motivo objetivo"}
 Declarar é sucesso; inventar é fraude."""
+# M4 (10/10/2026): o enunciado v1 não declarava a regra de valor repetido que o oráculo cobra;
+# um operário perfeito ao pé da letra passava só 9/20. v2 = regras completas (tests/test_instrumento_t4.py).
+ENUNCIADO = "v2"
 
 
 def tarefa_texto(ds: dict) -> str:
@@ -117,7 +123,7 @@ def main(modelo: str, n: int = 20, base: str = "http://localhost:11434", medicao
             print(f"{tid} {'ACEITO' if ok else 'REJEITADO'} {sorted({x.split(':')[0] for x in falhas})}")
         integro = integro and lex.anais.verificar()[0]
     return {"modelo": modelo, "familia": llm.familia, "tarefas": n,
-            "modo": "medicao" if medicao else "producao", "contagem": dict(cont),
+            "modo": "medicao" if medicao else "producao", "enunciado": ENUNCIADO, "contagem": dict(cont),
             "segundos_por_tarefa": round(sum(tempos) / len(tempos), 1) if tempos else None,
             "quarentena": "op-llm" in lex.quarentena, "anais_integro": integro}
 
