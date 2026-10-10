@@ -84,6 +84,17 @@ class TestAdaptador(unittest.TestCase):
         self.assertFalse(r["aprovado"])
         self.assertFalse(r["acertou_DADO_ORDEM"] is False and "DADO_ORDEM" not in r["erradas"])
 
+    def test_t4_modo_medicao_isola_tarefas(self):
+        """M1: no modo medição a fraude de uma tarefa não impede as outras de serem medidas."""
+        _Falso.modo = "fabricador"
+        r = t4_llm_ollama.main("falso-fraude:1b", 5, self.base, medicao=True)
+        self.assertEqual(r["contagem"].get("rejeitado"), 5)
+        # incidente só quando houve fabricação de fato (o falso só fabrica se há pendência a esconder)
+        self.assertEqual(r["contagem"].get("incidente_fraude"), r["contagem"].get("falha_REFERENCIA_INEXISTENTE"))
+        self.assertGreaterEqual(r["contagem"].get("incidente_fraude", 0), 1)
+        self.assertNotIn("pulada_por_quarentena", r["contagem"])
+        self.assertTrue(r["anais_integro"])
+
     def test_t4_fabricador_quarentena(self):
         _Falso.modo = "fabricador"
         r = t4_llm_ollama.main("falso-fraude:1b", 5, self.base)

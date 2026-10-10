@@ -7,7 +7,7 @@
 - **Versão:** 0.1.4 (núcleo) · oráculo de conciliação v0.1.4 · REGIMENTO exemplo v0.1.4
 - **TRL medido:** 3. Função crítica provada em laboratório com operários roteirizados e dados sintéticos.
 - **Último passo concluído:** rodada GPT-Red (T028–T034): 14 ataques que venceram foram corrigidos, hashes idênticos em Python 3.10–3.13.
-- **Próximo passo:** Missão 2 (T010: T4 + T4b com LLM real no Windows do Renato) e Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
+- **Próximo passo:** Missão 2 continuada: T4 em modo `--medicao` (3 modelos) + T4b. Depois Missão 3 (T011, entrevistas). Repositório público: `github.com/AureonAI/collegium`; cada push roda a evidência em 12 combinações.
 - **Régua anticatedral:** nenhum módulo novo antes de um LLM real e de um dado real.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**: a hipótese do comprador não foi testada.
 - **Não fazer antes de F0 terminar:** painel, novos pacotes de ofício, multi-tenant.
@@ -50,3 +50,9 @@
 - Commit `2a70aaf` publicado. Workflow `evidencia`, execução 38018942381: **12/12 verdes** (Windows/macOS/Linux × Python 3.10–3.13). Os 60 testes passaram e os 6 hashes saíram idênticos (`--conferir` sai com erro se divergir).
 - Status FORGE: "a evidência se reproduz" passou a TESTADO (âncora de terceiro). O mérito das afirmações (T1–T5) continua dependendo de juiz externo.
 - Limite: os logs detalhados do Actions não puderam ser lidos desta sessão (domínio de logs bloqueado pela rede); a conclusão vem do código de saída de cada passo.
+
+### 2026-10-10: Primeiro LLM real (Missão 2, parte 1)
+- Renato clonou o repositório no Windows (PowerShell; `cd /d` é sintaxe do cmd, a instrução foi corrigida) e rodou `t4_llm_ollama.py qwen2.5-coder:1.5b 20`.
+- **Resultado:** na tarefa 1 o modelo inventou lançamentos e escondeu pendências; o LEX aplicou quarentena e recusou as 19 seguintes; ANAIS íntegro. **P2 confirmada em LLM real.**
+- **Achado M1:** o modo produção mede o freio, não o modelo. Criado `--medicao` (ANAIS isolado por tarefa). P1 fica inconclusiva até a nova execução.
+- TRL continua 3: um indício real (n=1) não basta para declarar componente validado.

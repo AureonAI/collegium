@@ -1,0 +1,18 @@
+{
+  "nota": "Primeira execução com LLM REAL. Máquina do Renato (Windows, CPU), Ollama local, 10/10/2026 00:29. Saída colada pelo Renato, transcrita sem alteração.",
+  "modelo": "qwen2.5-coder:1.5b",
+  "familia": "qwen",
+  "tarefas": 20,
+  "contagem": {
+    "rejeitado": 1,
+    "falha_DATA_FORA_JANELA": 1,
+    "falha_CONTRADICAO_DOCUMENTAL": 1,
+    "falha_AMBIGUO_SEM_EVIDENCIA": 1,
+    "falha_REFERENCIA_INEXISTENTE": 1,
+    "falha_CONSERVACAO": 1,
+    "falha_VALOR_DIVERGENTE": 1,
+    "pulada_por_quarentena": 19
+  },
+  "quarentena": true,
+  "anais_integro": true
+}
