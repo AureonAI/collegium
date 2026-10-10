@@ -24,6 +24,13 @@
 
 Se disser sim na 8: "E se funcionar, como vocês preferem pagar: por conta, por lançamento ou por mês?" **Não diga preço.** Anote o que a pessoa disser.
 
+## Depois da pergunta 8 (acrescentado em 10/10/2026, depois do pré-registro; NÃO entra no S1 nem no S2)
+9. **Só agora mostre** o relatório de demonstração no celular (Missão 4; os dados são sintéticos, diga isso). Pergunte:
+   "O que aqui você não entendeu?" e "O que faltaria para você confiar neste resultado sem refazer?" Anote **literal**.
+10. Se a barreira da pergunta 7 foi sigilo/LGPD: a ferramenta roda **no computador do escritório**; extrato e razão não
+    saem de lá. Pergunte: "Isso muda a sua resposta da pergunta 8?" Anote a resposta, mas a pergunta 8 vale como foi
+    respondida **antes** (é a que conta no S1).
+
 ## O que anotar de cada conversa (copie e preencha)
 ```
 Conversa nº:
@@ -38,9 +45,12 @@ Maior barreira para confiar numa ferramenta:
 Pergunta 8 (piloto com dado anonimizado): SIM / NÃO / TALVEZ
 Forma de pagamento preferida:
 Frase marcante (literal):
+Pergunta 9 (o que não entendeu / o que faltaria para confiar), literal:
+Pergunta 10 (rodar no computador do escritório muda a resposta?):
 ```
 
 ## O que NÃO fazer
 - Não explicar o COLLEGIUM antes da pergunta 8. Quem ouve a solução antes passa a responder sobre a solução, não sobre a dor.
 - Não aceitar "achei interessante" como resultado. Só conta fato, número ou compromisso.
-- Não receber nenhum arquivo ainda. Primeiro preparamos a ferramenta de anonimização (próxima missão, se S1 passar).
+- Não receber nenhum arquivo. Se o piloto for aceito, o caminho é o escritório rodar a ferramenta no próprio computador;
+  só volta para nós o que ele decidir mandar (o `resumo.json` não traz nomes nem históricos — teste de minimização LGPD).

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import csv
 import dataclasses
+import hashlib
 import html
 import io
 import json
@@ -250,10 +251,32 @@ def conciliar_arquivos(extrato: str, razao: str, saida: str, ente: str = "Client
             json.dump(rc.emitir_recibo(caminho_anais, resumo["tarefa"], cab), f, ensure_ascii=False, indent=1)
         resumo["recibo"] = "recibo.json (conferir com: python -m collegium conferir-recibo recibo.json CHAVE_PUBLICA)"
     with open(os.path.join(saida, "resumo.json"), "w", encoding="utf-8") as f:
-        json.dump(resumo, f, ensure_ascii=False, indent=1)
+        json.dump(resumo_publico(resumo, extrato, razao), f, ensure_ascii=False, indent=1)
     with open(os.path.join(saida, "relatorio.html"), "w", encoding="utf-8") as f:
         f.write(relatorio_html(resumo, entrada, r))
     return resumo
+
+
+def _sha256_arquivo(caminho: str) -> str:
+    h = hashlib.sha256()
+    with open(caminho, "rb") as f:
+        for bloco in iter(lambda: f.read(1 << 16), b""):
+            h.update(bloco)
+    return h.hexdigest()
+
+
+def resumo_publico(resumo: dict, extrato: str, razao: str) -> dict:
+    """R6-13: resumo.json é o arquivo que pode SAIR do escritório. Só números, códigos e hashes: sem nome de
+    arquivo (costuma ter nome do cliente), sem caminho (tem o nome do usuário) e sem texto das linhas do
+    cliente. O relatório local (relatorio.html) continua mostrando tudo para quem está no computador."""
+    p = dict(resumo)
+    p.pop("extrato", None)
+    p.pop("razao", None)
+    p["extrato_sha256"], p["razao_sha256"] = _sha256_arquivo(extrato), _sha256_arquivo(razao)
+    p["anais"] = os.path.basename(resumo["anais"])
+    p["linhas_ignoradas"] = {lado: [{"linha": x.get("linha")} for x in xs]
+                             for lado, xs in resumo["linhas_ignoradas"].items()}
+    return p
 
 
 def _humanos_registrados(led: Ledger) -> list[str]:

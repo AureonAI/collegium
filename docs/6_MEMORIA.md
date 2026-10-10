@@ -4,10 +4,10 @@
 
 ## ⏸ ONDE PAROU (atualize SEMPRE este bloco primeiro)
 
-- **Versão:** 0.2.0 (núcleo) · oráculo de conciliação v0.1.4 · ofício três vias v0.1.1
-- **TRL medido:** 3. Laboratório + LLM real só na contenção. Sem dado real, sem cliente.
-- **Último passo concluído:** Fase SA (estado da arte), T042–T064, mais a rodada 5 do Red Team. Ver o diário de 10/10/2026.
-- **Próximo passo:** Missão 3 (T011, entrevistas: `docs/ROTEIRO_ENTREVISTA.md`). Em paralelo, as missões externas: AgentDojo (T051), Docker real (T016/T046), LLM real com `--esquema` e `--tentativas` (T053/T054), PaddleOCR real (T036).
+- **Versão:** 0.3.0 (núcleo + produto `collegium conciliar`) · oráculo de conciliação v0.1.5 · ofício três vias v0.1.1
+- **TRL medido:** 3. Laboratório + LLM real só na contenção + produto instalável rodado como estranho no CI. Sem dado real, sem cliente.
+- **Último passo concluído:** Fase P (T065–T071) e rodada 6 do Red Team (R6-1..R6-13). Ver o diário de 10/10/2026.
+- **Próximo passo:** Missão 4 (o produto no Windows do Renato, `docs/5_TAREFAS.md`), depois Missão 3 (entrevistas) com o relatório na mesa. Missões externas seguem: AgentDojo (T051), Docker real (T016/T046), LLM real com `--esquema`/`--tentativas` (T053/T054), PaddleOCR real (T036).
 - **Decisões pendentes do Renato:** LICENSE (o repositório está sem licença, ou seja, todos os direitos reservados).
 - **Régua anticatedral:** a Fase SA foi pedida explicitamente pelo Renato (10/10/2026). Daqui em diante, de novo: **nenhum módulo novo antes de dado real e de comprador**.
 - **Bloqueios:** nenhum técnico. O risco principal é de **mercado**.
@@ -101,3 +101,11 @@
 - **Falsificações registradas:** G3 do T7 (reconfirmada com semente nova); confirmatória 1 do A6 (corrigida; a confirmatória 2 deu 0 vitórias).
 - **Erros meus de processo:** CI vermelho por 3 envios sem eu notar; um commit publicado com teste falhando (`| tail` mascarava o código de saída). Corrigido: verificação em 3 sementes antes de cada commit, e CI com anotações por teste.
 - **Hashes:** T1–T6 e A4/A5 intactos desde a sessão 1; novos: T7, A6, T8, T9.
+
+### 2026-10-10: Fase P — do núcleo ao produto (T065–T071) + Red Team rodada 6
+- **Pedido do Renato:** executar sem acomodação, rejeitando "bom o suficiente". Foco: o comando que faz o trabalho que se vende, usado como um estranho o usaria.
+- **Entregue:** `collegium conciliar` e `aprovar` (arquivos reais → relatório que abre no celular, pendências, pares, recibo assinado; BLOQUEADO declarado quando a entrada não serve); mapa assinado de tarefas (prova de completude no recibo e na fatura; `auditar-cabeca`); instalação por `pip`, comando `collegium`, `collegium exemplo`, versão única 0.3.0; `pacotes` → `collegium_oficios`.
+- **Ataques que venceram, todos corrigidos com teste antes:** razão contábil invertido em silêncio (R6-1); BOM, título, D/C, total (R6-2..5); "4512" valendo dentro de "14512" (R6-6); recibo HONESTO escondendo a recusa humana (R6-7); minha própria fatura v2 cobrando trabalho recusado (R6-8); PowerShell 5.1 gravando UTF-16 (R6-9); página de código corrompendo texto assinado (R6-10); Excel "Texto Unicode" com mensagem falsa (R6-11); defeitos de uso como estranho (R6-12); `resumo.json` levando caminho, nome de arquivo e texto do cliente (R6-13).
+- **Achados pelo CI:** kit de exemplo com CRLF no Windows (W-3); actions em Node 20 descontinuado (W-4).
+- **Testes:** 222 → 268, em 3 sementes de hash; instalação limpa no CI (3 sistemas × 4 Pythons). **Hashes:** os 11 publicados, intactos.
+- **Limite novo declarado:** quem assina pode mentir NO mapa; só o auditor com o ANAIS prova (R6-7L).

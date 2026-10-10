@@ -2,7 +2,7 @@
 
 > *Collegium*, no direito romano, era a corporação de ofício: um grupo com estatuto próprio, que respondia pelo trabalho que entregava.
 
-**Versão:** 0.1.4 · **Data:** 09/10/2026 · **Regime:** CUME · **TRL medido:** 3 (ver `forge/EVIDENCE.md`)
+**Versão:** 0.3.0 · **Data:** 10/10/2026 (criado em 09/10/2026) · **Regime:** CUME · **TRL medido:** 3 (ver `forge/EVIDENCE.md`)
 
 ## 1. O problema (em uma frase)
 
@@ -35,8 +35,8 @@ Empresas pagam 6 vezes mais por **serviço** do que por software (Sequoia, 2026)
 
 ### H1 — Conciliar com recibo (P1)
 Como escritório, envio extrato e razão de um cliente e recebo a conciliação com pares, pendências e um recibo que qualquer auditor pode conferir.
-**Teste isolado:** `python reproduzir.py` → T1 mostra 200/200 entregas honestas aceitas.
-**Aceite:** (a) nenhum par cita lançamento inexistente; (b) soma do banco = soma dos pares + soma das pendências (conservação); (c) recibo selado no ANAIS e verificável com a âncora.
+**Teste isolado (produto, v0.3.0):** `python ferramentas/instalacao_limpa.py` → instala por `pip`, roda `exemplo → conciliar → aprovar → recibo → conferir-recibo → auditar-cabeca` fora da pasta do projeto (CI: 3 sistemas × 4 Pythons). Laboratório: `python reproduzir.py` → T1 mostra 200/200 entregas honestas aceitas.
+**Aceite:** (a) nenhum par cita lançamento inexistente; (b) soma do banco = soma dos pares + soma das pendências (conservação); (c) recibo selado no ANAIS e verificável com a âncora; (d) o recibo prova que mostra a história INTEIRA da tarefa (inclusive recusa humana) — `tests/test_mapa.py`; (e) no kit de demonstração, 0 par errado contra a verdade conhecida — `tests/test_piloto.py`.
 
 ### H2 — Nunca inventar para fechar (P1)
 Como escritório, quero ter certeza de que, quando não houver par, a equipe **deixe pendente** em vez de inventar.
@@ -44,7 +44,7 @@ Como escritório, quero ter certeza de que, quando não houver par, a equipe **d
 
 ### H3 — Dizer "não sei" com evidência (P1)
 Como responsável, quero que a equipe pare e declare BLOQUEADO/IMPOSSÍVEL quando o orçamento da tarefa acabar.
-**Teste isolado:** T1 E4/E5/E13.
+**Teste isolado:** T1 E4/E5/E13. No produto: saldo que não fecha (S1), período que não bate (S2) ou razão de outra conta/convenção indeterminada (S3) → BLOQUEADO declarado no ANAIS, com o motivo no relatório e código de saída 2 — `tests/test_piloto.py`.
 
 ### H4 — Autonomia que se conquista (P2)
 Como responsável, quero aprovar tudo no começo e, conforme o histórico prova qualidade, aprovar só por amostragem.
@@ -74,7 +74,10 @@ Como entidade soberana, quero rodar com modelo local (Ollama) ou de nuvem, à mi
 - **RF-09** O painel DEVE mostrar a fila do humano, os recibos e a matriz de autonomia. *(implementado, HTML estático)*
 - **RF-10** Extrato importado DEVE passar pela prova de saldo; item lido com baixa confiança NÃO PODE ser casado automaticamente. *(implementado)*
 - **RF-11** Conciliação DEVE aceitar lotes (1 crédito ↔ várias notas) só com documento de todos os membros ou subconjunto único. *(implementado)*
-- **RF-12** Mudança de REGIMENTO DEVE ser assinada pelo Patronus. *(implementado)*
+- **RF-12** Mudança de REGIMENTO DEVE ser assinada pelo Patronus. *(implementado; Ed25519 com quórum)*
+- **RF-13** Entrada que não passa na sanidade (saldo, período, conta, convenção de sinal) DEVE resultar em BLOQUEADO declarado, nunca em conciliação entregue. *(testado)*
+- **RF-14** O recibo e a fatura DEVEM provar a completude da história da tarefa; a mentira no mapa DEVE ser detectável por auditor com o ANAIS. *(testado; limite R6-7L)*
+- **RF-15** O produto DEVE instalar por `pip` sem dependências e rodar em Windows, macOS e Linux, inclusive com arquivos gravados pelo PowerShell 5.1 e exportados pelo Excel em CP-1252 ou UTF-16. *(testado no CI; no Windows do Renato = Missão 4)*
 
 ## 6. Critérios de sucesso (mensuráveis, agnósticos de tecnologia)
 
@@ -93,7 +96,7 @@ Como entidade soberana, quero rodar com modelo local (Ollama) ou de nuvem, à mi
 - Escrituração contábil com responsabilidade técnica, que exige profissional habilitado. *Não sou advogado; validar com assessoria antes de vender.* O COLLEGIUM entrega a conciliação **ao** escritório, não **em nome** de um contador.
 - Agente "CEO" com poder sobre os outros: o Project Vend mostrou ganho baixo ou negativo.
 - Tarefas de **julgamento** sem verificador (estratégia, negociação, jurídico consultivo): só como copiloto, nunca no autopiloto.
-- Interface gráfica completa: v0.1 é núcleo + CLI.
+- Interface gráfica completa: até a v0.3.0, núcleo + CLI + relatório HTML estático (abre offline e no celular).
 - Multi-tenant em nuvem: v0.1 é local-first.
 
 ## 8. Vetor SINGULARIDADE (declarado)
@@ -101,10 +104,10 @@ Como entidade soberana, quero rodar com modelo local (Ollama) ou de nuvem, à mi
 | Eixo | Estado | Por quê |
 |---|---|---|
 | PREMIUM | **ativo** | Cada entrega tem recibo verificável; a qualidade é medida, não prometida |
-| GLOBAL | **parcial** | O motor é universal; a cunha é Brasil (PIX, extrato BR) e os identificadores do código estão em PT-BR. Está previsto API bilíngue na v0.3 |
+| GLOBAL | **parcial** | O motor é universal; a cunha é Brasil (PIX, extrato BR) e os identificadores do código estão em PT-BR. A API bilíngue prevista para a v0.3 **não foi feita** (só o README tem resumo em inglês) |
 | AGNÓSTICO | **ativo** | O LEX não chama modelo nenhum; os agentes podem ser qualquer LLM ou humano |
-| SOBERANO | **ativo** | Só biblioteca padrão do Python, local-first, chave HMAC em poder da entidade |
-| SEGURO | **parcial** | O LEX governa só o que passa por ele; sem isolamento de SO, o ataque A1 vence |
+| SOBERANO | **ativo** | Só biblioteca padrão do Python, local-first; chave do ANAIS em poder da entidade e chave privada Ed25519 só no computador do humano |
+| SEGURO | **parcial** | O LEX governa só o que passa por ele; isolamento de rede testado (`unshare`), Docker ainda não executado (T016): sem isolamento de SO, o ataque A1 vence |
 
 ## 9. Anterioridade (honestidade sobre ineditismo)
 

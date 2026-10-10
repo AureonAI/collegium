@@ -72,19 +72,23 @@ ABERTA ──(passos ≤ orçamento)──► SUBMETIDA ──► ACEITA ──�
 | Isolamento C0 | Docker/Podman com `--network none` + proxy de egress com lista | O incidente mostrou que confinamento é infraestrutura |
 | Painel C4 | HTML estático + leitura do ANAIS (v0.2) | Sem servidor obrigatório; pode ser aberto offline |
 
-## 6. Estrutura de pastas (v0.2.0)
+## 6. Estrutura de pastas (v0.3.0)
 
 ```
-collegium/
-├── README.md · AGENTS.md · SECURITY.md
+collegium/  (repositório)
+├── README.md · AGENTS.md · SECURITY.md · pyproject.toml (pip install; comando `collegium`)
 ├── reproduzir.py                  1 comando → toda a evidência + HASHES.txt (--conferir compara)
-├── regimento.exemplo.json · dossie_exemplo/
-├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.13 + anotações + testemunha
+├── regimento.exemplo.json · dossie_exemplo/ · exemplos/piloto/ (kit de demonstração)
+├── .github/workflows/evidencia.yml   Windows/macOS/Linux × Python 3.10–3.13: testes, instalação
+│                                     como estranho, reprodução, anotações, testemunha
 ├── collegium/                     ── PRIMITIVO (C1), só biblioteca padrão ──
 │   ├── lex.py                     constituição executável (leis, plano, destinos, canários, orçamento,
 │   │                              tentativas, quatro olhos, digest do modelo, quórum Ed25519)
+│   ├── execucao.py                executor agnóstico de ofício; REGIMENTO guardado junto do ANAIS;
+│   │                              BLOQUEADO declarado; aprovação humana assinada
 │   ├── ledger.py · ledger_sqlite.py   ANAIS em JSONL ou SQLite (linha idêntica byte a byte)
-│   ├── merkle.py · recibo.py · fatura.py   RFC 9162; recibo e fatura conferíveis pelo cliente
+│   ├── merkle.py · mapa.py        RFC 9162; mapa assinado de tarefas (prova de completude)
+│   ├── recibo.py · fatura.py      recibo e fatura conferíveis pelo cliente; auditoria da cabeça
 │   ├── ed25519.py                 RFC 8032 em Python puro (vetores oficiais)
 │   ├── portao.py · isolamento.py  servidor MCP mediador + executor com falha fechada
 │   ├── oficio.py                  kit de ofício + suíte de conformidade (mutação)
@@ -94,14 +98,16 @@ collegium/
 │   ├── conduta.py · fila.py       admissão por conduta; fila do humano e "carimbo"
 │   ├── preregistro.py · telemetria.py
 │   ├── autonomia.py · dossie.py · equipe.py · adaptadores.py
-│   └── __main__.py                CLI: python -m collegium (lista todos os comandos)
-├── collegium_oficios/                       ── FOLHAS (C2) ──
+│   └── __main__.py                CLI `collegium` (sem argumentos: todos os comandos, produto primeiro)
+├── collegium_oficios/             ── FOLHAS (C2) ──
 │   ├── registro.py                ofícios por nome
-│   ├── conciliacao/               oráculo, operários, resíduo, importadores (OFX/CSV/OCR/CNAB/Open Finance),
-│   │                              ferramentas do portão, iscas de conduta, minerador de janela, ofício
+│   ├── conciliacao/               oráculo, operários, resíduo, importadores (OFX/CSV/planilha/OCR/CNAB/
+│   │                              Open Finance), piloto.py (conciliar arquivos → relatório), exemplo.py
+│   │                              (kit), ferramentas do portão, iscas de conduta, minerador de janela
 │   └── tres_vias/                 pedido × recebimento × nota fiscal (2º ofício, mesmo núcleo)
 ├── experimentos/                  T1–T9, A4–A6 (+ T4/T4b com LLM real)
-├── ferramentas/                   testes_ci.py · testemunha.py · release.py (pacote + SBOM)
+├── ferramentas/                   pre_envio.py (portão antes de enviar) · instalacao_limpa.py ·
+│                                  testes_ci.py · testemunha.py · release.py · gerar_exemplo_piloto.py
 ├── preregistros/                  REGISTRO.jsonl (criado no 1º pré-registro)
 ├── resultados/                    JSON + HASHES.txt + historico/ (falsificações arquivadas)
 ├── tests/                         suíte unittest
@@ -137,4 +143,7 @@ collegium/
 | 022 | Aprendizado só como proposta + backtest + quórum | Ajuste automático em produção | Art. 12; envenenamento ataca a disponibilidade, não a integridade (L-1) |
 | 023 | Canários indistinguíveis testam produtor E verificador | Confiar no histórico | Única verdade de chão para classe sem oráculo |
 | 024 | ANAIS SQLite com a mesma linha do JSONL | Banco com esquema próprio | Mesma raiz Merkle e mesmos recibos; troca de armazenamento sem trocar prova |
-
+| 025 | **Mapa assinado de tarefas** na cabeça: Merkle sobre folhas ordenadas por tarefa; o recibo traz TODAS as linhas da tarefa e os vizinhos | Recibo com as linhas que o operador escolhe | R6-7: até o recibo honesto escondia a recusa humana. Custo declarado: quem assina pode mentir no mapa; a mentira fica assinada e o auditor a prova (`auditar-cabeca`) — modelo dos logs de transparência |
+| 026 | Executor de ofício separado do ofício; REGIMENTO gravado ao lado do ANAIS e imutável por parâmetro; entrada imprestável = BLOQUEADO declarado | Regras passadas por linha de comando a cada execução | Mudar quem aprova por parâmetro seria burla do G4; "conciliar" algo que não fecha seria entregar errado como certo |
+| 027 | Convenção de sinal do razão decidida pelos DADOS (casamentos diretos × invertidos, com margem); indeterminado = BLOQUEADO | Perguntar ao usuário / supor convenção bancária | R6-1: o razão contábil entrava invertido em silêncio; o usuário não técnico não sabe responder a pergunta |
+| 028 | JSON de máquina em ASCII; leitores aceitam UTF-8, BOM e UTF-16; pacote instalável com nomes próprios (`collegium`, `collegium_oficios`) | Confiar no terminal e no nome `pacotes` | R6-9/R6-10/R6-12: PowerShell 5.1 e páginas de código antigas corrompem texto assinado; nome genérico colide no site-packages |

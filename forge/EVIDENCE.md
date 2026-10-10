@@ -46,13 +46,16 @@
 1. **Operários roteirizados** em T1–T5. Três LLMs reais (≤4B) executaram T4 e EXAME. Nenhum modelo maior foi testado.
 2. **Dados sintéticos.** Nenhum extrato ou razão de cliente real.
 3. **O LEX não é sandbox** (A1). A separação agente/orquestrador é de processo.
-4. **Assinatura simétrica** (HMAC). O núcleo também conhece a chave do Patronus.
+4. **Assinatura humana:** Ed25519 desde o T042 (o núcleo não conhece a chave privada), em Python puro e **sem tempo constante** (E-1): assinar só no computador do humano. HMAC segue aceito apenas quando o REGIMENTO não registra chave pública (Q-2).
 5. **O EXAME mede compreensão de regras, não competência.** O "estudioso" do T5 é roteirizado e circular.
 6. **Desempenho.** O operário de referência leva cerca de 24 s com 20 mil lançamentos; o oráculo, 0,3 s. O T3 leva 3–6 min.
 7. **Mercado: zero evidência.**
+8. **Recibo e fatura:** a completude é provada contra o mapa ASSINADO; quem assina pode mentir no mapa, e só o auditor com o ANAIS detecta (R6-7L). Sem auditor, a garantia é de atribuição, não de impossibilidade.
+9. **Produto (`collegium conciliar`):** rodado só com o kit de demonstração (sintético, com armadilhas de arquivos reais) e com as variações dos testes. Nenhum arquivo de banco ou ERP real passou por ele.
 
 ## TRL e nota (atualizado em 10/10/2026, após a Fase SA)
 - **TRL MEDIDO: continua 3.** A Fase SA adicionou capacidade e robustez em laboratório. TRL 4 exige componente validado com dado REAL; TRL 6+, cliente em campo. Nada disso aconteceu.
+- **10/10/2026, rodada 6 (v0.3.0):** o comando que faz o trabalho existe, instala por `pip` e roda o ciclo inteiro fora da pasta do projeto nos 3 sistemas (âncora: CI do GitHub). Isso é prontidão de **demonstração**, não validação com dado real: o TRL continua 3.
 - **"Estado da arte" ≠ produto pronto.** O código cobre os 22 itens identificados; a validade externa (AgentDojo, auditor, cliente) não existe.
 
 ## TRL e nota (histórico)

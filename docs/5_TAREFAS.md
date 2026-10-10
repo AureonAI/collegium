@@ -111,11 +111,33 @@ Critério geral: cada item só fica ✅ com teste que falharia sem ele e com um 
 | T063 | 2 | Mapa de conformidade (OWASP ASI01–ASI10, LGPD) | — | ✅ (`docs/CONFORMIDADE.md`: OWASP ASI01–10, LGPD, PL 2338, AI Act) |
 | T064 | 2 | Métricas de valor + fatura derivada dos recibos | fatura conferível pelo cliente | ✅ (`collegium/fatura.py`: métricas do ANAIS + fatura conferível pelo cliente) |
 
+## Fase P: do núcleo ao produto (10/10/2026, rodada 6 do Red Team)
+
+Critério: o trabalho que se vende roda de ponta a ponta, por quem não é o autor, fora da pasta do projeto.
+
+| ID | Item | Pronto quando | Status |
+|---|---|---|---|
+| T065 | Planilha real de banco e ERP: cabeçalho achado sozinho, CP-1252, BOM, D/C, total e saldo; convenção de sinal pelos dados | os ataques R6-1..R6-5 falham | ✅ (`ler_planilha`, `detectar_convencao`; `tests/test_planilha_real.py`) |
+| T066 | `collegium conciliar`: arquivos → relatório, pendências, pares, resumo, recibo; sanidade S1/S2/S3 com BLOQUEADO declarado | kit de demonstração com 0 par errado contra a verdade | ✅ (`piloto.py`, `execucao.py`; `tests/test_piloto.py`; oráculo v0.1.5 = R6-6) |
+| T067 | Prova de completude: mapa assinado de tarefas no recibo e na fatura; auditoria da cabeça | recibo não esconde a recusa humana; fatura não cobra canário nem recusada | ✅ (`collegium/mapa.py`; `tests/test_mapa.py`; R6-7, R6-8; fecha R-1 e F-L) |
+| T068 | Instalável por `pip`, comando `collegium`, kit empacotado (`collegium exemplo`), versão única | ciclo inteiro rodado como estranho no CI de 3 sistemas | ✅ (`pyproject.toml`; `ferramentas/instalacao_limpa.py`; R6-9..R6-12) · 🔶 prova no Windows do Renato = Missão 4 |
+| T069 | Documentação na v0.3.0 (README produto primeiro, ARQUITETURA, ADR 025–028, EVIDENCE, MEMÓRIA, ADVERSARIAL_LOG) | nenhum documento contradiz o código | ✅ |
+| T070 | Red Team rodada 6, continuação: arquivos hostis (OFX com sinal contraditório, duplicata entre arquivos, extrato de outro período) | cada ataque vira teste | em andamento |
+| T071 | `collegium aprovar`: humano com chave Ed25519 registrado no 1º uso; aprovação assinada → LIBERADA → aparece no recibo | ciclo conciliar → aprovar → recibo conferido offline | ✅ (`execucao.aprovar`; `tests/test_piloto.py`, `instalacao_limpa.py`) |
+
 ## Missão atual (uma de cada vez)
 
-> **MISSÃO 3: ouvir o mercado (T011), Renato**
-> 1. Abra `docs/ROTEIRO_ENTREVISTA.md` (no GitHub ele aparece formatado).
-> 2. Faça as **3 primeiras** conversas com escritórios contábeis ou de BPO financeiro.
-> 3. Preencha o bloco "O que anotar" de cada uma e cole aqui.
-> **Por que importa:** o código chegou ao limite do que dado sintético prova. O maior risco agora é não haver comprador.
+> **MISSÃO 4: o produto no SEU Windows, como um cliente faria (T068), Renato**
+> 1. Abra o PowerShell (não precisa estar na pasta do projeto). Rode, um de cada vez:
+>    `python -m pip install https://github.com/AureonAI/collegium/archive/refs/heads/main.zip`
+>    `cd ([Environment]::GetFolderPath("Desktop"))`   (vai para a sua Área de Trabalho, com ou sem OneDrive)
+>    `python -m collegium exemplo demo`
+>    `python -m collegium conciliar --extrato demo\extrato.ofx --razao demo\razao_contabil.csv --saida resultado`
+> 2. Abra `resultado\relatorio.html` (duplo clique na Área de Trabalho). Mande o arquivo para o seu celular e abra lá também.
+> 3. **Como validar:** a 1ª linha da resposta deve começar com `CONCILIADO: 47 casamentos`. O relatório deve abrir sem nada
+>    quebrado e mostrar os números 47, 15 e 12.
+> 4. **O que me relatar:** cole a saída do PowerShell inteira; diga se o relatório abriu no computador e no celular, e a
+>    primeira coisa que você não entendeu ao olhar para ele (essa é a pergunta que o cliente vai fazer).
+> **Por que importa:** é a primeira prova do produto fora das máquinas do GitHub, e é o que você vai MOSTRAR nas entrevistas.
+> Depois dela: Missão 3 (entrevistas, `docs/ROTEIRO_ENTREVISTA.md`), agora com o relatório aberto na mesa.
 > Missões 1, 2 e 2b concluídas: ver MEMÓRIA.

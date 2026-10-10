@@ -90,6 +90,32 @@ class TestPiloto(Base):
         with open(os.path.join(s, "anais.jsonl"), encoding="utf-8") as f:
             self.assertNotIn("PIX RECEBIDO", f.read())
 
+    def test_r6_13_resumo_json_nao_leva_dado_do_cliente(self):
+        """R6-13: resumo.json levava caminho absoluto (nome do usuário), nome dos arquivos e o TEXTO das linhas
+        ignoradas (título/total do ERP). É o arquivo que pode sair do escritório: só números e códigos."""
+        o, c = kit.gerar(42)
+        marca = "FULANO DE TAL"
+        c = c.decode("cp1252").replace("EMPRESA EXEMPLO LTDA", marca).replace("Total do período", f"Total {marca}")
+        d = os.path.join(self.tmp, "pasta_de_FULANO DE TAL")
+        os.makedirs(d)
+        ext, raz = os.path.join(d, f"extrato_{marca}.ofx"), os.path.join(d, f"razao_{marca}.csv")
+        with open(ext, "wb") as f:
+            f.write(o)
+        with open(raz, "wb") as f:
+            f.write(c.encode("cp1252"))
+        saida = os.path.join(self.tmp, "s")
+        res = piloto.conciliar_arquivos(ext, raz, saida, "Ente")
+        self.assertEqual(res["status"], "CONCILIADO")
+        with open(os.path.join(saida, "resumo.json"), encoding="utf-8") as f:
+            texto = f.read()
+        self.assertNotIn("FULANO", texto)
+        self.assertNotIn(self.tmp, texto)
+        r = json.loads(texto)
+        self.assertEqual(len(r["extrato_sha256"]), 64)
+        self.assertTrue(all(set(x) == {"linha"} for x in r["linhas_ignoradas"]["razao"]))
+        with open(os.path.join(saida, "relatorio.html"), encoding="utf-8") as f:
+            self.assertIn("FULANO", f.read())  # o relatório LOCAL continua mostrando o que foi ignorado
+
     def test_s3_conta_errada_e_bloqueada_com_evidencia(self):
         o, _ = kit.gerar(42)
         _, outra = kit.gerar(7)  # razão de OUTRA empresa
