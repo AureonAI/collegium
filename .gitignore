@@ -5,3 +5,10 @@ saida/
 build/
 dist/
 *.egg-info/
+# V-1: o que o PRODUTO grava nunca entra num `git add .` deste repositório PÚBLICO
+# (chave privada do humano e dados de cliente; apagar depois não tira do histórico do git)
+*.priv
+/demo/
+/resultado/
+/resultado_*/
+anais*.jsonl*

@@ -132,6 +132,12 @@ def _conciliar(args: list[str]) -> int:
               f"{r.get('pendencias_extrato', 0)} pendências no extrato, {r.get('pendencias_razao', 0)} no razão")
     for av in r["avisos"]:
         print(f"AVISO: {av}")
+    from . import repositorio
+    for caminho, oque in ((os.path.join(a.saida, "relatorio.html"), "a pasta de resultado (dados do cliente)"),
+                          (a.anais or os.path.join(a.saida, "anais.jsonl"), "o ANAIS")):
+        av = repositorio.aviso(caminho, oque)  # V-1
+        if av:
+            print(av, file=sys.stderr)
     print(f"Abra: {os.path.join(a.saida, 'relatorio.html')}")
     return {"CONCILIADO": 0, "BLOQUEADO": 2}.get(r["status"], 3)
 
@@ -242,6 +248,11 @@ def main(argv: list[str]) -> int:
     if cmd == "gerar-chave":
         if os.path.exists(argv[1]):
             print("arquivo já existe: não sobrescrevo chave", file=sys.stderr)
+            return 2
+        from . import repositorio
+        av = repositorio.aviso(argv[1], "a chave privada")
+        if av:  # V-1: chave privada não tem motivo legítimo para morar num repositório
+            print(av + " Por isso a chave NÃO foi gravada.", file=sys.stderr)
             return 2
         sk = ed25519.gerar_privada()
         fd = os.open(argv[1], os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)

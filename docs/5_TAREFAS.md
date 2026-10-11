@@ -124,6 +124,7 @@ Critério: o trabalho que se vende roda de ponta a ponta, por quem não é o aut
 | T069 | Documentação na v0.3.0 (README produto primeiro, ARQUITETURA, ADR 025–028, EVIDENCE, MEMÓRIA, ADVERSARIAL_LOG) | nenhum documento contradiz o código | ✅ |
 | T070 | Red Team rodada 6, continuação: arquivos hostis e usuário descuidado | cada ataque vira teste | ✅ (`tests/test_rodada6_hostil.py`, `tests/test_formatos.py`; R6-14..R6-27: arquivos hostis, mesmos dados em OFX/CNAB/Open Finance, tipo de arquivo errado; `honesto_v6` nunca recusado pelo oráculo em 420 casos) |
 | T072 | Escala: conciliação de dezenas de milhares de lançamentos em segundos, com resultado idêntico | 10 mil < 3 s; teste diferencial contra a versão antiga | ✅ (`tests/test_escala.py`; 30 mil: 60 s → 7,8 s) |
+| T073 | Chave privada e dado de cliente fora do alcance de `git add .` (vídeo de git, `forge/ANALISE_VIDEO_GIT.md`) | gerar-chave recusa dentro de repositório não ignorado; conciliar avisa; .gitignore do projeto | ✅ (`collegium/repositorio.py`; `tests/test_git_seguro.py`; V-1) |
 | T071 | `collegium aprovar`: humano com chave Ed25519 registrado no 1º uso; aprovação assinada → LIBERADA → aparece no recibo | ciclo conciliar → aprovar → recibo conferido offline | ✅ (`execucao.aprovar`; `tests/test_piloto.py`, `instalacao_limpa.py`) |
 
 ## Missão atual (uma de cada vez)

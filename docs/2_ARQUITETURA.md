@@ -89,6 +89,7 @@ collegium/  (repositório)
 │   ├── ledger.py · ledger_sqlite.py   ANAIS em JSONL ou SQLite (linha idêntica byte a byte)
 │   ├── merkle.py · mapa.py        RFC 9162; mapa assinado de tarefas (prova de completude)
 │   ├── recibo.py · fatura.py      recibo e fatura conferíveis pelo cliente; auditoria da cabeça
+│   ├── repositorio.py             chave privada e dado de cliente fora do alcance de `git add .` (V-1)
 │   ├── ed25519.py                 RFC 8032 em Python puro (vetores oficiais)
 │   ├── portao.py · isolamento.py  servidor MCP mediador + executor com falha fechada
 │   ├── oficio.py                  kit de ofício + suíte de conformidade (mutação)
@@ -148,3 +149,4 @@ collegium/  (repositório)
 | 027 | Convenção de sinal do razão decidida pelos DADOS (casamentos diretos × invertidos, com margem); indeterminado = BLOQUEADO | Perguntar ao usuário / supor convenção bancária | R6-1: o razão contábil entrava invertido em silêncio; o usuário não técnico não sabe responder a pergunta |
 | 028 | JSON de máquina em ASCII; leitores aceitam UTF-8, BOM e UTF-16; pacote instalável com nomes próprios (`collegium`, `collegium_oficios`) | Confiar no terminal e no nome `pacotes` | R6-9/R6-10/R6-12: PowerShell 5.1 e páginas de código antigas corrompem texto assinado; nome genérico colide no site-packages |
 | 029 | O operário do PRODUTO (`honesto_v6`) aplica exatamente as regras do oráculo, inclusive nos lotes; invariante testado: o operário nunca é recusado pelo oráculo, com históricos cortados em todos os comprimentos | Corrigir o `honesto_v5` | O v5 alimenta os hashes publicados (reprodutibilidade); versões convivem como as do oráculo (v0.1.4/v0.1.5). R6-24 |
+| 030 | Antes de GRAVAR chave privada ou dado de cliente, checar se o destino é publicável por git (dentro de repositório e fora do .gitignore): chave = recusa; dado = aviso | Ensinar o usuário a configurar .gitignore | Prevenção antes do `add`; depois do `push`, `revert` não tira do histórico. O usuário é contador, não programador. V-1 |

@@ -6,7 +6,7 @@
 
 - **Versão:** 0.3.0 (núcleo + produto `collegium conciliar`) · oráculo de conciliação v0.1.5 · ofício três vias v0.1.1
 - **TRL medido:** 3. Laboratório + LLM real só na contenção + produto instalável rodado como estranho no CI. Sem dado real, sem cliente.
-- **Último passo concluído:** Fase P (T065–T072) e rodada 6 do Red Team (R6-1..R6-29). Ver o diário de 10/10/2026.
+- **Último passo concluído:** V-1 / T073 (vídeo de git, 11/10/2026); antes, Fase P (T065–T072) e rodada 6 do Red Team (R6-1..R6-29). Ver o diário de 10/10/2026.
 - **Próximo passo:** Missão 4 (o produto no Windows do Renato, `docs/5_TAREFAS.md`), depois Missão 3 (entrevistas) com o relatório na mesa. Missões externas seguem: AgentDojo (T051), Docker real (T016/T046), LLM real com `--esquema`/`--tentativas` (T053/T054), PaddleOCR real (T036).
 - **Versão fixa para a Missão 4 e as entrevistas:** zip do commit `1fc315b` (v0.3.0, CI 15/15). Este ambiente não consegue enviar TAG ao GitHub (o proxy recusa com 403); se quiser uma "release" com nome, crie no site do GitHub apontando para esse commit.
 - **Decisões pendentes do Renato:** LICENSE (o repositório está sem licença, ou seja, todos os direitos reservados).
@@ -103,6 +103,12 @@
 - **Falsificações registradas:** G3 do T7 (reconfirmada com semente nova); confirmatória 1 do A6 (corrigida; a confirmatória 2 deu 0 vitórias).
 - **Erros meus de processo:** CI vermelho por 3 envios sem eu notar; um commit publicado com teste falhando (`| tail` mascarava o código de saída). Corrigido: verificação em 3 sementes antes de cada commit, e CI com anotações por teste.
 - **Hashes:** T1–T6 e A4/A5 intactos desde a sessão 1; novos: T7, A6, T8, T9.
+
+### 2026-10-11: vídeo "curso relâmpago de git" (heliofilhou) → V-1
+- **Pedido do Renato:** análise profunda, crítica e comparativa; implementar se necessário. Análise completa em `forge/ANALISE_VIDEO_GIT.md` (transcrição lida quadro a quadro, 16 alegações ratificadas).
+- **Veredito:** conteúdo correto e didático para iniciante; omissões relevantes (o identificador do commit é hash encadeado; `restore` apaga sem volta; `reflog`; `.gitignore`); "90% do tempo" sem base; chamada final é isca de engajamento.
+- **Comparação:** o COLLEGIUM já tem, e além do git, o que o vídeo ensina sobre histórico (só acrescenta, hash encadeado, correção por registro novo, prova de consistência contra reescrita).
+- **Lacuna achada no projeto (V-1):** o `git add .` que o vídeo ensina publicaria a chave privada e os dados do cliente se o produto fosse rodado numa cópia do repositório público. Corrigido com teste antes (T073).
 
 ### 2026-10-10: Fase P — do núcleo ao produto (T065–T071) + Red Team rodada 6
 - **Pedido do Renato:** executar sem acomodação, rejeitando "bom o suficiente". Foco: o comando que faz o trabalho que se vende, usado como um estranho o usaria.
